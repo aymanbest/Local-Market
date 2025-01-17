@@ -1,123 +1,183 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, ArrowLeft, Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
-import Button from './ui/Button';
+import { ArrowLeft } from 'lucide-react';
 import { removeFromCart, updateQuantity } from '../store/slices/cartSlice';
 
 const Cart = () => {
   const dispatch = useDispatch();
   const { items } = useSelector((state) => state.cart);
-  const { user } = useSelector((state) => state.auth);
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center">
-        <div className="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-gray-100 max-w-md w-full">
-          <div className="text-center space-y-4">
-            <ShoppingCart className="w-12 h-12 text-gray-400 mx-auto" />
-            <h2 className="text-2xl font-bold text-gray-900">Your Shopping Cart</h2>
-            <p className="text-gray-600">Please sign in to view your cart</p>
-            <Link to="/login">
-              <Button className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white">
-                Sign In
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [couponCode, setCouponCode] = useState('');
+  const [email, setEmail] = useState('');
+  const [makeAccount, setMakeAccount] = useState(false);
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <Link to="/" className="flex items-center text-gray-600 hover:text-green-600 transition-colors">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Continue Shopping
+    <div className="min-h-screen bg-[#0a0a0a] text-white p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-4xl font-bold tracking-wide">CHECKOUT</h1>
+          <Link 
+            to="/store" 
+            className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-800 bg-[#1E1E1E] hover:bg-[#2A2A2A] transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Back to Store
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Shopping Cart ({items.length})</h1>
         </div>
 
-        {items.length === 0 ? (
-          <div className="text-center py-16 bg-white/80 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100">
-            <ShoppingCart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Your cart is empty</h2>
-            <p className="text-gray-600 mb-6">Looks like you haven't added any items yet</p>
-            <Link to="/">
-              <Button className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white">
-                Start Shopping
-              </Button>
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-4">
-              {items.map((item) => (
-                <div key={item.id} className="bg-white/80 backdrop-blur-md p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-4">
-                    <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-lg" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                      <p className="text-gray-600">${item.price.toFixed(2)}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => dispatch(updateQuantity({ id: item.id, quantity: Math.max(1, item.quantity - 1) }))}
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                      <span className="w-12 text-center">{item.quantity}</span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }))}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      className="text-red-500 hover:text-red-700"
-                      onClick={() => dispatch(removeFromCart(item.id))}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
+          {/* Main Content */}
+          <div className="space-y-6">
+            {/* Cart Items */}
+            <div className="bg-transparent border border-gray-800 rounded-2xl p-8">
+              <div className="text-center py-4">
+                <h2 className="text-2xl font-bold">CART IS EMPTY</h2>
+              </div>
             </div>
 
-            <div className="lg:col-span-1">
-              <div className="bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-sm border border-gray-100 sticky top-24">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between text-gray-600">
-                    <span>Subtotal</span>
-                    <span>${total.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-600">
-                    <span>Shipping</span>
-                    <span>Free</span>
-                  </div>
-                  <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-gray-900">
-                    <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
-                  </div>
+            {/* Billing Details */}
+            <div className="bg-transparent border border-gray-800 rounded-2xl p-8">
+              <h2 className="text-xl font-bold mb-6">Billing Details</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-400 mb-2">Email Address</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="w-full bg-[#1E1E1E] border border-gray-800 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#FF4500]"
+                  />
                 </div>
-                <Button className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white flex items-center justify-center gap-2">
-                  <span>Proceed to Checkout</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="makeAccount"
+                    checked={makeAccount}
+                    onChange={(e) => setMakeAccount(e.target.checked)}
+                    className="rounded border-gray-800 bg-[#1E1E1E] text-[#FF4500] focus:ring-0"
+                  />
+                  <label htmlFor="makeAccount" className="text-gray-400">Make an account?</label>
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Method */}
+            <div className="bg-transparent border border-gray-800 rounded-2xl p-8">
+              <h2 className="text-xl font-bold mb-6">Payment Method</h2>
+              <div className="grid grid-cols-3 gap-4">
+                <button
+                  onClick={() => setPaymentMethod('card')}
+                  className={`flex items-center gap-3 p-4 rounded-xl border ${
+                    paymentMethod === 'card' 
+                      ? 'border-[#FF4500] bg-[#1E1E1E]' 
+                      : 'border-gray-800 bg-[#1E1E1E]'
+                  }`}
+                >
+                  <div className="w-8 h-8 flex items-center justify-center bg-[#1a1a1a] rounded-lg text-[#00A8E8]">
+                    💳
+                  </div>
+                  <span>Card/Google Pay/Apple Pay</span>
+                </button>
+                <button
+                  onClick={() => setPaymentMethod('cashapp')}
+                  className={`flex items-center gap-3 p-4 rounded-xl border ${
+                    paymentMethod === 'cashapp' 
+                      ? 'border-[#FF4500] bg-[#1E1E1E]' 
+                      : 'border-gray-800 bg-[#1E1E1E]'
+                  }`}
+                >
+                  <div className="w-8 h-8 flex items-center justify-center bg-[#1a1a1a] rounded-lg text-[#00D632]">
+                    $
+                  </div>
+                  <span>Cash App</span>
+                </button>
+                <button
+                  onClick={() => setPaymentMethod('crypto')}
+                  className={`flex items-center gap-3 p-4 rounded-xl border ${
+                    paymentMethod === 'crypto' 
+                      ? 'border-[#FF4500] bg-[#1E1E1E]' 
+                      : 'border-gray-800 bg-[#1E1E1E]'
+                  }`}
+                >
+                  <div className="w-8 h-8 flex items-center justify-center bg-[#1a1a1a] rounded-lg text-[#F7931A]">
+                    ₿
+                  </div>
+                  <span>Crypto</span>
+                </button>
               </div>
             </div>
           </div>
-        )}
+
+          {/* Order Summary */}
+          <div className="bg-transparent border border-gray-800 rounded-2xl p-8 h-fit">
+            <div className="space-y-6">
+              {/* Promo Code */}
+              <div>
+                <h3 className="text-lg font-medium mb-4">Got a Promo Code?</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    placeholder="Coupon Code"
+                    className="flex-1 bg-[#1E1E1E] border border-gray-800 rounded-lg px-4 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-[#FF4500]"
+                  />
+                  <button className="px-6 py-2 bg-[#FF4500] hover:bg-[#FF6D33] text-white rounded-lg transition-colors">
+                    Apply
+                  </button>
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div>
+                <h3 className="text-lg font-medium mb-4">Order Summary</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-gray-400">
+                    <span>Items</span>
+                    <span>0</span>
+                  </div>
+                  <div className="flex justify-between text-gray-400">
+                    <span>Service Fee</span>
+                    <span>$0.00</span>
+                  </div>
+                  <div className="flex justify-between font-medium pt-3 border-t border-gray-800">
+                    <span>Total</span>
+                    <span>$0.00</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Terms */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  checked={agreeToTerms}
+                  onChange={(e) => setAgreeToTerms(e.target.checked)}
+                  className="rounded border-gray-800 bg-[#1E1E1E] text-[#FF4500] focus:ring-0"
+                />
+                <label htmlFor="terms" className="text-gray-400">
+                  I agree to the <Link to="/terms" className="text-white hover:text-[#FF4500]">Terms of Service</Link>
+                </label>
+              </div>
+
+              {/* Checkout Button */}
+              <button 
+                className="w-full bg-[#FF4500] hover:bg-[#FF6D33] text-white py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!agreeToTerms || items.length === 0}
+              >
+                Checkout
+                <ArrowLeft className="w-5 h-5 rotate-180" />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
