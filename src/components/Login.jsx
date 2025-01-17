@@ -28,7 +28,7 @@ const Login = () => {
       <div className="w-full max-w-md">
         {/* Title */}
         <h1 className="text-4xl font-bold text-white text-center mb-2">
-          WELCOME TO REALDUDESINC
+          WELCOME TO OUR MARKET
         </h1>
         <p className="text-center text-gray-400 mb-8">
           Don't have an account?{' '}
