@@ -1,39 +1,44 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { loginUser } from '../store/slices/authSlice';
-import { Leaf, LogIn, KeyRound, User, ArrowLeft } from 'lucide-react';
-import Button from './ui/Button';
-import Input from './ui/Input';
-import Label from './ui/Label';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
+import { registerUser } from '../store/slices/authSlice';
 
-const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+const Register = () => {
+  const [formData, setFormData] = useState({
+    email: '',
+    username: '',
+    password: '',
+  });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { status, error } = useSelector((state) => state.auth);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const resultAction = await dispatch(loginUser({ username, password }));
-    if (loginUser.fulfilled.match(resultAction)) {
+    const resultAction = await dispatch(registerUser(formData));
+    if (registerUser.fulfilled.match(resultAction)) {
       navigate('/');
     }
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center pt-32">
       <div className="w-full max-w-md">
         {/* Title */}
-        <h1 className="text-4xl font-staatliches text-white text-center mb-2">
+        <h1 className="text-4xl font-staatliches text-white text-center mb-2 ">
           WELCOME TO OUR MARKET
         </h1>
         <p className="text-center text-gray-400 mb-8">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-[#FF4500]">
-            Register here
+          Already registered?{' '}
+          <Link to="/login" className="text-[#FF4500]">
+            Login here
           </Link>
         </p>
 
@@ -43,11 +48,24 @@ const Login = () => {
             <div>
               <div className="text-gray-400 uppercase text-xs mb-2">EMAIL</div>
               <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full bg-[#1E1E1E] border-none rounded-md px-4 py-3 text-white text-sm focus:ring-0"
                 placeholder="john.doe@email.com"
+              />
+            </div>
+
+            <div>
+              <div className="text-gray-400 uppercase text-xs mb-2">USERNAME</div>
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                className="w-full bg-[#1E1E1E] border-none rounded-md px-4 py-3 text-white text-sm focus:ring-0"
+                placeholder="real_dude"
               />
             </div>
 
@@ -55,8 +73,9 @@ const Login = () => {
               <div className="text-gray-400 uppercase text-xs mb-2">PASSWORD</div>
               <input
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
                 className="w-full bg-[#1E1E1E] border-none rounded-md px-4 py-3 text-white text-sm focus:ring-0"
                 placeholder="••••••••••"
               />
@@ -68,20 +87,18 @@ const Login = () => {
             className="w-full bg-[#FF4500] text-white py-3 rounded-md text-sm font-medium hover:bg-[#FF6D33] transition-colors"
             disabled={status === 'loading'}
           >
-            Login
+            Register
           </button>
 
-          <div className="text-center">
-            <Link to="/forgot-password" className="text-sm">
-              <span className="text-white">Forgot password?</span>{' '}
-              <span className="text-[#FF4500]">Reset here</span>
-            </Link>
-          </div>
+          {error && (
+            <div className="text-red-500 text-center text-sm">
+              {error}
+            </div>
+          )}
         </form>
       </div>
     </div>
   );
 };
 
-export default Login;
-
+export default Register; 

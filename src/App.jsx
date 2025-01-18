@@ -9,6 +9,7 @@ import ProducerLayout from './layouts/ProducerLayout';
 import AdminLayout from './layouts/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
+import Register from './components/Register';
 import Cart from './components/Cart';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <Routes>
               <Route path="/" element={<MainPage />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/customer/*" element={<ProtectedRoute role="customer"><CustomerLayout /></ProtectedRoute>} />
               <Route path="/producer/*" element={<ProtectedRoute role="producer"><ProducerLayout /></ProtectedRoute>} />

@@ -16,6 +16,37 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+export const registerUser = createAsyncThunk(
+  'auth/registerUser',
+  async ({ email, username, password }, { rejectWithValue }) => {
+    // Simulation 
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const userExists = mockUsers.find(u => u.username === username || u.email === email);
+    if (userExists) {
+      return rejectWithValue('User already exists');
+    }
+
+    const newUser = {
+      id: mockUsers.length + 1,
+      username,
+      email,
+      password,
+      role: 'customer',
+    };
+    mockUsers.push(newUser);
+    
+    return { 
+      user: { 
+        id: newUser.id, 
+        username: newUser.username, 
+        role: newUser.role 
+      }, 
+      token: 'mock_jwt_token' 
+    };
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
@@ -47,6 +78,20 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
       })
       .addCase(loginUser.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+      .addCase(registerUser.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.isAuthenticated = true;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       });
