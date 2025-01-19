@@ -11,6 +11,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
 import Register from './components/Register';
 import Cart from './components/Cart';
+import AccountPage from './components/AccountPage';
 
 function App() {
   return (
@@ -27,6 +28,14 @@ function App() {
               <Route path="/customer/*" element={<ProtectedRoute role="customer"><CustomerLayout /></ProtectedRoute>} />
               <Route path="/producer/*" element={<ProtectedRoute role="producer"><ProducerLayout /></ProtectedRoute>} />
               <Route path="/admin/*" element={<ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>} />
+              <Route
+                path="/account"
+                element={
+                  <ProtectedRoute>
+                    <AccountPage />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </div>
         </div>

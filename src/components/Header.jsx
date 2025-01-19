@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { ShoppingCart, LogIn, User , Apple } from 'lucide-react';
+import { ShoppingCart, LogIn, CircleUser, Apple } from 'lucide-react';
 import Button from './ui/Button';
 import { logoutUser } from '../store/slices/authSlice';
 
@@ -42,32 +42,16 @@ const Header = () => {
                   </span>
                 )}
               </Link>
-
+              <span className="h-6 w-px bg-white/20"></span>
               {isAuthenticated ? (
                 <div className="relative">
-                  <Button
-                    variant="ghost"
-                    className="text-gray-300 hover:text-[#FF4500]"
-                    onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  >
-                    <User className="w-6 h-6" />
-                  </Button>
-                  {showProfileMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-[#1E1E1E] rounded-lg shadow-lg py-1 border border-gray-800">
-                      <Link to="/profile" className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#FF4500] hover:text-white">
-                        Profile
-                      </Link>
-                      <Link to="/orders" className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#FF4500] hover:text-white">
-                        Orders
-                      </Link>
-                      <button
-                        onClick={() => dispatch(logoutUser())}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#FF4500] hover:text-white"
-                      >
-                        Sign Out
-                      </button>
+                  <Link to="/account" className="h-12 flex items-center gap-3 pr-4 pl-1">
+                    <CircleUser className="w-10 h-10 text-gray-300 hover:text-[#FF4500] transition-colors" />
+                    <div>
+                      <span className="block text-white/80 -mb-2">Hello,</span>
+                      <span className="block text-white/80 font-semibold">{user.name}</span>
                     </div>
-                  )}
+                  </Link>
                 </div>
               ) : (
                 <div className="flex items-center space-x-4">
@@ -78,7 +62,7 @@ const Header = () => {
                   </Link>
                   <Link to="/register">
                     <Button className="bg-[#FF4500] hover:bg-[#FF6D33] text-white rounded-full px-6 h-12 flex items-center gap-2 font-medium">
-                      <User className="w-6 h-6" />
+                      <CircleUser className="w-6 h-6" />
                       Register
                     </Button>
                   </Link>
