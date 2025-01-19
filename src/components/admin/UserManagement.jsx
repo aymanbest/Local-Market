@@ -7,6 +7,8 @@ import { Search, Filter, ArrowUpDown, UserPlus, Edit2, Trash2, MoreVertical, Shi
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import DonutChart from './DonutChart';
+import GeneratePdf from '../Helpers/GeneratePdf';
+import GeneratePDF from '../Helpers/GeneratePdf';
 
 const UserManagement = () => {
   // States
@@ -304,10 +306,29 @@ const UserManagement = () => {
     </div>
   );
 
-  const downloadPdf = () => {
-    console.log('downloaded!!');
 
-  }
+  const generateTablePDF = (usersData) => { 
+    const title = 'User Report';
+    const fileName = 'users_report.pdf';
+    const columns = ['Username', 'Role', 'ID']; 
+  
+    // Styling customizations
+    const styles = {
+      titleFontSize: 20,
+      titleTextColor : [0, 0, 0], // Black color
+      headerFontSize: 14,
+      headerTextColor: [0, 0, 0], // Black color
+      rowFontSize: 12,
+      rowTextColor: [50, 50, 50], // Dark gray
+    };
+  
+    // Call the generatePDF function
+    GeneratePDF(columns, usersData, title, fileName, styles);
+  };
+
+
+
+
   return (
     <div className="space-y-6">
       {/* Header Section */}
@@ -363,7 +384,10 @@ const UserManagement = () => {
 
           <Button
             className="bg-red-600 hover:bg-red-700 text-white flex items-center space-x-2"
-            onClick={() => downloadPdf()}
+            onClick={() => {
+              console.log(users);
+              generateTablePDF(users); // Pass the `users` data correctly
+            }}
           >
             <FileText />
           </Button>
@@ -379,106 +403,106 @@ const UserManagement = () => {
 
       {/* Users Table */}
       <Card className="overflow-hidden border border-inputGrey shadow-sm hover:shadow-md transition-shadow duration-300 ">
-  <Table>
-    <TableHeader>
-      <TableRow className="bgGrey/50">
-        <TableHead
-          className="font-semibold cursor-pointer"
-          onClick={() => handleSort('name')}
-        >
-          <div className="flex items-center space-x-2">
-            <span>User</span>
-            {sortConfig.key === 'name' && (
-              <ArrowUpDown className="w-4 h-4 text-gray-500" />
-            )}
-          </div>
-        </TableHead>
-        <TableHead
-          className="font-semibold cursor-pointer "
-          onClick={() => handleSort('role')}
-        >
-          <div className="flex items-center space-x-2">
-            <span>Role</span>
-            {sortConfig.key === 'role' && (
-              <ArrowUpDown className="w-4 h-4 text-gray-500" />
-            )}
-          </div>
-        </TableHead>
-        <TableHead className="font-semibold">Status</TableHead>
-        <TableHead className="font-semibold">Last Active</TableHead>
-        <TableHead className="font-semibold text-right">Actions</TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {paginatedUsers.map((user) => (
-        <TableRow key={user.id} className="group hover:bg-grey/50">
-          <TableCell>
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white font-medium">
-                {user.name.charAt(0)}
-              </div>
-              <div>
-                <p className="font-medium text-gray-300">{user.name}</p>
-                <p className="text-sm text-gray-500">{user.username}</p>
-              </div>
-            </div>
-          </TableCell>
-          <TableCell>
-            <div
-              className={`inline-flex items-center space-x-2 px-2.5 py-1.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}
-            >
-              {getRoleIcon(user.role)}
-              <span className="capitalize">{user.role}</span>
-            </div>
-          </TableCell>
-          <TableCell>
-            <Badge variant="success">Active</Badge>
-          </TableCell>
-          <TableCell>
-            <span className="text-gray-600">2 hours ago</span>
-          </TableCell>
-          <TableCell className="text-right">
-            <div className="flex items-center justify-end space-x-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hover:bg-blue-50 p-2"
-                onClick={() => {
-                  setSelectedUser(user);
-                  setShowEditModal(true);
-                }}
+        <Table>
+          <TableHeader>
+            <TableRow className="bgGrey/50">
+              <TableHead
+                className="font-semibold cursor-pointer"
+                onClick={() => handleSort('name')}
               >
-                <Edit2 className="w-4 h-4 text-blue-600" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hover:bg-red-50 p-2"
-                onClick={() => {
-                  setSelectedUser(user);
-                  setShowDeleteModal(true);
-                }}
+                <div className="flex items-center space-x-2">
+                  <span>User</span>
+                  {sortConfig.key === 'name' && (
+                    <ArrowUpDown className="w-4 h-4 text-gray-500" />
+                  )}
+                </div>
+              </TableHead>
+              <TableHead
+                className="font-semibold cursor-pointer "
+                onClick={() => handleSort('role')}
               >
-                <Trash2 className="w-4 h-4 text-red-600" />
-              </Button>
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="hover:bg-gray-100 p-2"
-                  onClick={() => setShowActionMenu(showActionMenu === user.id ? null : user.id)}
-                >
-                  <MoreVertical className="w-4 h-4 text-gray-600" />
-                </Button>
-                {showActionMenu === user.id && <ActionMenu user={user} />}
-              </div>
-            </div>
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-</Card>
+                <div className="flex items-center space-x-2">
+                  <span>Role</span>
+                  {sortConfig.key === 'role' && (
+                    <ArrowUpDown className="w-4 h-4 text-gray-500" />
+                  )}
+                </div>
+              </TableHead>
+              <TableHead className="font-semibold">Status</TableHead>
+              <TableHead className="font-semibold">Last Active</TableHead>
+              <TableHead className="font-semibold text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paginatedUsers.map((user) => (
+              <TableRow key={user.id} className="group hover:bg-grey/50">
+                <TableCell>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white font-medium">
+                      {user.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-300">{user.name}</p>
+                      <p className="text-sm text-gray-500">{user.username}</p>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div
+                    className={`inline-flex items-center space-x-2 px-2.5 py-1.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}
+                  >
+                    {getRoleIcon(user.role)}
+                    <span className="capitalize">{user.role}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="success">Active</Badge>
+                </TableCell>
+                <TableCell>
+                  <span className="text-gray-600">2 hours ago</span>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="hover:bg-blue-50 p-2"
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setShowEditModal(true);
+                      }}
+                    >
+                      <Edit2 className="w-4 h-4 text-blue-600" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="hover:bg-red-50 p-2"
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setShowDeleteModal(true);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </Button>
+                    <div className="relative">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="hover:bg-gray-100 p-2"
+                        onClick={() => setShowActionMenu(showActionMenu === user.id ? null : user.id)}
+                      >
+                        <MoreVertical className="w-4 h-4 text-gray-600" />
+                      </Button>
+                      {showActionMenu === user.id && <ActionMenu user={user} />}
+                    </div>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
 
 
       {/* Pagination */}
