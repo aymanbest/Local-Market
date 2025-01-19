@@ -1,14 +1,14 @@
 import React from 'react';
 
 export const Table = ({ children, className = '' }) => (
-  <div className="overflow-x-auto">
-    <table className={`min-w-full divide-y divide-gray-200 ${className}`}>{children}</table>
+  <div className="overflow-x-auto ">
+    <table className={`min-w-full divide-y divide-gray-600  ${className}`}>{children}</table>
   </div>
 );
 
-export const TableHeader = ({ children }) => <thead className="bg-gray-50">{children}</thead>;
+export const TableHeader = ({ children }) => <thead className="bg-inputGrey">{children}</thead>;
 
-export const TableBody = ({ children }) => <tbody className="bg-white divide-y divide-gray-200">{children}</tbody>;
+export const TableBody = ({ children }) => <tbody className="bg-inputGrey divide-y divide-gray-500">{children}</tbody>;
 
 export const TableRow = ({ children }) => <tr>{children}</tr>;
 
