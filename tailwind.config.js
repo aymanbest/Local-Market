@@ -40,6 +40,9 @@ export default {
       colors: {
         cashapp: '#00D632',
         bitcoin: '#F7931A',
+        bgGrey : '#1e1e1e',
+        mainBlack : '#0a0a0a',
+        inputGrey : '#2f2f2f'
       },
     },
   },
