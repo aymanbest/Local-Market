@@ -28,7 +28,7 @@ function App() {
               <Route path="/cart" element={<Cart />} />
               <Route path="/customer/*" element={<ProtectedRoute role="customer"><CustomerLayout /></ProtectedRoute>} />
               <Route path="/producer/*" element={<ProtectedRoute role="producer"><ProducerLayout /></ProtectedRoute>} />
-              <Route path="/admin/*" element={<AdminLayout />} />
+              <Route path="/admin/*" element={<ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>} />
               <Route
                 path="/account"
                 element={
