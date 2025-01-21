@@ -44,6 +44,6 @@ function App() {
     </Provider>
   );
 }
-function ConditionalHeader() { const location = useLocation(); const shouldShowHeader = !location.pathname.startsWith('/admin/'); return shouldShowHeader ? <Header /> : <AdminHeader/>; }
+function ConditionalHeader() { const location = useLocation(); const shouldShowHeader = !location.pathname.startsWith('/admin'); return shouldShowHeader ? <Header /> : <AdminHeader/>; }
 export default App;
 
