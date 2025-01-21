@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { mockTransactions } from '../mockData';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/Table';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Search, Filter, ArrowUpDown, DollarSign, TrendingUp, AlertCircle, Clock, CheckCircle2, XCircle } from 'lucide-react';
-import Button from './ui/Button';
-import Badge from './ui/Badge';
+import Button from '../../components/ui/Button';
+import Badge from '../../components/ui/Badge';
+import { mockTransactions } from '../../mockData';
 
 const TransactionMonitoring = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,13 +15,13 @@ const TransactionMonitoring = () => {
 
   // Filter transactions
   const filteredTransactions = mockTransactions.filter(transaction => {
-    const matchesSearch = 
+    const matchesSearch =
       transaction.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.producer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.id.toString().includes(searchTerm);
-    
+
     const matchesStatus = filterStatus === 'all' || transaction.status === filterStatus;
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -59,46 +59,46 @@ const TransactionMonitoring = () => {
       {/* Header Section */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Transaction Monitoring</h2>
+          <h2 className="text-2xl font-bold text-gray-100">Transaction Monitoring</h2>
           <p className="text-gray-500 mt-1">Monitor and track all transactions</p>
         </div>
       </div>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="hover:shadow-lg transition-shadow duration-300">
-          <CardContent className="p-6">
+        <Card className="hover:shadow-lg transition-shadow duration-300 bg-inputGrey rounded-xl">
+          <CardContent className="p-6 bg-inputGrey rounded-xl">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-indigo-100 rounded-lg">
                 <DollarSign className="w-5 h-5 text-indigo-600" />
               </div>
             </div>
-            <p className="text-3xl font-bold mt-2">${totalAmount.toFixed(2)}</p>
-            <p className="text-sm text-gray-500">Total Transaction Volume</p>
+            <p className="text-3xl font-bold mt-2 text-gray-100">${totalAmount.toFixed(2)}</p>
+            <p className="text-sm text-gray-400">Total Transaction Volume</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow duration-300">
-          <CardContent className="p-6">
+        <Card className="hover:shadow-lg transition-shadow duration-300 bg-inputGrey rounded-xl">
+          <CardContent className="p-6 bg-inputGrey rounded-xl">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-green-100 rounded-lg">
                 <CheckCircle2 className="w-5 h-5 text-green-600" />
               </div>
             </div>
-            <p className="text-3xl font-bold mt-2">{completedTransactions}</p>
-            <p className="text-sm text-gray-500">Completed Transactions</p>
+            <p className="text-3xl font-bold mt-2 text-gray-100">{completedTransactions}</p>
+            <p className="text-sm text-gray-400">Completed Transactions</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow duration-300">
-          <CardContent className="p-6">
+        <Card className="hover:shadow-lg transition-shadow duration-300 bg-inputGrey rounded-xl">
+          <CardContent className="p-6 bg-inputGrey rounded-xl ">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-yellow-100 rounded-lg">
                 <Clock className="w-5 h-5 text-yellow-600" />
               </div>
             </div>
-            <p className="text-3xl font-bold mt-2">{pendingTransactions}</p>
-            <p className="text-sm text-gray-500">Pending Transactions</p>
+            <p className="text-3xl font-bold mt-2 text-gray-100">{pendingTransactions}</p>
+            <p className="text-sm text-gray-400">Pending Transactions</p>
           </CardContent>
         </Card>
       </div>
@@ -112,13 +112,13 @@ const TransactionMonitoring = () => {
             placeholder="Search transactions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="text-white pl-10 pr-4 py-2 w-full rounded-lg border  focus:ring-2 focus:ring-orange-600 focus:outline-none bg-inputGrey"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="px-4 py-2 rounded-lg text-white focus:border-orange-700 bg-inputGrey"
         >
           <option value="all">All Status</option>
           <option value="Completed">Completed</option>
@@ -128,7 +128,7 @@ const TransactionMonitoring = () => {
       </div>
 
       {/* Transactions Table */}
-      <Card className="overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300">
+      <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50/50">
@@ -143,12 +143,12 @@ const TransactionMonitoring = () => {
           <TableBody>
             {filteredTransactions.map((transaction) => (
               <TableRow key={transaction.id} className="hover:bg-gray-50/50">
-                <TableCell>{transaction.date}</TableCell>
-                <TableCell className="font-medium">#{transaction.id}</TableCell>
-                <TableCell>{transaction.customer}</TableCell>
-                <TableCell>{transaction.producer}</TableCell>
-                <TableCell className="font-medium">${transaction.amount.toFixed(2)}</TableCell>
-                <TableCell>{getStatusBadge(transaction.status)}</TableCell>
+                <TableCell className="font-medium text text-gray-300">{transaction.date}</TableCell>
+                <TableCell className="font-medium text text-gray-300">#{transaction.id}</TableCell>
+                <TableCell className="font-medium text text-gray-300">{transaction.customer}</TableCell>
+                <TableCell className="font-medium text text-gray-300">{transaction.producer}</TableCell>
+                <TableCell className="font-medium text text-gray-300">${transaction.amount.toFixed(2)}</TableCell>
+                <TableCell className="font-medium text text-gray-300">{getStatusBadge(transaction.status)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -156,23 +156,32 @@ const TransactionMonitoring = () => {
       </Card>
 
       {/* Chart Section */}
-      <Card className="p-6">
-        <CardHeader>
-          <CardTitle>Transaction Volume Over Time</CardTitle>
+      <Card className="p-6 !bg-inputGrey">
+        <CardHeader className="bg-inputGrey">
+          <CardTitle>
+            <h1 className="text text-gray-200">Transaction Volume Over Time</h1>
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="bg-inputGrey">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="date" />
               <YAxis />
-              <Tooltip />
+              <Tooltip 
+              contentStyle={{
+                backgroundColor: '#0a0a0a',  
+                border: 'none',
+                borderRadius: '4px',
+                color: 'white'    
+              }}/>
               <Legend />
-              <Bar dataKey="amount" fill="#818cf8" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="amount" fill="orange" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
+
     </div>
   );
 };

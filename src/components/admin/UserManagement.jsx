@@ -7,7 +7,6 @@ import { Search, Filter, ArrowUpDown, UserPlus, Edit2, Trash2, MoreVertical, Shi
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import DonutChart from './DonutChart';
-import GeneratePdf from '../Helpers/GeneratePdf';
 import GeneratePDF from '../Helpers/GeneratePdf';
 
 const UserManagement = () => {
@@ -76,20 +75,20 @@ const UserManagement = () => {
     {
       title: 'Total Users',
       value: users.length,
-      total: 1000,  // Example total value (can be dynamic)
-      color: '#4CAF50',  // Green for Total Users
+      total: 1000,  
+      color: '#4CAF50', 
     },
     {
       title: 'Active Producers',
       value: users.filter((u) => u.role === 'producer').length,
       total: users.length,
-      color: '#3B82F6',  // Blue for Active Producers
+      color: '#3B82F6', 
     },
     {
       title: 'New Users (This Month)',
-      value: 5,  // Adjust dynamically based on your logic
-      total: 100,  // Adjust this based on your data
-      color: '#9C27B0',  // Purple for New Users
+      value: 5,  
+      total: 100,  
+      color: '#9C27B0',  
     },
   ];
 
@@ -312,14 +311,14 @@ const UserManagement = () => {
     const fileName = 'users_report.pdf';
     const columns = ['Username', 'Role', 'ID']; 
   
-    // Styling customizations
+    
     const styles = {
       titleFontSize: 20,
-      titleTextColor : [0, 0, 0], // Black color
+      titleTextColor : [0, 0, 0], 
       headerFontSize: 14,
-      headerTextColor: [0, 0, 0], // Black color
+      headerTextColor: [0, 0, 0], 
       rowFontSize: 12,
-      rowTextColor: [50, 50, 50], // Dark gray
+      rowTextColor: [50, 50, 50],
     };
   
     // Call the generatePDF function
