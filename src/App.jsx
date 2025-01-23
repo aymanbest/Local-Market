@@ -5,7 +5,7 @@ import store from './store';
 import Header from './components/Header';
 import MainPage from './components/MainPage';
 import CustomerLayout from './layouts/CustomerLayout';
-import ProducerLayout from './layouts/ProducerLayout';
+import ProducerLayout from './layouts/producer/ProducerLayout';
 import AdminLayout from './layouts/admin/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
@@ -13,6 +13,7 @@ import Register from './components/Register';
 import Cart from './components/Cart';
 import AccountPage from './components/AccountPage';
 import AdminHeader from './components/admin/AdminHeader';
+import ProducerHeader from './components/producer/ProducerHeader';
 
 function App() {
   return (
@@ -26,9 +27,9 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/cart" element={<Cart />} />
-              <Route path="/customer/*" element={<ProtectedRoute role="customer"><CustomerLayout /></ProtectedRoute>} />
-              <Route path="/producer/*" element={<ProtectedRoute role="producer"><ProducerLayout /></ProtectedRoute>} />
-              <Route path="/admin/*" element={<ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>} />
+              <Route path="/customer/*" element={<CustomerLayout />} />
+              <Route path="/producer/*" element={<ProducerLayout />} />
+              <Route path="/admin/*" element={<AdminLayout />} />
               <Route
                 path="/account"
                 element={
@@ -44,6 +45,21 @@ function App() {
     </Provider>
   );
 }
-function ConditionalHeader() { const location = useLocation(); const shouldShowHeader = !location.pathname.startsWith('/admin'); return shouldShowHeader ? <Header /> : <AdminHeader/>; }
+function ConditionalHeader() {
+  const location = useLocation(); 
+
+  if (location.pathname.startsWith('/admin')) {
+    return <AdminHeader />;
+  } 
+  
+  if (location.pathname.startsWith('/producer')) {
+    return <ProducerHeader />;
+  }
+
+  return <Header />;
+}
+
+
+
 export default App;
 

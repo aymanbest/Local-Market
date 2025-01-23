@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { mockProducerProducts } from '../mockData';
+import { mockProducerProducts } from '../../mockData';
 import { Plus, Pencil, Trash2, ArrowUpDown, Search, Filter, X, Upload, Edit2, MoreVertical, Eye } from 'lucide-react';
-import Button from './ui/Button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/Table';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
+import Button from '../../components/ui/Button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 
 const ProductManagement = () => {
   const [products, setProducts] = useState(mockProducerProducts);
@@ -204,71 +204,70 @@ const ProductManagement = () => {
   // Filter Modal
   const FilterModal = () => (
     <div className="fixed inset-0 flex items-center justify-center z-[9999]">
-      <div className="absolute inset-0 bg-white/60 backdrop-blur-sm" />
-      <div className="bg-white/80 backdrop-blur-md rounded-lg p-6 w-full max-w-md relative mx-4 shadow-xl border border-gray-100">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div className="bg-gray-800/90 backdrop-blur-md rounded-lg p-6 w-full max-w-md relative mx-4 shadow-xl border border-gray-700">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+          <h3 className="text-xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
             Filter Products
           </h3>
-          <Button 
-            variant="ghost" 
+          <button
             onClick={() => setShowFilters(false)}
-            className="hover:bg-red-50 hover:text-red-600"
+            className="p-2 text-gray-300 hover:bg-red-600/20 hover:text-red-400 rounded-full"
           >
-            <X className="w-5 h-5" />
-          </Button>
+            ✕
+          </button>
         </div>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Min Price</label>
+              <label className="block text-sm font-medium mb-1 text-gray-400">Min Price</label>
               <input
                 type="number"
                 min="0"
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border border-gray-600 bg-gray-700 text-gray-200 rounded focus:ring-2 focus:ring-blue-500"
                 value={filters.minPrice}
-                onChange={(e) => setFilters({...filters, minPrice: e.target.value})}
+                onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Max Price</label>
+              <label className="block text-sm font-medium mb-1 text-gray-400">Max Price</label>
               <input
                 type="number"
                 min="0"
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border border-gray-600 bg-gray-700 text-gray-200 rounded focus:ring-2 focus:ring-blue-500"
                 value={filters.maxPrice}
-                onChange={(e) => setFilters({...filters, maxPrice: e.target.value})}
+                onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Min Inventory</label>
+              <label className="block text-sm font-medium mb-1 text-gray-400">Min Inventory</label>
               <input
                 type="number"
                 min="0"
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border border-gray-600 bg-gray-700 text-gray-200 rounded focus:ring-2 focus:ring-blue-500"
                 value={filters.minInventory}
-                onChange={(e) => setFilters({...filters, minInventory: e.target.value})}
+                onChange={(e) => setFilters({ ...filters, minInventory: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Max Inventory</label>
+              <label className="block text-sm font-medium mb-1 text-gray-400">Max Inventory</label>
               <input
                 type="number"
                 min="0"
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border border-gray-600 bg-gray-700 text-gray-200 rounded focus:ring-2 focus:ring-blue-500"
                 value={filters.maxInventory}
-                onChange={(e) => setFilters({...filters, maxInventory: e.target.value})}
+                onChange={(e) => setFilters({ ...filters, maxInventory: e.target.value })}
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Status</label>
+            <label className="block text-sm font-medium mb-1 text-gray-400">Status</label>
             <select
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border border-gray-600 bg-gray-700 text-gray-200 rounded focus:ring-2 focus:ring-blue-500"
               value={filters.status}
-              onChange={(e) => setFilters({...filters, status: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
             >
               <option value="all">All</option>
               <option value="active">Active</option>
@@ -276,113 +275,122 @@ const ProductManagement = () => {
             </select>
           </div>
           <div className="flex space-x-2">
-            <Button
+            <button
               type="button"
-              className="flex-1"
-              variant="outline"
-              onClick={() => {
+              className="flex-1 px-4 py-2 border border-gray-500 text-gray-300 rounded hover:bg-gray-700 hover:border-gray-400"
+              onClick={() =>
                 setFilters({
                   minPrice: '',
                   maxPrice: '',
                   minInventory: '',
                   maxInventory: '',
-                  status: 'all'
-                });
-              }}
+                  status: 'all',
+                })
+              }
             >
               Reset
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
               onClick={() => setShowFilters(false)}
             >
               Apply Filters
-            </Button>
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
+  
 
   // View Modal Component
   const ViewModal = () => (
     <div className="fixed inset-0 flex items-center justify-center z-[9999]">
-      <div className="absolute inset-0 bg-white/60 backdrop-blur-sm" />
-      <div className="bg-white/80 backdrop-blur-md rounded-lg p-6 w-full max-w-md relative mx-4 shadow-xl border border-gray-100">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-            Product Details
-          </h3>
-          <Button 
-            variant="ghost" 
-            onClick={() => setShowViewModal(false)}
-            className="hover:bg-red-50 hover:text-red-600"
-          >
-            <X className="w-5 h-5" />
-          </Button>
-        </div>
-        {selectedProduct && (
-          <div className="space-y-4">
-            <div className="aspect-square w-full max-w-[200px] mx-auto">
-              <img 
-                src={selectedProduct.image} 
-                alt={selectedProduct.name}
-                className="w-full h-full object-cover rounded-lg"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500">Name</p>
-                <p className="font-medium">{selectedProduct.name}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Category</p>
-                <p className="font-medium">{selectedProduct.category}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Price</p>
-                <p className="font-medium">${selectedProduct.price.toFixed(2)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Inventory</p>
-                <p className="font-medium">{selectedProduct.inventory}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-sm text-gray-500">Description</p>
-                <p className="font-medium">{selectedProduct.description}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-sm text-gray-500">Status</p>
-                <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                  selectedProduct.active 
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-gray-100 text-gray-700'
-                }`}>
-                  {selectedProduct.active ? 'Active' : 'Inactive'}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+  <div className="bg-gray-800/90 backdrop-blur-md rounded-lg p-6 w-full max-w-md relative mx-4 shadow-xl border border-gray-700">
+    <div className="flex justify-between items-center mb-4">
+      <h3 className="text-xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+        Product Details
+      </h3>
+      <Button 
+        variant="ghost" 
+        onClick={() => setShowViewModal(false)}
+        className="hover:bg-red-600/20 hover:text-red-400 text-gray-300"
+      >
+        <X className="w-5 h-5" />
+      </Button>
     </div>
+    {selectedProduct && (
+      <div className="space-y-4">
+        <div className="aspect-square w-full max-w-[200px] mx-auto">
+          <img 
+            src={selectedProduct.image} 
+            alt={selectedProduct.name}
+            className="w-full h-full object-cover rounded-lg border border-gray-700"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-sm text-gray-400">Name</p>
+            <p className="font-medium text-gray-200">{selectedProduct.name}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-400">Category</p>
+            <p className="font-medium text-gray-200">{selectedProduct.category}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-400">Price</p>
+            <p className="font-medium text-gray-200">${selectedProduct.price.toFixed(2)}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-400">Inventory</p>
+            <p className="font-medium text-gray-200">{selectedProduct.inventory}</p>
+          </div>
+          <div className="col-span-2">
+            <p className="text-sm text-gray-400">Description</p>
+            <p className="font-medium text-gray-200">{selectedProduct.description}</p>
+          </div>
+          <div className="col-span-2">
+            <p className="text-sm text-gray-400">Status</p>
+            <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+              selectedProduct.active 
+                ? 'bg-green-700/20 text-green-400'
+                : 'bg-gray-700/20 text-gray-400'
+            }`}>
+              {selectedProduct.active ? 'Active' : 'Inactive'}
+            </span>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+</div>
+
   );
 
   // Delete Confirmation Modal
-  const DeleteModal = () => (
+  const DeleteModal = ({ selectedProduct, setShowDeleteModal, confirmDelete }) => (
     <div className="fixed inset-0 flex items-center justify-center z-[9999]">
-      <div className="absolute inset-0 bg-white/60 backdrop-blur-sm" />
-      <div className="bg-white/80 backdrop-blur-md rounded-lg p-6 w-full max-w-md relative mx-4 shadow-xl border border-gray-100">
+      {/* Background Overlay */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      
+      {/* Modal Content */}
+      <div className="bg-gray-800/90 backdrop-blur-md rounded-lg p-6 w-full max-w-md relative mx-4 shadow-xl border border-gray-700">
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-gray-900">Confirm Delete</h3>
-          <p className="text-gray-600">
+          {/* Modal Header */}
+          <h3 className="text-xl font-bold text-gray-200">Confirm Delete</h3>
+          
+          {/* Modal Description */}
+          <p className="text-gray-400">
             Are you sure you want to delete "{selectedProduct?.name}"? This action cannot be undone.
           </p>
+          
+          {/* Action Buttons */}
           <div className="flex space-x-3 pt-4">
             <Button
               variant="outline"
-              className="flex-1"
+              className="flex-1 border-gray-500 text-gray-300 hover:bg-gray-700 hover:border-gray-400"
               onClick={() => setShowDeleteModal(false)}
             >
               Cancel
@@ -398,13 +406,14 @@ const ProductManagement = () => {
       </div>
     </div>
   );
+  
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-bgGrey">
       {/* Header Section */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center ">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Product Management</h2>
+          <h2 className="text-2xl font-bold text-gray-200">Product Management</h2>
           <p className="text-gray-500 mt-1">Manage your product inventory and listings</p>
         </div>
         <Button 
@@ -419,18 +428,18 @@ const ProductManagement = () => {
       {/* Filters and Search */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5   text-gray-400 " />
           <input
             type="text"
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+            className="text-white pl-10 pr-4 py-2 w-full rounded-lg border  focus:ring-2 focus:ring-green-600 focus:outline-none bg-inputGrey"
           />
         </div>
         <Button 
           variant="outline" 
-          className="flex items-center space-x-2 hover:border-green-500 hover:text-green-600"
+          className="flex items-center space-x-2 text !text-gray-200 dark:hover:bg-green-900 dark:hover:border-green-200 hover:text-green-100 hover:border-green-500 hover:text-green-600"
           onClick={() => setShowFilters(true)}
         >
           <Filter className="w-5 h-5" />
@@ -438,7 +447,7 @@ const ProductManagement = () => {
         </Button>
         <Button 
           variant="outline" 
-          className="flex items-center space-x-2 hover:border-green-500 hover:text-green-600"
+          className="flex items-center space-x-2 text !text-gray-200 dark:hover:bg-green-900 dark:hover:border-green-200 hover:text-green-100 hover:border-green-500 hover:text-green-600"
           onClick={() => handleSort('name')}
         >
           <ArrowUpDown className="w-5 h-5" />
@@ -447,7 +456,7 @@ const ProductManagement = () => {
       </div>
 
       {/* Products Table */}
-      <Card className="overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300">
+      <Card className="overflow-hidden border border-borderGrey shadow-sm hover:shadow-md transition-shadow duration-300">
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50/50">
@@ -472,30 +481,30 @@ const ProductManagement = () => {
                       alt={product.name}
                       className="w-10 h-10 rounded-lg object-cover border border-gray-200"
                     />
-                    <span className="font-medium text-gray-900">{product.name}</span>
+                    <span className="font-medium text-gray-300">{product.name}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-gray-600">
+                <TableCell className="text-gray-400">
                   {product.category}
                 </TableCell>
-                <TableCell className="text-gray-600">
+                <TableCell className="text-gray-400">
                   ${product.price.toFixed(2)}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center space-x-2">
-                    <span className="text-gray-600">{product.inventory}</span>
+                    <span className="text-gray-400">{product.inventory}</span>
                     {product.inventory < 10 && (
-                      <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-medium text-red-100 bg-red-900 px-2 py-0.5 rounded-full">
                         Low Stock
                       </span>
                     )}
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium  ${
                     product.active 
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-gray-100 text-gray-700'
+                      ? 'bg-green-900 text-green-100 border-green-100'
+                      : 'bg-gray-900 text-gray-100 border-gray-100'
                   }`}>
                     {product.active ? 'Active' : 'Inactive'}
                   </span>
@@ -508,23 +517,23 @@ const ProductManagement = () => {
                       className="hover:bg-gray-100 p-2 rounded-lg"
                       onClick={() => handleView(product.id)}
                     >
-                      <Eye className="w-4 h-4 text-gray-600" />
+                      <Eye className="w-4 h-4 text-gray-600 dark:text-gray-300 hover:dark:text-gray-600" />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="hover:bg-blue-50 p-2 rounded-lg"
+                      className="hover:bg-blue-50 hover:dark:bg-blue-900   p-2 rounded-lg"
                       onClick={() => handleEdit(product.id)}
                     >
-                      <Edit2 className="w-4 h-4 text-blue-600" />
+                      <Edit2 className="w-4 h-4 text-blue-600 hover:text-blue-100" />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="hover:bg-red-50 p-2 rounded-lg"
+                      className="hover:bg-red-50  hover:dark:bg-red-900 p-2 rounded-lg"
                       onClick={() => handleDelete(product.id)}
                     >
-                      <Trash2 className="w-4 h-4 text-red-600" />
+                      <Trash2 className="w-4 h-4 text-red-600 hover:dark:text-red-100" />
                     </Button>
                   </div>
                 </TableCell>
@@ -547,6 +556,8 @@ const ProductManagement = () => {
           <Button 
             variant="outline" 
             size="sm" 
+            className='border hover:bg-gray-200 text-gray-600 border-gray-600
+            dark:hover:bg-gray-900 dark:hover:text-gray-100 dark:hover:border-gray-100'
             disabled={currentPage === 1}
             onClick={() => setCurrentPage(prev => prev - 1)}
           >
@@ -555,6 +566,8 @@ const ProductManagement = () => {
           <Button 
             variant="outline" 
             size="sm"
+            className='border hover:bg-green-200 text-green-600 border-green-600
+            dark:hover:bg-green-900 dark:hover:text-green-100 dark:hover:border-green-100'
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(prev => prev + 1)}
           >

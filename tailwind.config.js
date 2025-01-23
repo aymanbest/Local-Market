@@ -42,7 +42,9 @@ export default {
         bitcoin: '#F7931A',
         bgGrey : '#1e1e1e',
         mainBlack : '#0a0a0a',
-        inputGrey : '#2f2f2f'
+        inputGrey : '#2f2f2f',
+        bioGreen : '#22c55e',
+        borderGrey : '#6c6c6c'
       },
     },
   },
