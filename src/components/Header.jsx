@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { ShoppingCart, LogIn, CircleUser, Apple, Sun, Moon } from 'lucide-react';
+import { ShoppingCart, LogIn, CircleUser, Leaf, Sun, Moon } from 'lucide-react';
 import Button from './ui/Button';
 import { logoutUser } from '../store/slices/authSlice';
 import { useTheme } from '../context/ThemeContext';
@@ -24,7 +24,7 @@ const Header = () => {
             {/* Social Icons */}
             <div className="flex items-center space-x-4">
               <a href="/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primaryHover transition-colors">
-                <Apple className="w-6 h-6" />
+                <Leaf className="w-6 h-6" />
               </a>
               <button
                 onClick={toggleTheme}

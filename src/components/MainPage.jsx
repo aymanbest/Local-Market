@@ -44,53 +44,97 @@ const MainPage = () => {
   return (
     <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-4 pt-20 pb-16">
-        <div className="text-center mb-12">
-          {/* Logo */}
-          <div className="mb-6">
-            <svg
-              className="w-16 h-16 mx-auto text-primary"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"
-                fill="currentColor"
-              />
-              <path
-                d="M12 7c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1s1-.45 1-1V8c0-.55-.45-1-1-1z"
-                fill="currentColor"
-              />
-            </svg>
+      <div className="relative overflow-hidden bg-gradient-to-br from-background via-background/95 to-background">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative pt-20 pb-20">
+            <div className="flex flex-col lg:flex-row items-center gap-16">
+              {/* Left Content */}
+              <div className="flex-1 text-left relative z-10">
+                <div className="space-y-8">
+                  {/* Badge */}
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                    </span>
+                    <span className="text-sm font-medium text-primary">
+                      Now serving your local community
+                    </span>
+                  </div>
+
+                  {/* Main Title */}
+                  <h1 className="text-6xl font-bold leading-tight tracking-tight">
+                    <span className="block text-text">ENJOY FRESH</span>
+                    <span className="block mt-1">
+                      <span className="text-primary">LOCAL</span> PRODUCTS
+                    </span>
+                  </h1>
+                  
+                  <h2 className="text-2xl text-textSecondary font-medium">
+                    Your <span className="text-primary font-semibold">#1</span> Local{" "}
+                    <span className="text-primary font-semibold">Organic </span>Marketplace
+                  </h2>
+                  
+                  <p className="text-lg text-textSecondary/80 max-w-xl">
+                    We connect you directly with local farmers and artisans.
+                    Fresh, organic, and sustainably sourced products delivered
+                    right to your doorstep.
+                  </p>
+
+                  <div className="flex items-center gap-6">
+                    <Link to="/store">
+                      <Button className="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-full text-lg flex items-center gap-3 group shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-300">
+                        Visit Store
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                    </Link>
+                    
+                    {/* <div className="flex items-center gap-4 text-textSecondary">
+                      <div className="flex -space-x-3">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="w-10 h-10 rounded-full border-2 border-background bg-cardBg overflow-hidden">
+                            <img 
+                              src={`/Producers/Producers${i}.jpg`} 
+                              alt="Local Producers"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-sm">
+                        <p className="font-medium">50+ Local Producers</p>
+                        <p className="text-textSecondary/60">Trusted Partners</p>
+                      </div>
+                    </div> */}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Content - SVG Animation */}
+              <div className="flex-1 relative">
+                <div className="relative z-10 w-full max-w-lg mx-auto">
+                  {/* Decorative Elements */}
+                  <div className="absolute -top-4 -right-4 w-72 h-72 bg-primary/30 rounded-full blur-3xl"></div>
+                  <div className="absolute -bottom-4 -left-4 w-72 h-72 bg-[#22C55E]/20 rounded-full blur-3xl"></div>
+                  
+                  {/* SVG Container with enhanced styling */}
+                  <div className="relative bg-gradient-to-b from-transparent to-background/5 rounded-2xl backdrop-blur-sm p-8">
+                    <object
+                      type="image/svg+xml"
+                      data="/product-hunt-animate.svg"
+                      className="w-full h-full transform hover:scale-105 transition-transform duration-500"
+                      id="freepik_stories-product-hunt"
+                    >
+                      Product Hunt Animation
+                    </object>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-
-          {/* Main Title */}
-          <h1 className="text-6xl font-bold leading-tight mb-4">
-            ENJOY FRESH LOCAL PRODUCTS
-          </h1>
-
-          {/* Subtitle */}
-          <h2 className="text-2xl mb-8">
-            Your <span className="text-primary">#1</span> Local{" "}
-            <span className="text-primary">Organic </span>Marketplace
-          </h2>
-
-          {/* Description */}
-          <p className="text-textSecondary text-lg max-w-2xl mx-auto mb-8">
-            We connect you directly with local farmers and artisans.
-            Fresh, organic, and sustainably sourced products delivered
-            right to your doorstep. Support your local community while
-            enjoying the best nature has to offer.
-          </p>
-
-          {/* CTA Button */}
-          <Link to="/store">
-            <Button className="bg-primary hover:bg-[#FF6D33] text-white px-8 py-3 rounded-full text-lg flex items-center gap-2 group mx-auto">
-              Visit Store
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
         </div>
       </div>
 
