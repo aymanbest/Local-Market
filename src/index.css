@@ -5,8 +5,8 @@
 
 @layer base {
   :root {
-    --color-primary: #FF4500;
-    --color-primary-hover: #FF6D33;
+    --color-primary: #22C55E;
+    --color-primary-hover: #16A34A;
     --color-background: #f8f9fa;
     --color-header-bg: #ffffff;
     --color-card-bg: #ffffff;
@@ -20,8 +20,8 @@
   }
 
   .dark {
-    --color-primary: #FF4500;
-    --color-primary-hover: #FF6D33;
+    --color-primary: #22C55E;
+    --color-primary-hover: #16A34A;
     --color-background: #0a0a0a;
     --color-header-bg: #1E1E1E;
     --color-card-bg: #1E1E1E;

@@ -49,7 +49,7 @@ const MainPage = () => {
           {/* Logo */}
           <div className="mb-6">
             <svg
-              className="w-16 h-16 mx-auto text-[#FF4500]"
+              className="w-16 h-16 mx-auto text-primary"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -72,8 +72,8 @@ const MainPage = () => {
 
           {/* Subtitle */}
           <h2 className="text-2xl mb-8">
-            Your <span className="text-[#FF4500]">#1</span> Local{" "}
-            <span className="text-[#FF4500]">Organic </span>Marketplace
+            Your <span className="text-primary">#1</span> Local{" "}
+            <span className="text-primary">Organic </span>Marketplace
           </h2>
 
           {/* Description */}
@@ -86,7 +86,7 @@ const MainPage = () => {
 
           {/* CTA Button */}
           <Link to="/store">
-            <Button className="bg-[#FF4500] hover:bg-[#FF6D33] text-white px-8 py-3 rounded-full text-lg flex items-center gap-2 group mx-auto">
+            <Button className="bg-primary hover:bg-[#FF6D33] text-white px-8 py-3 rounded-full text-lg flex items-center gap-2 group mx-auto">
               Visit Store
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
@@ -126,14 +126,14 @@ const MainPage = () => {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="flex justify-between items-center mb-12">
           <h2 className="text-4xl font-bold">
-            EXPLORE OUR <span className="text-[#FF4500]">CATEGORIES</span>
+            EXPLORE OUR <span className="text-primary">CATEGORIES</span>
           </h2>
           <div className="flex gap-2">
             <Button
               variant="outline"
               className={`p-2 rounded-lg transition-colors duration-300 ${currentPage === 0
                   ? 'bg-[#1E1E1E] border-gray-800 text-gray-600 cursor-not-allowed'
-                  : 'bg-[#1E1E1E] border-gray-800 hover:bg-[#FF4500] hover:border-transparent'
+                  : 'bg-[#1E1E1E] border-gray-800 hover:bg-primary hover:border-transparent'
                 }`}
               onClick={handlePrevPage}
               disabled={currentPage === 0}
@@ -145,7 +145,7 @@ const MainPage = () => {
               variant="outline"
               className={`p-2 rounded-lg transition-colors duration-300 ${currentPage === totalPages - 1
                   ? 'bg-[#1E1E1E] border-gray-800 text-gray-600 cursor-not-allowed'
-                  : 'bg-[#FF4500] border-transparent hover:bg-[#FF6D33]'
+                  : 'bg-primary border-transparent hover:bg-[#FF6D33]'
                 }`}
               onClick={handleNextPage}
               disabled={currentPage === totalPages - 1}
@@ -184,7 +184,7 @@ const MainPage = () => {
           {Array.from({ length: totalPages }).map((_, index) => (
             <button
               key={index}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${currentPage === index ? 'bg-[#FF4500] w-4' : 'bg-gray-600'
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${currentPage === index ? 'bg-primary w-4' : 'bg-gray-600'
                 }`}
               onClick={() => {
                 setDirection(index > currentPage ? 'right' : 'left');
