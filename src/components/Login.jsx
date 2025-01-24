@@ -2,11 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../store/slices/authSlice';
-import { Leaf, LogIn, KeyRound, User, ArrowLeft } from 'lucide-react';
-import Button from './ui/Button';
-import Input from './ui/Input';
-import Label from './ui/Label';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
+
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -24,10 +20,10 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center pt-32">
+    <div className="min-h-screen bg-background flex flex-col items-center pt-32 transition-colors duration-300">
       <div className="w-full max-w-md">
         {/* Title */}
-        <h1 className="text-4xl font-staatliches text-white text-center mb-2">
+        <h1 className="text-4xl font-staatliches text-text text-center mb-2">
           WELCOME TO OUR MARKET
         </h1>
         <p className="text-center text-gray-400 mb-8">
@@ -46,7 +42,7 @@ const Login = () => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-[#1E1E1E] border-none rounded-md px-4 py-3 text-white text-sm focus:ring-0"
+                className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
                 placeholder="john.doe@email.com"
               />
             </div>
@@ -57,7 +53,7 @@ const Login = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#1E1E1E] border-none rounded-md px-4 py-3 text-white text-sm focus:ring-0"
+                className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
                 placeholder="••••••••••"
               />
             </div>
@@ -73,8 +69,8 @@ const Login = () => {
 
           <div className="text-center">
             <Link to="/forgot-password" className="text-sm">
-              <span className="text-white">Forgot password?</span>{' '}
-              <span className="text-[#FF4500]">Reset here</span>
+              <span className="text-text">Forgot password?</span>{' '}
+              <span className="text-primary">Reset here</span>
             </Link>
           </div>
         </form>

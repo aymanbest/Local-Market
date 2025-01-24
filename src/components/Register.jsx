@@ -29,15 +29,15 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center pt-32">
+    <div className="min-h-screen bg-background flex flex-col items-center pt-32 transition-colors duration-300">
       <div className="w-full max-w-md">
         {/* Title */}
-        <h1 className="text-4xl font-staatliches text-white text-center mb-2 ">
+        <h1 className="text-4xl font-staatliches text-text text-center mb-2">
           WELCOME TO OUR MARKET
         </h1>
-        <p className="text-center text-gray-400 mb-8">
+        <p className="text-center text-textSecondary mb-8">
           Already registered?{' '}
-          <Link to="/login" className="text-[#FF4500]">
+          <Link to="/login" className="text-primary hover:text-primaryHover transition-colors">
             Login here
           </Link>
         </p>
@@ -46,37 +46,37 @@ const Register = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div>
-              <div className="text-gray-400 uppercase text-xs mb-2">EMAIL</div>
+              <div className="text-textSecondary uppercase text-xs mb-2">EMAIL</div>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full bg-[#1E1E1E] border-none rounded-md px-4 py-3 text-white text-sm focus:ring-0"
+                className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
                 placeholder="john.doe@email.com"
               />
             </div>
 
             <div>
-              <div className="text-gray-400 uppercase text-xs mb-2">USERNAME</div>
+              <div className="text-textSecondary uppercase text-xs mb-2">USERNAME</div>
               <input
                 type="text"
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                className="w-full bg-[#1E1E1E] border-none rounded-md px-4 py-3 text-white text-sm focus:ring-0"
+                className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
                 placeholder="real_dude"
               />
             </div>
 
             <div>
-              <div className="text-gray-400 uppercase text-xs mb-2">PASSWORD</div>
+              <div className="text-textSecondary uppercase text-xs mb-2">PASSWORD</div>
               <input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full bg-[#1E1E1E] border-none rounded-md px-4 py-3 text-white text-sm focus:ring-0"
+                className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
                 placeholder="••••••••••"
               />
             </div>
@@ -84,7 +84,7 @@ const Register = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#FF4500] text-white py-3 rounded-md text-sm font-medium hover:bg-[#FF6D33] transition-colors"
+            className="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-md text-sm font-medium transition-colors duration-300"
             disabled={status === 'loading'}
           >
             Register

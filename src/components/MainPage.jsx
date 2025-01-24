@@ -42,7 +42,7 @@ const MainPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white pb-16">
+    <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-4 pt-20 pb-16">
         <div className="text-center mb-12">
@@ -77,7 +77,7 @@ const MainPage = () => {
           </h2>
 
           {/* Description */}
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto mb-8">
+          <p className="text-textSecondary text-lg max-w-2xl mx-auto mb-8">
             We connect you directly with local farmers and artisans.
             Fresh, organic, and sustainably sourced products delivered
             right to your doorstep. Support your local community while
@@ -96,27 +96,27 @@ const MainPage = () => {
 
       {/* Stats Section */}
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="bg-[#1E1E1E]/50 backdrop-blur-sm rounded-xl p-8 border border-gray-800">
+        <div className="bg-cardBg backdrop-blur-sm rounded-xl p-8 border border-cardBorder transition-colors duration-300">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div className="space-y-2">
-              <Heart className="w-8 h-8 text-[#FF4500] mx-auto" />
-              <div className="text-4xl font-bold">100%</div>
-              <div className="text-gray-400">Organic Products</div>
+              <Heart className="w-8 h-8 text-primary mx-auto" />
+              <div className="text-4xl font-bold text-text">100%</div>
+              <div className="text-textSecondary">Organic Products</div>
             </div>
             <div className="space-y-2">
-              <PackageOpen className="w-8 h-8 text-[#FF4500] mx-auto" />
-              <div className="text-4xl font-bold">50+</div>
-              <div className="text-gray-400">Local Farmers</div>
+              <PackageOpen className="w-8 h-8 text-primary mx-auto" />
+              <div className="text-4xl font-bold text-text">50+</div>
+              <div className="text-textSecondary">Local Farmers</div>
             </div>
             <div className="space-y-2">
-              <SquareChartGantt className="w-8 h-8 text-[#FF4500] mx-auto" />
-              <div className="text-4xl font-bold">1000+</div>
-              <div className="text-gray-400">Fresh Products</div>
+              <SquareChartGantt className="w-8 h-8 text-primary mx-auto" />
+              <div className="text-4xl font-bold text-text">1000+</div>
+              <div className="text-textSecondary">Fresh Products</div>
             </div>
             <div className="space-y-2">
-              <Shield className="w-8 h-8 text-[#FF4500] mx-auto" />
-              <div className="text-4xl font-bold">10+</div>
-              <div className="text-gray-400">Years of Service</div>
+              <Shield className="w-8 h-8 text-primary mx-auto" />
+              <div className="text-4xl font-bold text-text">10+</div>
+              <div className="text-textSecondary">Years of Service</div>
             </div>
           </div>
         </div>
@@ -198,46 +198,46 @@ const MainPage = () => {
 
       {/* Why Choose Us Section */}
       <div className="max-w-7xl mx-auto px-4 py-16">
-        <h2 className="text-4xl font-bold text-center mb-16">
-          WHY SHOULD YOU <span className="text-[#FF4500]">CHOOSE US?</span>
+        <h2 className="text-4xl font-bold text-center mb-16 text-text">
+          WHY SHOULD YOU <span className="text-primary">CHOOSE US?</span>
         </h2>
         
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           {/* Secure Payment */}
-          <div className="col-span-2 rounded-lg border border-[#ffffff33] px-5 pb-5">
+          <div className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg transition-all duration-300">
             <div className="w-min mb-2">
               <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#A62BDA] to-100%">
                 <ShieldCheck className="w-10 h-10 mx-auto text-white" />
               </div>
             </div>
-            <h4 className="text-xl font-semibold mb-1">Secure Payment</h4>
-            <p className="text-sm text-[#d4d4d4] leading-relaxed">
+            <h4 className="text-xl font-semibold mb-1 text-text">Secure Payment</h4>
+            <p className="text-sm text-textSecondary leading-relaxed">
               We offer secure payment options including credit card and cryptocurrency. All transactions are protected with industry-standard encryption.
             </p>
           </div>
 
           {/* Superior Quality */}
-          <div className="col-span-2 rounded-lg border border-[#ffffff33] px-5 pb-5">
+          <div className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg transition-all duration-300">
             <div className="w-min mb-2">
-              <div className="relative w-16 h-16 rounded-b-full pt-3 pb-2 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#31B3CC] to-100%">
+              <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#31B3CC] to-100%">
                 <Gem className="w-10 h-10 mx-auto text-white" />
               </div>
             </div>
-            <h4 className="text-xl font-semibold mb-1">Superior Quality</h4>
-            <p className="text-sm text-[#d4d4d4] leading-relaxed">
+            <h4 className="text-xl font-semibold mb-1 text-text">Superior Quality</h4>
+            <p className="text-sm text-textSecondary leading-relaxed">
               Our marketplace features only the highest quality local products. Each seller is carefully vetted to ensure premium standards.
             </p>
           </div>
 
           {/* Best Prices */}
-          <div className="col-span-2 rounded-lg border border-[#ffffff33] px-5 pb-5">
+          <div className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg transition-all duration-300">
             <div className="w-min mb-2">
-              <div className="relative w-16 h-16 rounded-b-full pt-3 pb-2 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#FF9900] to-100%">
+              <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#FF9900] to-100%">
                 <DollarSign className="w-10 h-10 mx-auto text-white" />
               </div>
             </div>
-            <h4 className="text-xl font-semibold mb-1">Best Prices</h4>
-            <p className="text-sm text-[#d4d4d4] leading-relaxed">
+            <h4 className="text-xl font-semibold mb-1 text-text">Best Prices</h4>
+            <p className="text-sm text-textSecondary leading-relaxed">
               By connecting you directly with local sellers, we eliminate middlemen to offer the most competitive prices in your area.
             </p>
           </div>
@@ -246,27 +246,27 @@ const MainPage = () => {
           <div className="hidden md:block"></div>
 
           {/* 24×7 Support */}
-          <div className="col-span-2 rounded-lg border border-[#ffffff33] px-5 pb-5">
+          <div className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg transition-all duration-300">
             <div className="w-min mb-2">
-              <div className="relative w-16 h-16 rounded-b-full pt-3 pb-2 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#F46036] to-100%">
+              <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#F46036] to-100%">
                 <Headphones className="w-10 h-10 mx-auto text-white" />
               </div>
             </div>
-            <h4 className="text-xl font-semibold mb-1">24×7 Support</h4>
-            <p className="text-sm text-[#d4d4d4] leading-relaxed">
+            <h4 className="text-xl font-semibold mb-1 text-text">24×7 Support</h4>
+            <p className="text-sm text-textSecondary leading-relaxed">
               Our dedicated support team is available around the clock to assist both buyers and sellers with any questions or concerns.
             </p>
           </div>
 
           {/* Fast Delivery */}
-          <div className="col-span-2 rounded-lg border border-[#ffffff33] px-5 pb-5">
+          <div className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg transition-all duration-300">
             <div className="w-min mb-2">
-              <div className="relative w-16 h-16 rounded-b-full pt-3 pb-2 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#ED45CD] to-100%">
+              <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#ED45CD] to-100%">
                 <Clock className="w-10 h-10 mx-auto text-white" />
               </div>
             </div>
-            <h4 className="text-xl font-semibold mb-1">Fast Delivery</h4>
-            <p className="text-sm text-[#d4d4d4] leading-relaxed">
+            <h4 className="text-xl font-semibold mb-1 text-text">Fast Delivery</h4>
+            <p className="text-sm text-textSecondary leading-relaxed">
               With our network of local sellers, you can arrange quick pickup or delivery of your purchases within your community.
             </p>
           </div>

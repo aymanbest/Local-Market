@@ -1,17 +1,54 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { mockUsers } from '../../mockData';
+import axios from 'axios';
+
+
+const API_URL = 'http://localhost:8080/api/auth';
+
+
+export const initializeAuthFromToken = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return {
+      user: {
+        id: payload.userId,
+        email: payload.sub,
+        role: payload.role.toLowerCase()
+      },
+      token,
+      isAuthenticated: true
+    };
+  } catch (error) {
+    localStorage.removeItem('token');
+    return null;
+  }
+}; 
+
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async ({ username, password }, { rejectWithValue }) => {
-    // Simulation 
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const user = mockUsers.find(u => u.username === username && u.password === password);
-    if (user) {
-      return { user: { id: user.id, username: user.username, role: user.role, name: user.name }, token: 'mock_jwt_token' };
-    } else {
-      return rejectWithValue('Invalid credentials');
+  async ({ email, password }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${API_URL}/login`, {
+        email,
+        password
+      });
+      
+      const { token, userId, email: userEmail, role } = response.data;
+      localStorage.setItem('token', token);
+      
+      return {
+        user: {
+          id: userId,
+          email: userEmail,
+          role: role.toLowerCase()
+        },
+        token
+      };
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
   }
 );
@@ -19,50 +56,71 @@ export const loginUser = createAsyncThunk(
 export const registerUser = createAsyncThunk(
   'auth/registerUser',
   async ({ email, username, password }, { rejectWithValue }) => {
-    // Simulation 
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const userExists = mockUsers.find(u => u.username === username || u.email === email);
-    if (userExists) {
-      return rejectWithValue('User already exists');
+    try {
+      const response = await axios.post(`${API_URL}/register`, {
+        email,
+        username,
+        password,
+        role: 'CUSTOMER'
+      });
+      
+      const { token, userId, email: userEmail, role } = response.data;
+      localStorage.setItem('token', token);
+      
+      return {
+        user: {
+          id: userId,
+          email: userEmail,
+          role: role.toLowerCase()
+        },
+        token
+      };
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Registration failed');
     }
+  }
+);
 
-    const newUser = {
-      id: mockUsers.length + 1,
-      username,
-      email,
-      password,
-      role: 'customer',
-    };
-    mockUsers.push(newUser);
-    
-    return { 
-      user: { 
-        id: newUser.id, 
-        username: newUser.username, 
-        role: newUser.role 
-      }, 
-      token: 'mock_jwt_token' 
-    };
+export const logoutUser = createAsyncThunk(
+  'auth/logoutUser',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const token = getState().auth.token;
+      await axios.post(
+        `${API_URL}/logout`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      return null;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Logout failed');
+    }
   }
 );
 
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    user: null,
-    token: null,
-    status: 'idle',
-    error: null,
-    isAuthenticated: false
+    ...initializeAuthFromToken() || {
+      user: null,
+      token: null,
+      status: 'idle',
+      error: null,
+      isAuthenticated: false
+    }
   },
   reducers: {
-    logout: (state) => {
+    clearAuth: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
       state.status = 'idle';
       state.error = null;
+      localStorage.removeItem('token');
     },
   },
   extraReducers: (builder) => {
@@ -94,11 +152,29 @@ const authSlice = createSlice({
       .addCase(registerUser.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
+      })
+      .addCase(logoutUser.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
+        state.status = 'idle';
+        state.error = null;
+        localStorage.removeItem('token');
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
+        state.status = 'idle';
+        state.error = action.payload;
+        localStorage.removeItem('token');
       });
   },
 });
 
-export const { logout: logoutUser } = authSlice.actions;
-
+export const { clearAuth } = authSlice.actions;
 export default authSlice.reducer;
 

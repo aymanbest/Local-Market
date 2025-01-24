@@ -2,3 +2,35 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #FF4500;
+    --color-primary-hover: #FF6D33;
+    --color-background: #f8f9fa;
+    --color-header-bg: #ffffff;
+    --color-card-bg: #ffffff;
+    --color-text: #1a1a1a;
+    --color-text-secondary: #4b5563;
+    --color-border: #e5e7eb;
+    --color-input-bg: #f3f4f6;
+    --color-card-border: #e5e7eb;
+    --color-stats-card: #ffffff80;
+    --color-divider: rgba(26, 26, 26, 0.2);
+  }
+
+  .dark {
+    --color-primary: #FF4500;
+    --color-primary-hover: #FF6D33;
+    --color-background: #0a0a0a;
+    --color-header-bg: #1E1E1E;
+    --color-card-bg: #1E1E1E;
+    --color-text: #FFFFFF;
+    --color-text-secondary: #d4d4d4;
+    --color-border: #63676e;
+    --color-input-bg: #2f2f2f;
+    --color-card-border: #ffffff33;
+    --color-stats-card: #1E1E1E80;
+    --color-divider: rgba(255, 255, 255, 0.2);
+  }
+}

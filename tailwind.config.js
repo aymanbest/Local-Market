@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
@@ -15,6 +16,7 @@ export default {
         'bounce-slow': 'bounce 3s infinite',
         'slide-left': 'slideLeft 0.3s ease-out',
         'slide-right': 'slideRight 0.3s ease-out',
+        'spin-slow': 'spin 3s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -44,7 +46,16 @@ export default {
         mainBlack : '#0a0a0a',
         inputGrey : '#2f2f2f',
         bioGreen : '#22c55e',
-        borderGrey : '#6c6c6c'
+        borderGrey : '#6c6c6c',
+        primary: 'var(--color-primary)',
+        primaryHover: 'var(--color-primary-hover)',
+        background: 'var(--color-background)',
+        headerBg: 'var(--color-header-bg)',
+        cardBg: 'var(--color-card-bg)',
+        text: 'var(--color-text)',
+        textSecondary: 'var(--color-text-secondary)',
+        border: 'var(--color-border)',
+        inputBg: 'var(--color-input-bg)',
       },
     },
   },

@@ -14,35 +14,38 @@ import Cart from './components/Cart';
 import AccountPage from './components/AccountPage';
 import AdminHeader from './components/admin/AdminHeader';
 import ProducerHeader from './components/producer/ProducerHeader';
+import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
   return (
-    <Provider store={store}>
-      <Router>
-        <div className="min-h-screen bg-[#0a0a0a]">
-          <ConditionalHeader />
-          <div className="pt-16">
-            <Routes>
-              <Route path="/" element={<MainPage />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/customer/*" element={<CustomerLayout />} />
-              <Route path="/producer/*" element={<ProducerLayout />} />
-              <Route path="/admin/*" element={<AdminLayout />} />
-              <Route
-                path="/account"
-                element={
-                  <ProtectedRoute>
-                    <AccountPage />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
+    <ThemeProvider>
+      <Provider store={store}>
+        <Router>
+          <div className="min-h-screen bg-background transition-colors duration-300">
+            <ConditionalHeader />
+            <div className="pt-16">
+              <Routes>
+                <Route path="/" element={<MainPage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/customer/*" element={<CustomerLayout />} />
+                <Route path="/producer/*" element={<ProducerLayout />} />
+                <Route path="/admin/*" element={<AdminLayout />} />
+                <Route
+                  path="/account"
+                  element={
+                    <ProtectedRoute>
+                      <AccountPage />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </div>
           </div>
-        </div>
-      </Router>
-    </Provider>
+        </Router>
+      </Provider>
+    </ThemeProvider>
   );
 }
 function ConditionalHeader() {
@@ -58,8 +61,6 @@ function ConditionalHeader() {
 
   return <Header />;
 }
-
-
 
 export default App;
 

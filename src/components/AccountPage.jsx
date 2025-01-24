@@ -7,10 +7,16 @@ import { logoutUser } from '../store/slices/authSlice';
 const AccountPage = () => {
   const dispatch = useDispatch();
 
-  const handleLogout = () => {
-    dispatch(logoutUser());
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      navigate('/login');
+    }
   };
-
+  
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
