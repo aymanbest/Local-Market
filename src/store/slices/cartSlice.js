@@ -3,7 +3,29 @@ import { createSlice } from '@reduxjs/toolkit';
 const cartSlice = createSlice({
   name: 'cart',
   initialState: {
-    items: []
+    items: [
+      {
+        id: 1,
+        name: "Organic Mountain Coffee",
+        price: 5.00,
+        image: "https://placehold.co/600x400",
+        quantity: 1
+      },
+      {
+        id: 2,
+        name: "Wild Forest Honey",
+        price: 11.00,
+        image: "https://placehold.co/600x400",
+        quantity: 1
+      },
+      {
+        id: 3,
+        name: "Local Farm Fresh Eggs",
+        price: 5.00,
+        image: "https://placehold.co/600x400",
+        quantity: 1
+      }
+    ]
   },
   reducers: {
     addToCart: (state, action) => {
@@ -18,9 +40,10 @@ const cartSlice = createSlice({
       state.items = state.items.filter(item => item.id !== action.payload);
     },
     updateQuantity: (state, action) => {
-      const item = state.items.find(item => item.id === action.payload.id);
-      if (item) {
-        item.quantity = action.payload.quantity;
+      const { id, quantity } = action.payload;
+      const item = state.items.find(item => item.id === id);
+      if (item && quantity >= 1) {
+        item.quantity = quantity;
       }
     },
     clearCart: (state) => {

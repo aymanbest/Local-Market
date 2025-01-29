@@ -28,7 +28,7 @@ const Login = () => {
         </h1>
         <p className="text-center text-gray-400 mb-8">
           Don't have an account?{' '}
-          <Link to="/register" className="text-[#FF4500]">
+          <Link to="/register" className="text-primary">
             Register here
           </Link>
         </p>
@@ -61,7 +61,7 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#FF4500] text-white py-3 rounded-md text-sm font-medium hover:bg-[#FF6D33] transition-colors"
+            className="w-full bg-primary text-white py-3 rounded-md text-sm font-medium hover:bg-[#FF6D33] transition-colors"
             disabled={status === 'loading'}
           >
             Login

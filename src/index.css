@@ -3,10 +3,12 @@
 @tailwind components;
 @tailwind utilities;
 
+
+/* COLOR PALETTE: https://colorhunt.co/palette/5d8736809d3ca9c46cf4ffc3 */
 @layer base {
   :root {
-    --color-primary: #22C55E;
-    --color-primary-hover: #16A34A;
+    --color-primary: #5D8736;
+    --color-primary-hover: #A9C46C;
     --color-background: #f8f9fa;
     --color-header-bg: #ffffff;
     --color-card-bg: #ffffff;
@@ -20,8 +22,8 @@
   }
 
   .dark {
-    --color-primary: #22C55E;
-    --color-primary-hover: #16A34A;
+    --color-primary: #A9C46C;
+    --color-primary-hover: #5D8736;
     --color-background: #0a0a0a;
     --color-header-bg: #1E1E1E;
     --color-card-bg: #1E1E1E;
@@ -40,4 +42,14 @@
   font-weight: 600;
   font-style: normal;
   font-display: swap;
+}
+
+input[type="number"].hide-spinner::-webkit-inner-spin-button,
+input[type="number"].hide-spinner::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"].hide-spinner {
+  -moz-appearance: textfield;
 }

@@ -142,65 +142,80 @@ const Header = () => {
                   to="/" 
                   className={`relative text-text transition-colors duration-300 ${
                     isActivePath('/') 
-                      ? 'dark:bg-gradient-to-r dark:from-primary dark:via-primary/80 dark:to-primary dark:bg-clip-text dark:text-transparent font-semibold bg-gradient-to-r from-primary/90 via-primary to-primary/90 bg-clip-text text-transparent' 
+                      ? 'text-primary font-semibold' 
                       : 'hover:text-primary'
                   }`}
                 >
                   Home
                   {isActivePath('/') && (
-                    <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-primary/90 via-primary to-primary/90 rounded-full" />
+                    <>
+                      <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary rounded-full shadow-[0_0_10px_rgba(169,196,108,0.7)] animate-pulse" />
+                      <div className="absolute -bottom-1 left-0 w-full h-8 bg-gradient-to-t from-primary/20 to-transparent rounded-full blur-sm" />
+                    </>
                   )}
                 </Link>
                 <Link 
                   to="/store" 
                   className={`relative text-text transition-colors duration-300 ${
                     isActivePath('/store') 
-                      ? 'dark:bg-gradient-to-r dark:from-primary dark:via-primary/80 dark:to-primary dark:bg-clip-text dark:text-transparent font-semibold bg-gradient-to-r from-primary/90 via-primary to-primary/90 bg-clip-text text-transparent' 
+                      ? 'text-primary font-semibold' 
                       : 'hover:text-primary'
                   }`}
                 >
                   Store
                   {isActivePath('/store') && (
-                    <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-primary/90 via-primary to-primary/90 rounded-full" />
+                    <>
+                      <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary rounded-full shadow-[0_0_10px_rgba(169,196,108,0.7)] animate-pulse" />
+                      <div className="absolute -bottom-1 left-0 w-full h-8 bg-gradient-to-t from-primary/20 to-transparent rounded-full blur-sm" />
+                    </>
                   )}
                 </Link>
                 <Link 
                   to="/about" 
                   className={`relative text-text transition-colors duration-300 ${
                     isActivePath('/about') 
-                      ? 'dark:bg-gradient-to-r dark:from-primary dark:via-primary/80 dark:to-primary dark:bg-clip-text dark:text-transparent font-semibold bg-gradient-to-r from-primary/90 via-primary to-primary/90 bg-clip-text text-transparent' 
+                      ? 'text-primary font-semibold' 
                       : 'hover:text-primary'
                   }`}
                 >
                   About
                   {isActivePath('/about') && (
-                    <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-primary/90 via-primary to-primary/90 rounded-full" />
+                    <>
+                      <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary rounded-full shadow-[0_0_10px_rgba(169,196,108,0.7)] animate-pulse" />
+                      <div className="absolute -bottom-1 left-0 w-full h-8 bg-gradient-to-t from-primary/20 to-transparent rounded-full blur-sm" />
+                    </>
                   )}
                 </Link>
                 <Link 
                   to="/support" 
                   className={`relative text-text transition-colors duration-300 ${
                     isActivePath('/support') 
-                      ? 'dark:bg-gradient-to-r dark:from-primary dark:via-primary/80 dark:to-primary dark:bg-clip-text dark:text-transparent font-semibold bg-gradient-to-r from-primary/90 via-primary to-primary/90 bg-clip-text text-transparent' 
+                      ? 'text-primary font-semibold' 
                       : 'hover:text-primary'
                   }`}
                 >
                   Support
                   {isActivePath('/support') && (
-                    <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-primary/90 via-primary to-primary/90 rounded-full" />
+                    <>
+                      <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary rounded-full shadow-[0_0_10px_rgba(169,196,108,0.7)] animate-pulse" />
+                      <div className="absolute -bottom-1 left-0 w-full h-8 bg-gradient-to-t from-primary/20 to-transparent rounded-full blur-sm" />
+                    </>
                   )}
                 </Link>
                 <Link 
                   to="/faq" 
                   className={`relative text-text transition-colors duration-300 ${
                     isActivePath('/faq') 
-                      ? 'dark:bg-gradient-to-r dark:from-primary dark:via-primary/80 dark:to-primary dark:bg-clip-text dark:text-transparent font-semibold bg-gradient-to-r from-primary/90 via-primary to-primary/90 bg-clip-text text-transparent' 
+                      ? 'text-primary font-semibold' 
                       : 'hover:text-primary'
                   }`}
                 >
                   FAQ
                   {isActivePath('/faq') && (
-                    <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-primary/90 via-primary to-primary/90 rounded-full" />
+                    <>
+                      <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary rounded-full shadow-[0_0_10px_rgba(169,196,108,0.7)] animate-pulse" />
+                      <div className="absolute -bottom-1 left-0 w-full h-8 bg-gradient-to-t from-primary/20 to-transparent rounded-full blur-sm" />
+                    </>
                   )}
                 </Link>
                 <Link 
@@ -216,7 +231,7 @@ const Header = () => {
               <div className="flex items-center space-x-6">
                 <Link to="/cart" className="relative group flex items-center gap-2">
                   <ShoppingCart className="w-6 h-6 text-text group-hover:text-primary transition-colors" />
-                  {true && ( // TODO: Change to items.length > 0 
+                  {items.length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-primary text-text text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
                       {items.length}
                     </span>

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, CreditCard, DollarSign, Bitcoin } from 'lucide-react';
+import { ArrowLeft, CreditCard, DollarSign, Bitcoin, Minus, Plus, Trash2 } from 'lucide-react';
+import { updateQuantity, removeFromCart } from '../store/slices/cartSlice';
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -13,6 +14,16 @@ const Cart = () => {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const handleUpdateQuantity = (id, newQuantity) => {
+    if (newQuantity >= 1) {
+      dispatch(updateQuantity({ id, quantity: newQuantity }));
+    }
+  };
+
+  const handleRemoveFromCart = (id) => {
+    dispatch(removeFromCart(id));
+  };
 
   return (
     <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
@@ -33,9 +44,71 @@ const Cart = () => {
           <div className="h-max flex-col flex gap-4 flex-1">
             {/* Cart Items */}
             <div className="border border-border bg-cardBg px-4 rounded-xl w-full divide-y divide-border transition-colors duration-300">
-              <h1 className="text-center w-full font-bold text-2xl font-recoleta py-12 text-text">
-                Cart is empty
-              </h1>
+              {items.length === 0 ? (
+                <h1 className="text-center w-full font-bold text-2xl font-recoleta py-12 text-text">
+                  Cart is empty
+                </h1>
+              ) : (
+                items.map((item) => (
+                  <div key={item.id} className="flex gap-3 py-4">
+                    <img 
+                      src={item.image} 
+                      alt={item.name} 
+                      className="aspect-square w-24 h-24 shrink-0 z-10 object-cover rounded-lg border"
+                    />
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div className="flex justify-between w-full">
+                        <h2 className="uppercase font-bold">{item.name}</h2>
+                        <h2 className="text-xl text-white font-semibold">${item.price.toFixed(2)}</h2>
+                      </div>
+                      
+                      <div className="flex gap-2 items-center text-xs">
+                        <span className="text-neutral-300">${item.price.toFixed(2)}</span>
+                        <span className="w-px h-3 bg-white"></span>
+                        <span className="text-blue-400">In Stock</span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center mt-2">
+                        <div className="inline-flex items-center border bg-white/5 p-1 rounded-lg">
+                          <button 
+                            type="button" 
+                            className="p-1 bg-white/10 rounded"
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <input 
+                            type="number"
+                            min="1"
+                            max="150"
+                            value={item.quantity}
+                            onChange={(e) => handleUpdateQuantity(item.id, parseInt(e.target.value) || 1)}
+                            className="hide-spinner bg-transparent px-2 max-w-12 text-center text-sm"
+                          />
+                          <button 
+                            type="button" 
+                            className="p-1 bg-white/10 rounded"
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+                        
+                        <div>
+                          <button 
+                            type="button"
+                            onClick={() => handleRemoveFromCart(item.id)}
+                            className="flex items-center gap-1.5 group text-neutral-300"
+                          >
+                            <Trash2 className="w-5 group-hover:text-red-400 transition" />
+                            <span className="group-hover:text-red-400 transition">Remove</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             {/* Billing Details */}

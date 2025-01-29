@@ -117,8 +117,7 @@ const MainPage = () => {
               <div className="flex-1 relative">
                 <div className="relative z-10 w-full max-w-lg mx-auto">
                   {/* Decorative Elements */}
-                  <div className="absolute -top-4 -right-4 w-72 h-72 bg-primary/30 rounded-full blur-3xl"></div>
-                  <div className="absolute -bottom-4 -left-4 w-72 h-72 bg-[#22C55E]/20 rounded-full blur-3xl"></div>
+                  <div className="absolute -bottom-4 -left-4 w-72 h-72 dark:bg-[#A9C46C]/20 bg-[#5D8736]/20 rounded-full blur-3xl"></div>
                   
                   {/* SVG Container with enhanced styling */}
                   <div className="relative bg-gradient-to-b from-transparent to-background/5 rounded-2xl backdrop-blur-sm p-8">
