@@ -17,6 +17,7 @@ export default {
         'slide-left': 'slideLeft 0.3s ease-out',
         'slide-right': 'slideRight 0.3s ease-out',
         'spin-slow': 'spin 3s linear infinite',
+        'loading-bar': 'loading 1s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -35,6 +36,10 @@ export default {
           '0%': { transform: 'translateX(-100%)', opacity: '0' },
           '100%': { transform: 'translateX(0)', opacity: '1' },
         },
+        loading: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' }
+        }
       },
       scale: {
         '102': '1.02',

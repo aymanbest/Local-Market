@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store';
@@ -15,13 +15,32 @@ import AccountPage from './components/AccountPage';
 import AdminHeader from './components/admin/AdminHeader';
 import ProducerHeader from './components/producer/ProducerHeader';
 import { ThemeProvider } from './context/ThemeContext';
+import Store from './components/Store';
+import Preloader from './components/Preloader';
 
 function App() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading time and wait for content
+    window.onload = () => {
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000); // Add a minimum delay of 1 second
+    };
+
+    // Fallback in case window.onload doesn't trigger
+    setTimeout(() => {
+      setLoading(false);
+    }, 3000); // Maximum loading time of 3 seconds
+  }, []);
+
   return (
     <ThemeProvider>
       <Provider store={store}>
         <Router>
-          <div className="min-h-screen bg-background transition-colors duration-300">
+          {loading && <Preloader />}
+          <div className={`min-h-screen bg-background transition-colors duration-300 ${loading ? 'hidden' : ''}`}>
             <ConditionalHeader />
             <div className="pt-16">
               <Routes>
@@ -40,6 +59,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route path="/store" element={<Store />} />
               </Routes>
             </div>
           </div>
