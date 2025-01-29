@@ -66,7 +66,7 @@ const MainPage = () => {
                   </div>
 
                   {/* Main Title */}
-                  <h1 className="text-6xl font-bold leading-tight tracking-tight">
+                  <h1 className="text-6xl font-recoleta leading-tight  tracking-tight">
                     <span className="block text-text">ENJOY FRESH</span>
                     <span className="block mt-1">
                       <span className="text-primary">LOCAL</span> PRODUCTS

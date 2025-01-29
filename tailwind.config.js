@@ -9,6 +9,7 @@ export default {
     extend: {
       fontFamily: {
         'staatliches': ['Staatliches', 'serif'],
+        'recoleta': ['Recoleta', 'serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',

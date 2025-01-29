@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { ShoppingCart, LogIn, CircleUser, Leaf, Sun, Moon, Menu, X } from 'lucide-react';
+import { ShoppingCart, LogIn, CircleUser, Leaf, Sun, Moon, Menu, X, Building2 } from 'lucide-react';
 import Button from './ui/Button';
 import { logoutUser } from '../store/slices/authSlice';
 import { useTheme } from '../context/ThemeContext';
@@ -202,6 +202,13 @@ const Header = () => {
                   {isActivePath('/faq') && (
                     <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-primary/90 via-primary to-primary/90 rounded-full" />
                   )}
+                </Link>
+                <Link 
+                  to="/become-seller" 
+                  className="bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full flex items-center gap-2 transition-colors duration-300"
+                >
+                  <Building2 className="w-5 h-5" />
+                  <span>Start Selling</span>
                 </Link>
               </nav>
 

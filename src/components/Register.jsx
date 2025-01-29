@@ -32,7 +32,7 @@ const Register = () => {
     <div className="min-h-screen bg-background flex flex-col items-center pt-32 transition-colors duration-300">
       <div className="w-full max-w-md">
         {/* Title */}
-        <h1 className="text-4xl font-staatliches text-text text-center mb-2">
+        <h1 className="text-4xl font-recoleta text-text text-center mb-2">
           WELCOME TO OUR MARKET
         </h1>
         <p className="text-center text-textSecondary mb-8">

@@ -17,6 +17,8 @@ import ProducerHeader from './components/producer/ProducerHeader';
 import { ThemeProvider } from './context/ThemeContext';
 import Store from './components/Store';
 import Preloader from './components/Preloader';
+import BecomeSeller from './components/BecomeSeller';
+import FAQ from './components/FAQ';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -60,6 +62,9 @@ function App() {
                   }
                 />
                 <Route path="/store" element={<Store />} />
+                <Route path="/become-seller" element={<BecomeSeller />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/faq/:category" element={<FAQ />} />
               </Routes>
             </div>
           </div>

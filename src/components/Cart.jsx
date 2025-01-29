@@ -18,7 +18,7 @@ const Cart = () => {
     <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-4xl font-staatliches font-semibold uppercase text-text">
+          <h2 className="text-4xl font-recoleta font-semibold uppercase text-text">
             Checkout
           </h2>
           <Link to="/store" className="rounded-full border border-border hover:bg-text/5 transition-colors duration-300 flex gap-2 items-center px-4 py-2">
@@ -33,7 +33,7 @@ const Cart = () => {
           <div className="h-max flex-col flex gap-4 flex-1">
             {/* Cart Items */}
             <div className="border border-border bg-cardBg px-4 rounded-xl w-full divide-y divide-border transition-colors duration-300">
-              <h1 className="text-center w-full font-bold text-2xl font-staatliches py-12 text-text">
+              <h1 className="text-center w-full font-bold text-2xl font-recoleta py-12 text-text">
                 Cart is empty
               </h1>
             </div>
