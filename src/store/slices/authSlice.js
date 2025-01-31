@@ -1,9 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-
-const API_URL = 'http://localhost:8080/api/auth';
-
+import api from '../../lib/axios';
 
 export const initializeAuthFromToken = () => {
   const token = localStorage.getItem('token');
@@ -14,8 +10,12 @@ export const initializeAuthFromToken = () => {
     return {
       user: {
         id: payload.userId,
-        email: payload.sub,
-        role: payload.role.toLowerCase()
+        email: payload.email,
+        role: payload.role.toLowerCase(),
+        firstName: payload.firstname,
+        lastName: payload.lastname,
+        username: payload.username,
+        applicationStatus: payload.applicationStatus
       },
       token,
       isAuthenticated: true
@@ -26,26 +26,33 @@ export const initializeAuthFromToken = () => {
   }
 }; 
 
-
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/login`, {
+      const response = await api.post('/api/auth/login', {
         email,
         password
       });
       
-      const { token, userId, email: userEmail, role } = response.data;
+      const { token, status } = response.data;
       localStorage.setItem('token', token);
+      
+      // Decode token to get user info
+      const payload = JSON.parse(atob(token.split('.')[1]));
       
       return {
         user: {
-          id: userId,
-          email: userEmail,
-          role: role.toLowerCase()
+          id: payload.userId,
+          email: payload.email,
+          role: payload.role.toLowerCase(),
+          firstName: payload.firstname,
+          lastName: payload.lastname,
+          username: payload.username,
+          applicationStatus: payload.applicationStatus
         },
-        token
+        token,
+        status
       };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
@@ -57,23 +64,27 @@ export const registerUser = createAsyncThunk(
   'auth/registerUser',
   async ({ email, username, password }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/register`, {
+      const response = await api.post('/api/auth/register', {
         email,
         username,
         password,
         role: 'CUSTOMER'
       });
       
-      const { token, userId, email: userEmail, role } = response.data;
+      const { token, status } = response.data;
       localStorage.setItem('token', token);
+      
+      // Decode token to get user info
+      const payload = JSON.parse(atob(token.split('.')[1]));
       
       return {
         user: {
-          id: userId,
-          email: userEmail,
-          role: role.toLowerCase()
+          id: payload.userId,
+          email: payload.email,
+          role: payload.role.toLowerCase()
         },
-        token
+        token,
+        status
       };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Registration failed');
@@ -86,8 +97,8 @@ export const logoutUser = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token;
-      await axios.post(
-        `${API_URL}/logout`,
+      await api.post(
+        '/api/auth/logout',
         {},
         {
           headers: {

@@ -1,0 +1,176 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProductById } from '../store/slices/categorySlice';
+import { addToCart } from '../store/slices/cartSlice';
+import { CheckCircle, ShoppingCart, ArrowRight, Upload, Info, Plus, Minus } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+const ProductDetails = () => {
+  const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { selectedProduct } = useSelector((state) => state.categories);
+  const [quantity, setQuantity] = useState(1);
+  const [inStock, setInStock] = useState(true); // You should get this from your product data
+
+  const handleQuantityChange = (value) => {
+    const newQuantity = Math.max(1, Math.min(40, value));
+    setQuantity(newQuantity);
+  };
+
+  const handleAddToCart = () => {
+    if (product) {
+      const cartItem = {
+        id: product.productId,
+        productId: product.productId,
+        name: product.name,
+        price: product.price,
+        imageUrl: product.imageUrl,
+        quantity: quantity
+      };
+      dispatch(addToCart(cartItem));
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (product) {
+      const cartItem = {
+        id: product.productId,
+        productId: product.productId,
+        name: product.name,
+        price: product.price,
+        imageUrl: product.imageUrl,
+        quantity: quantity
+      };
+      dispatch(addToCart(cartItem));
+      navigate('/cart');
+    }
+  };
+
+  useEffect(() => {
+    if (!location.state?.product && id) {
+      dispatch(fetchProductById(id));
+    }
+  }, [dispatch, id, location.state]);
+
+  const product = location.state?.product || selectedProduct;
+
+  if (!product) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-background text-text transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="container">
+          <h2 className="text-4xl font-staatliches font-semibold uppercase">Product Details</h2>
+          <hr className="border-border my-6" />
+          
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="bg-cardBg aspect-square overflow-hidden rounded-xl md:max-w-96 h-max border border-border">
+              <img 
+                src={product.imageUrl || `https://placehold.co/600x400?text=${product.name}`}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="bg-cardBg rounded-xl p-4 flex-1 h-max overflow-hidden border border-border">
+              <h2 className="text-3xl font-staatliches font-semibold uppercase mb-2">{product.name}</h2>
+              <p className="text-textSecondary text-sm">{product.description}</p>
+              
+              <hr className="border-border my-3" />
+              
+              <div className="flex items-center gap-4 mb-4">
+                <span className="text-textSecondary text-sm">Quantity:</span>
+                <div className="flex items-stretch justify-stretch">
+                  <button 
+                    className="rounded-l-lg bg-white/5 border border-border border-r-0 w-8 flex items-center justify-center text-text hover:bg-white/10 transition-colors"
+                    onClick={() => handleQuantityChange(quantity - 1)}
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <input 
+                    type="number" 
+                    value={quantity}
+                    onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
+                    className="card bg-white/5 px-3 py-1.5 hide-spinner max-w-20 text-center text-text border-y border-border"
+                    min="1"
+                    max="40"
+                  />
+                  <button 
+                    className="rounded-r-lg bg-white/5 border border-border border-l-0 w-8 flex items-center justify-center text-text hover:bg-white/10 transition-colors"
+                    onClick={() => handleQuantityChange(quantity + 1)}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="text-xl mb-2 text-text">Features</div>
+              <ul>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-5 h-5 text-primary" />
+                  <span className="text-textSecondary">Categories:</span>
+                  <div className="flex gap-2">
+                    {product.categories.map((category, index) => (
+                      <span key={category.id} className="text-text">
+                        {category.name}{index < product.categories.length - 1 ? ',' : ''}
+                      </span>
+                    ))}
+                  </div>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-5 h-5 text-primary" />
+                  <span className="text-textSecondary">Producer:</span>
+                  <span className="text-text">{product.producer.firstname} {product.producer.lastname}</span>
+                </li>
+              </ul>
+
+              <hr className="border-border my-3" />
+
+              <div className="flex justify-between">
+                <p className="uppercase text-2xl font-bold text-primary">${product.price} USD</p>
+                <div className="rounded-full bg-white/5 flex items-center gap-1 text-sm px-3 py-1.5 text-textSecondary border border-border">
+                  <span>Status:</span>
+                  <span className={inStock ? "text-blue-400" : "text-red-400"}>
+                    {inStock ? "In Stock" : "Out of Stock"}
+                  </span>
+                </div>
+              </div>
+
+              <hr className="border-border my-3" />
+
+              <button 
+                onClick={handleBuyNow}
+                className="rounded-full bg-primary hover:bg-primaryHover px-4 py-3 mt-4 flex items-center gap-2 w-full justify-center transition-colors duration-300 text-white"
+              >
+                <span>Buy Now</span>
+                <ShoppingCart className="w-5 h-5" />
+              </button>
+
+              <button 
+                type="button" 
+                onClick={handleAddToCart}
+                className="rounded-full mt-2 bg-cardBg px-4 py-3 text-center w-full hover:bg-white/5 transition-colors duration-300 border border-border"
+              >
+                Add to Cart
+              </button>
+              <img src="https://www.realdudesinc.com/_app/immutable/assets/methods.JhUITgw9.webp" class="mt-4 w-full"></img>
+            </div>
+          </div>
+
+          <h2 className="text-2xl font-staatliches font-semibold uppercase mt-12">Product Description</h2>
+          <hr className="border-border mb-2" />
+          <div className="space-y-4 mb-6">
+            <p className="text-textSecondary">{product.description}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductDetails; 

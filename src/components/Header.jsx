@@ -245,7 +245,7 @@ const Header = () => {
                       <div>
                         <span className="block text-white/80 -mb-2">Hello,</span>
                         <span className="block text-white/80 font-semibold">
-                          {user.email || 'User'}
+                          {user.lastName || 'User'}
                         </span>
                       </div>
                     </Link>

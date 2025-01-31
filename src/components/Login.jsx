@@ -5,7 +5,7 @@ import { loginUser } from '../store/slices/authSlice';
 
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -13,9 +13,28 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const resultAction = await dispatch(loginUser({ username, password }));
-    if (loginUser.fulfilled.match(resultAction)) {
-      navigate('/');
+    try {
+      const resultAction = await dispatch(loginUser({ email, password }));
+      if (loginUser.fulfilled.match(resultAction)) {
+        const role = resultAction.payload.user.role.toLowerCase();
+        
+        // Navigate based on role
+        switch (role) {
+          case 'admin':
+            navigate('/admin/users');
+            break;
+          case 'producer':
+            navigate('/producer/dashboard');
+            break;
+          case 'customer':
+            navigate('/');
+            break;
+          default:
+            navigate('/');
+        }
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
     }
   };
 
@@ -40,8 +59,8 @@ const Login = () => {
               <div className="text-gray-400 uppercase text-xs mb-2">EMAIL</div>
               <input
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
                 placeholder="john.doe@email.com"
               />

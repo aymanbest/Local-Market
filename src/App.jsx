@@ -19,6 +19,10 @@ import Store from './components/Store';
 import Preloader from './components/Preloader';
 import BecomeSeller from './components/BecomeSeller';
 import FAQ from './components/FAQ';
+import ProductDetails from './components/ProductDetails';
+import PaymentForm from './components/PaymentForm';
+import PaymentSuccess from './components/PaymentSuccess';
+import OrderBundle from './components/OrderBundle';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -50,6 +54,8 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/cart" element={<Cart />} />
+                <Route path="/payment" element={<PaymentForm />} />
+                <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/customer/*" element={<CustomerLayout />} />
                 <Route path="/producer/*" element={<ProducerLayout />} />
                 <Route path="/admin/*" element={<AdminLayout />} />
@@ -65,6 +71,8 @@ function App() {
                 <Route path="/become-seller" element={<BecomeSeller />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/faq/:category" element={<FAQ />} />
+                <Route path="/store/products/:id" element={<ProductDetails />} />
+                <Route path="/orders/bundle/:bundleId" element={<OrderBundle />} />
               </Routes>
             </div>
           </div>

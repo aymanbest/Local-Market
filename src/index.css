@@ -53,3 +53,5 @@ input[type="number"].hide-spinner::-webkit-outer-spin-button {
 input[type="number"].hide-spinner {
   -moz-appearance: textfield;
 }
+
+
