@@ -23,30 +23,31 @@ import ProductDetails from './components/ProductDetails';
 import PaymentForm from './components/PaymentForm';
 import PaymentSuccess from './components/PaymentSuccess';
 import OrderBundle from './components/OrderBundle';
+import useLoading from './hooks/useLoading';
 
 function App() {
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const isLoading = useLoading();
 
   useEffect(() => {
-    // Simulate loading time and wait for content
+    // Initial app load simulation
     window.onload = () => {
       setTimeout(() => {
-        setLoading(false);
-      }, 1000); // Add a minimum delay of 1 second
+        setInitialLoading(false);
+      }, 1000);
     };
 
-    // Fallback in case window.onload doesn't trigger
     setTimeout(() => {
-      setLoading(false);
-    }, 3000); // Maximum loading time of 3 seconds
+      setInitialLoading(false);
+    }, 3000);
   }, []);
 
   return (
     <ThemeProvider>
       <Provider store={store}>
         <Router>
-          {loading && <Preloader />}
-          <div className={`min-h-screen bg-background transition-colors duration-300 ${loading ? 'hidden' : ''}`}>
+          {(initialLoading || isLoading) && <Preloader />}
+          <div className={`min-h-screen bg-background transition-colors duration-300 ${initialLoading ? 'hidden' : ''}`}>
             <ConditionalHeader />
             <div className="pt-16">
               <Routes>

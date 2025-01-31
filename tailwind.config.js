@@ -19,6 +19,8 @@ export default {
         'slide-right': 'slideRight 0.3s ease-out',
         'spin-slow': 'spin 3s linear infinite',
         'loading-bar': 'loading 1s ease-in-out infinite',
+        'spin': 'spin 1s linear infinite',
+        'spin-reverse': 'spin-reverse 1s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -40,7 +42,11 @@ export default {
         loading: {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' }
-        }
+        },
+        'spin-reverse': {
+          '0%': { transform: 'rotate(360deg)' },
+          '100%': { transform: 'rotate(0deg)' },
+        },
       },
       scale: {
         '102': '1.02',
