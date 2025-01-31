@@ -2,16 +2,20 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { registerUser } from '../store/slices/authSlice';
+import { Eye, EyeClosed } from 'lucide-react';
 
 const Register = () => {
   const [formData, setFormData] = useState({
     email: '',
     username: '',
+    firstname: '',
+    lastname: '',
     password: '',
   });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { status, error } = useSelector((state) => state.auth);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,8 +49,35 @@ const Register = () => {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-textSecondary uppercase text-xs mb-2">First Name</div>
+                <input
+                  type="text"
+                  name="firstname"
+                  value={formData.firstname}
+                  onChange={handleChange}
+                  className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
+                  placeholder="John"
+                  required
+                />
+              </div>
+              <div>
+                <div className="text-textSecondary uppercase text-xs mb-2">Last Name</div>
+                <input
+                  type="text"
+                  name="lastname"
+                  value={formData.lastname}
+                  onChange={handleChange}
+                  className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
+                  placeholder="Doe"
+                  required
+                />
+              </div>
+            </div>
+
             <div>
-              <div className="text-textSecondary uppercase text-xs mb-2">EMAIL</div>
+              <div className="text-textSecondary uppercase text-xs mb-2">Email</div>
               <input
                 type="email"
                 name="email"
@@ -54,31 +85,47 @@ const Register = () => {
                 onChange={handleChange}
                 className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
                 placeholder="john.doe@email.com"
+                required
               />
             </div>
 
             <div>
-              <div className="text-textSecondary uppercase text-xs mb-2">USERNAME</div>
+              <div className="text-textSecondary uppercase text-xs mb-2">Username</div>
               <input
                 type="text"
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
                 className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
-                placeholder="real_dude"
+                placeholder="johndoe"
+                required
               />
             </div>
 
             <div>
-              <div className="text-textSecondary uppercase text-xs mb-2">PASSWORD</div>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
-                placeholder="••••••••••"
-              />
+              <div className="text-textSecondary uppercase text-xs mb-2">Password</div>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
+                  placeholder="••••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-textSecondary hover:text-text transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeClosed className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 

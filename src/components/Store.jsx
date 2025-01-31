@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { ChevronDown, Search, ArrowRight } from 'lucide-react';
 import Button from '../components/ui/Button';
@@ -15,10 +15,22 @@ const Store = () => {
     const { currentCategoryProducts } = useSelector((state) => state.categories);
     const { items: products } = useSelector((state) => state.products);
     const isLoading = useLoading();
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredProducts, setFilteredProducts] = useState([]);
+    const [searchResults, setSearchResults] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6; // 3x3 grid for desktop
+
+    // Calculate pagination
+    const totalPages = Math.ceil(searchResults.length / itemsPerPage);
+    const paginatedProducts = searchResults.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
     // Fetch categories and products on component mount
     useEffect(() => {
@@ -26,35 +38,62 @@ const Store = () => {
         dispatch(fetchProducts());
     }, [dispatch]);
 
+    // Add this useEffect to handle URL parameters
+    useEffect(() => {
+        const categoryName = location.pathname.split('/category/')[1];
+        if (categoryName) {
+            const category = categories.find(
+                cat => cat.name.toLowerCase() === decodeURIComponent(categoryName.toLowerCase())
+            );
+            if (category) {
+                setSelectedCategory(category.categoryId);
+            }
+        }
+    }, [location, categories]);
+
     // Handle category change
     useEffect(() => {
         if (selectedCategory === 'all') {
-            setFilteredProducts(products?.products || []);
+            dispatch(fetchProducts())
+                .then((action) => {
+                    if (action.payload) {
+                        const allProducts = action.payload.flatMap(producer => 
+                            producer.products.map(product => ({
+                                ...product,
+                                producer: producer.username,
+                                producerName: `${producer.firstname} ${producer.lastname}`
+                            }))
+                        );
+                        setFilteredProducts(allProducts);
+                        setSearchResults(allProducts);
+                    }
+                });
         } else {
             dispatch(fetchProductsByCategory(selectedCategory))
                 .then((action) => {
                     if (action.payload) {
-                        // Extract all products from producers array
                         const allProducts = action.payload.flatMap(producer => 
                             producer.products || []
                         );
                         setFilteredProducts(allProducts);
+                        setSearchResults(allProducts);
                     }
                 });
         }
-    }, [selectedCategory, products, dispatch]);
+    }, [selectedCategory, dispatch]);
 
     // Handle search
     useEffect(() => {
-        const productsToFilter = selectedCategory === 'all'
-            ? (products?.products || [])
-            : (currentCategoryProducts?.products || []);
-
-        const filtered = productsToFilter.filter(product =>
+        if (searchTerm === '') {
+            setSearchResults(filteredProducts);
+            return;
+        }
+        
+        const filtered = filteredProducts.filter(product =>
             product.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
-        setFilteredProducts(filtered);
-    }, [searchTerm, products, currentCategoryProducts, selectedCategory]);
+        setSearchResults(filtered);
+    }, [searchTerm, filteredProducts]);
 
     const handleAddToCart = (product) => {
         const cartItem = {
@@ -66,6 +105,59 @@ const Store = () => {
             quantity: 1
         };
         dispatch(addToCart(cartItem));
+    };
+
+    // Modify the PaginationControls component to include a visibility check
+    const PaginationControls = () => {
+        if (searchResults.length <= itemsPerPage) {
+            return null;
+        }
+        
+        return (
+            <div className="max-w-6xl mx-auto px-4 flex items-center justify-between py-4">
+                <p className="text-sm text-textSecondary">
+                    Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                    <span className="font-medium">
+                        {Math.min(currentPage * itemsPerPage, searchResults.length)}
+                    </span> of{' '}
+                    <span className="font-medium">{searchResults.length}</span> products
+                </p>
+                <div className="flex items-center space-x-2">
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="border hover:bg-cardBg text-text border-border"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(prev => prev - 1)}
+                    >
+                        Previous
+                    </Button>
+                    <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="border hover:bg-primary/10 text-primary border-primary"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(prev => prev + 1)}
+                    >
+                        Next
+                    </Button>
+                </div>
+            </div>
+        );
+    };
+
+    // Modify the category selection handler
+    const handleCategorySelect = (categoryId) => {
+        setSelectedCategory(categoryId);
+        setCurrentPage(1);
+        
+        // Find the category name for the URL
+        const selectedCat = categories.find(cat => cat.categoryId === categoryId);
+        if (selectedCat) {
+            navigate(`/category/${encodeURIComponent(selectedCat.name.toLowerCase())}`);
+        } else if (categoryId === 'all') {
+            navigate('/store');
+        }
     };
 
     if (isLoading) {
@@ -111,7 +203,7 @@ const Store = () => {
 
                         {/* Products Grid */}
                         <div className="grid grid-cols-1 gap-4">
-                            {filteredProducts.map(product => (
+                            {paginatedProducts.map(product => (
                                 <div
                                     key={product.productId}
                                     className="bg-cardBg rounded-lg overflow-hidden border border-border transition-colors duration-300"
@@ -138,6 +230,7 @@ const Store = () => {
                                 </div>
                             ))}
                         </div>
+                        <PaginationControls />
                     </div>
                 </div>
 
@@ -167,10 +260,12 @@ const Store = () => {
                                 <input
                                     type="text"
                                     placeholder="Search"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
                                     className="bg-transparent flex-1 text-text placeholder-textSecondary outline-none focus:outline-none focus:ring-0 border-none"
                                 />
                                 <button className="bg-primary hover:bg-primaryHover rounded-full p-1 transition-colors">
-                                    <ArrowRight className="w-6 h-6 text-white" />
+                                    <Search className="w-6 h-6 text-white" />
                                 </button>
                             </label>
                         </div>
@@ -181,32 +276,40 @@ const Store = () => {
                                     <hr className="border-border" />
                                     <ul className="py-4 space-y-2">
                                         <li className="px-4 relative">
-                                            <a
-                                                className={`rounded-lg px-4 py-2 block ${selectedCategory === 'all'
+                                            <Link
+                                                to="/category/all"
+                                                className={`rounded-lg px-4 py-2 block ${
+                                                    selectedCategory === 'all'
                                                         ? 'bg-primary hover:bg-primaryHover text-white'
                                                         : 'bg-cardBg hover:bg-white/5 text-text border border-border'
-                                                    } transition-colors`}
-                                                onClick={() => setSelectedCategory('all')}
-                                                href="#"
+                                                } transition-colors`}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    handleCategorySelect('all');
+                                                }}
                                             >
                                                 <span className="p-px">All</span>
-                                            </a>
+                                            </Link>
                                             {selectedCategory === 'all' && (
                                                 <div className="absolute right-0 w-1 inset-y-0 bg-primary rounded-l"></div>
                                             )}
                                         </li>
                                         {categories.map(category => (
                                             <li key={category.categoryId} className="px-4 relative">
-                                                <a
-                                                    className={`rounded-lg px-4 py-2 block ${selectedCategory === category.categoryId
+                                                <Link
+                                                    to={`/category/${encodeURIComponent(category.name.toLowerCase())}`}
+                                                    className={`rounded-lg px-4 py-2 block ${
+                                                        selectedCategory === category.categoryId
                                                             ? 'bg-primary hover:bg-primaryHover text-white'
-                                                            : 'bg-cardBg hover:bg-white/5 text-text border border-border'
-                                                        } transition-colors duration-300`}
-                                                    onClick={() => setSelectedCategory(category.categoryId)}
-                                                    href="#"
+                                                        : 'bg-cardBg hover:bg-white/5 text-text border border-border'
+                                                    } transition-colors duration-300`}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleCategorySelect(category.categoryId);
+                                                    }}
                                                 >
                                                     {category.name}
-                                                </a>
+                                                </Link>
                                                 {selectedCategory === category.categoryId && (
                                                     <div className="absolute right-0 w-1 inset-y-0 bg-primary rounded-l"></div>
                                                 )}
@@ -216,32 +319,34 @@ const Store = () => {
                                 </div>
                             </div>
 
-                            <div className="flex-1 grid gap-4 md:grid-cols-2 lg:grid-cols-3 h-max">
-                                {filteredProducts.map(product => (
-                                    <a
-                                        key={product.productId}
-                                        href={`/store/products/${product.productId}`}
-                                        className="rounded-lg bg-cardBg relative hover:bg-cardBg/80 transition-colors duration-300 border border-border"
-                                    >
-                                        <div style={{ aspectRatio: '5 / 4' }} className="rounded-t-lg overflow-hidden w-full">
-                                            <img
-                                                src={product.imageUrl || `https://placehold.co/600x400?text=${product.name}`}
-                                                alt={product.name}
-                                                className="h-full w-full shrink-0 z-10 object-cover"
-                                            />
-                                        </div>
-                                        <div className="p-4">
-                                            <h2 className="font-semibold text-text">{product.name}</h2>
-                                            <div className="text-textSecondary text-sm flex gap-1 items-center">
-                                                <span>From</span>
-                                                <span className="text-xl text-primary font-bold">
-                                                    ${product.price}
-                                                </span>
+                            <div className="flex-1">
+                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 h-max">
+                                    {paginatedProducts.map(product => (
+                                        <a
+                                            key={product.productId}
+                                            href={`/store/products/${product.productId}`}
+                                            className="rounded-lg bg-cardBg relative hover:bg-cardBg/80 transition-colors duration-300 border border-border"
+                                        >
+                                            <div style={{ aspectRatio: '5 / 4' }} className="rounded-t-lg overflow-hidden w-full">
+                                                <img
+                                                    src={product.imageUrl || `https://placehold.co/600x400?text=${product.name}`}
+                                                    alt={product.name}
+                                                    className="h-full w-full shrink-0 z-10 object-cover"
+                                                />
                                             </div>
-                                        </div>
-                                    </a>
-                                ))}
-
+                                            <div className="p-4">
+                                                <h2 className="font-semibold text-text">{product.name}</h2>
+                                                <div className="text-textSecondary text-sm flex gap-1 items-center">
+                                                    <span>From</span>
+                                                    <span className="text-xl text-primary font-bold">
+                                                        ${product.price}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    ))}
+                                </div>
+                                <PaginationControls />
                             </div>
                         </div>
                     </div>

@@ -24,6 +24,10 @@ import PaymentForm from './components/PaymentForm';
 import PaymentSuccess from './components/PaymentSuccess';
 import OrderBundle from './components/OrderBundle';
 import useLoading from './hooks/useLoading';
+import OrderHistory from './components/OrderHistory';
+// import SecurityPage from './components/SecurityPage';
+import SellerApplication from './components/SellerApplication';
+import MyReviews from './components/MyReviews';
 
 function App() {
   const [initialLoading, setInitialLoading] = useState(true);
@@ -60,6 +64,7 @@ function App() {
                 <Route path="/customer/*" element={<CustomerLayout />} />
                 <Route path="/producer/*" element={<ProducerLayout />} />
                 <Route path="/admin/*" element={<AdminLayout />} />
+                {/* <Route element={<ProtectedRoute />}> */}
                 <Route
                   path="/account"
                   element={
@@ -68,12 +73,28 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                {/* <Route path="/account/security" element={<SecurityPage />} /> */}
+                <Route path="/account/orders" element={<OrderHistory />} />
+                <Route path="/orders/bundle/:bundleId" element={<OrderBundle />} />
+                <Route
+                  path="/account/apply-seller"
+                  element={
+                    <ProtectedRoute>
+                      <SellerApplication />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/category/:categoryName" element={<Store />} />
                 <Route path="/store" element={<Store />} />
                 <Route path="/become-seller" element={<BecomeSeller />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/faq/:category" element={<FAQ />} />
                 <Route path="/store/products/:id" element={<ProductDetails />} />
-                <Route path="/orders/bundle/:bundleId" element={<OrderBundle />} />
+                <Route path="/account/reviews" element={
+                  <ProtectedRoute>
+                    <MyReviews />
+                  </ProtectedRoute>
+                } />
               </Routes>
             </div>
           </div>
@@ -83,12 +104,12 @@ function App() {
   );
 }
 function ConditionalHeader() {
-  const location = useLocation(); 
+  const location = useLocation();
 
   if (location.pathname.startsWith('/admin')) {
     return <AdminHeader />;
-  } 
-  
+  }
+
   if (location.pathname.startsWith('/producer')) {
     return <ProducerHeader />;
   }

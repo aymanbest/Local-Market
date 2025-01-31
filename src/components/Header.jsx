@@ -41,7 +41,7 @@ const Header = () => {
               to="/" 
               onClick={handleLinkClick} 
               className={`bg-cardBg rounded-lg px-4 py-2 block text-text transition-colors duration-300 ${
-                isActivePath('/') ? 'bg-primary text-white' : 'hover:bg-white/5'
+                isActivePath('/') ? 'bg-primary text-white' : 'hover:bg-cardBg'
               }`}
             >
               Home
@@ -55,7 +55,7 @@ const Header = () => {
               to="/store" 
               onClick={handleLinkClick} 
               className={`bg-cardBg rounded-lg px-4 py-2 block text-text transition-colors duration-300 ${
-                isActivePath('/store') ? 'bg-primary text-white' : 'hover:bg-white/5'
+                isActivePath('/store') ? 'bg-primary text-white' : 'hover:bg-cardBg'
               }`}
             >
               Store
@@ -65,13 +65,13 @@ const Header = () => {
             </Link>
           </li>
           <li className="px-7 relative">
-            <Link to="/about" onClick={handleLinkClick} className="bg-cardBg rounded-lg px-4 py-2 block text-text hover:bg-white/5 transition-colors duration-300">About</Link>
+            <Link to="/about" onClick={handleLinkClick} className="bg-cardBg rounded-lg px-4 py-2 block text-text hover:bg-cardBg transition-colors duration-300">About</Link>
           </li>
           <li className="px-7 relative">
-            <Link to="/support" onClick={handleLinkClick} className="bg-cardBg rounded-lg px-4 py-2 block text-text hover:bg-white/5 transition-colors duration-300">Support</Link>
+            <Link to="/support" onClick={handleLinkClick} className="bg-cardBg rounded-lg px-4 py-2 block text-text hover:bg-cardBg transition-colors duration-300">Support</Link>
           </li>
           <li className="px-7 relative">
-            <Link to="/faq" onClick={handleLinkClick} className="bg-cardBg rounded-lg px-4 py-2 block text-text hover:bg-white/5 transition-colors duration-300">FAQ</Link>
+            <Link to="/faq" onClick={handleLinkClick} className="bg-cardBg rounded-lg px-4 py-2 block text-text hover:bg-cardBg transition-colors duration-300">FAQ</Link>
           </li>
         </ul>
         <div className="flex px-7 items-center gap-6 justify-end">
@@ -126,7 +126,7 @@ const Header = () => {
                 </a>
                 <button
                   onClick={toggleTheme}
-                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-2 rounded-full hover:bg-cardBg transition-colors"
                 >
                   {isDark ? (
                     <Sun className="w-6 h-6 text-primary animate-spin-slow" />
@@ -218,13 +218,21 @@ const Header = () => {
                     </>
                   )}
                 </Link>
-                <Link 
-                  to="/become-seller" 
-                  className="bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full flex items-center gap-2 transition-colors duration-300"
-                >
-                  <Building2 className="w-5 h-5" />
-                  <span>Start Selling</span>
-                </Link>
+                {user?.role === 'customer' && user?.applicationStatus === 'NO_APPLICATION' && (
+                  <Link 
+                    to="/become-seller" 
+                    className="bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full flex items-center gap-2 transition-colors duration-300"
+                  >
+                    <Building2 className="w-5 h-5" />
+                    <span>Start Selling</span>
+                  </Link>
+                )}
+                {user?.role === 'customer' && user?.applicationStatus === 'PENDING' && (
+                  <div className="bg-yellow-500/10 text-yellow-500 px-4 py-2 rounded-full flex items-center gap-2">
+                    <Building2 className="w-5 h-5" />
+                    <span>Application Pending</span>
+                  </div>
+                )}
               </nav>
 
               {/* Right Section */}
@@ -237,14 +245,14 @@ const Header = () => {
                     </span>
                   )}
                 </Link>
-                <span className="h-6 w-px dark:bg-white/20 bg-black/20 transition-colors duration-300"></span>
+                <span className="h-6 w-px bg-border transition-colors duration-300"></span>
                 {isAuthenticated && user ? (
                   <div className="relative">
                     <Link to="/account" className="h-12 flex items-center gap-3 pr-4 pl-1">
-                      <CircleUser className="w-10 h-10 text-gray-300 hover:text-[#FF4500] transition-colors" />
+                      <CircleUser className="w-10 h-10 text-textSecondary hover:text-primary transition-colors" />
                       <div>
-                        <span className="block text-white/80 -mb-2">Hello,</span>
-                        <span className="block text-white/80 font-semibold">
+                        <span className="block text-textSecondary -mb-2">Hello,</span>
+                        <span className="block text-text font-semibold">
                           {user.lastName || 'User'}
                         </span>
                       </div>

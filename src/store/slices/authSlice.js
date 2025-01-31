@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../lib/axios';
+import { submitApplication } from './producerApplicationSlice';
 
 export const initializeAuthFromToken = () => {
   const token = localStorage.getItem('token');
@@ -61,34 +62,10 @@ export const loginUser = createAsyncThunk(
 );
 
 export const registerUser = createAsyncThunk(
-  'auth/registerUser',
-  async ({ email, username, password }, { rejectWithValue }) => {
-    try {
-      const response = await api.post('/api/auth/register', {
-        email,
-        username,
-        password,
-        role: 'CUSTOMER'
-      });
-      
-      const { token, status } = response.data;
-      localStorage.setItem('token', token);
-      
-      // Decode token to get user info
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      
-      return {
-        user: {
-          id: payload.userId,
-          email: payload.email,
-          role: payload.role.toLowerCase()
-        },
-        token,
-        status
-      };
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Registration failed');
-    }
+  'auth/register',
+  async (userData) => {
+    const response = await api.post('/api/auth/register', userData);
+    return response.data;
   }
 );
 
@@ -182,6 +159,11 @@ const authSlice = createSlice({
         state.status = 'idle';
         state.error = action.payload;
         localStorage.removeItem('token');
+      })
+      .addCase(submitApplication.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.applicationStatus = 'PENDING';
+        }
       });
   },
 });

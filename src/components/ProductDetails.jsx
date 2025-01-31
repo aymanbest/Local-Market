@@ -3,8 +3,9 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductById } from '../store/slices/categorySlice';
 import { addToCart } from '../store/slices/cartSlice';
-import { CheckCircle, ShoppingCart, ArrowRight, Upload, Info, Plus, Minus } from 'lucide-react';
+import { CheckCircle, ShoppingCart, ArrowRight, Upload, Info, Plus, Minus, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { checkReviewEligibility, submitReview } from '../store/slices/reviewSlice';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -14,6 +15,13 @@ const ProductDetails = () => {
   const { selectedProduct } = useSelector((state) => state.categories);
   const [quantity, setQuantity] = useState(1);
   const [inStock, setInStock] = useState(true); // You should get this from your product data
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const { eligibility, loading: reviewLoading } = useSelector(state => state.reviews);
+  const { isAuthenticated } = useSelector(state => state.auth);
+
+  const product = location.state?.product || selectedProduct;
 
   const handleQuantityChange = (value) => {
     const newQuantity = Math.max(1, Math.min(40, value));
@@ -55,7 +63,22 @@ const ProductDetails = () => {
     }
   }, [dispatch, id, location.state]);
 
-  const product = location.state?.product || selectedProduct;
+  useEffect(() => {
+    if (isAuthenticated && product?.productId) {
+      dispatch(checkReviewEligibility(product.productId));
+    }
+  }, [dispatch, isAuthenticated, product]);
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    const reviewData = {
+      productId: product.productId,
+      rating,
+      comment
+    };
+    await dispatch(submitReview(reviewData));
+    setShowReviewForm(false);
+  };
 
   if (!product) {
     return <div>Loading...</div>;
@@ -162,10 +185,118 @@ const ProductDetails = () => {
             </div>
           </div>
 
-          <h2 className="text-2xl font-staatliches font-semibold uppercase mt-12">Product Description</h2>
-          <hr className="border-border mb-2" />
-          <div className="space-y-4 mb-6">
-            <p className="text-textSecondary">{product.description}</p>
+          <div className="mt-12 space-y-8">
+            {/* Verified Reviews Section */}
+            {product.verifiedReviews && product.verifiedReviews.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-staatliches font-semibold uppercase mb-4">Verified Reviews</h2>
+                <hr className="border-border mb-6" />
+                <div className="grid gap-4">
+                  {product.verifiedReviews.map((review) => (
+                    <div key={review.reviewId} className="bg-cardBg rounded-xl p-4 border border-border">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <div className="flex gap-2 items-center">
+                            <span className="font-semibold text-text">
+                              {review.customerUsername.slice(0, Math.floor(review.customerUsername.length / 2))}*****
+                            </span>
+                            {review.verifiedPurchase && (
+                              <span className="text-xs bg-green-500/10 text-green-500 px-2 py-0.5 rounded-full border border-green-500/30">
+                                Verified Purchase
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex gap-1">
+                              {[...Array(5)].map((_, index) => (
+                                <Star
+                                  key={index}
+                                  className={`w-4 h-4 ${
+                                    index < review.rating ? 'text-yellow-500 fill-current' : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-sm text-textSecondary">
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-textSecondary mt-2">{review.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Write a Review Section */}
+            {isAuthenticated && eligibility?.eligible && !eligibility?.hasReviewed && (
+              <div className="bg-cardBg rounded-xl p-6 border border-border">
+                <h3 className="text-xl font-semibold mb-4">Write a Review</h3>
+                {!showReviewForm ? (
+                  <button
+                    onClick={() => setShowReviewForm(true)}
+                    className="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg"
+                  >
+                    Write Review
+                  </button>
+                ) : (
+                  <form onSubmit={handleSubmitReview} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-textSecondary mb-1">Rating</label>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setRating(star)}
+                            className={`text-2xl ${star <= rating ? 'text-yellow-500' : 'text-gray-300'}`}
+                          >
+                            <Star className="w-6 h-6" fill={star <= rating ? 'currentColor' : 'none'} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-textSecondary mb-1">Comment</label>
+                      <textarea
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        required
+                        rows={4}
+                        className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        disabled={reviewLoading}
+                        className="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg"
+                      >
+                        {reviewLoading ? 'Submitting...' : 'Submit Review'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowReviewForm(false)}
+                        className="bg-cardBg hover:bg-white/5 px-4 py-2 rounded-lg border border-border"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )}
+
+            {/* Product Description Section */}
+            <div>
+              <h2 className="text-2xl font-staatliches font-semibold uppercase mb-4">Product Description</h2>
+              <hr className="border-border mb-4" />
+              <div className="space-y-4">
+                <p className="text-textSecondary">{product.description}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

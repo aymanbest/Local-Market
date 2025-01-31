@@ -1,26 +1,65 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Heart, PackageOpen, SquareChartGantt, ShieldCheck, ChevronLeft, ChevronRight, Clock, Gem, DollarSign, Headphones , Shield } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { ArrowRight, Heart, PackageOpen, SquareChartGantt, ShieldCheck, ChevronLeft, ChevronRight, Clock, Gem, DollarSign, Headphones, Shield } from 'lucide-react';
+import { fetchCategories } from '../store/slices/categorySlice';
 import Button from './ui/Button';
+import Preloader from './Preloader';
+import { useTheme } from '../context/ThemeContext';
 
-const categories = [
-  { id: 1, name: 'Vegetables', image: '/categories/vegetables.png', gradient: 'from-green-900/50 to-transparent' },
-  { id: 2, name: 'Fruits', image: '/categories/fruits.png', gradient: 'from-orange-900/50 to-transparent' },
-  { id: 3, name: 'Dairy', image: '/categories/dairy.png', gradient: 'from-yellow-900/50 to-transparent' },
-  { id: 4, name: 'Meat', image: '/categories/meat.png', gradient: 'from-red-900/50 to-transparent' },
-  { id: 5, name: 'Fish', image: '/categories/fish.png', gradient: 'from-blue-900/50 to-transparent' },
-  { id: 6, name: 'Bakery', image: '/categories/bakery.png', gradient: 'from-gray-900/50 to-transparent' },
-  { id: 7, name: 'Wine', image: '/categories/wine.png', gradient: 'from-purple-900/50 to-transparent' },
-  { id: 8, name: 'Beer', image: '/categories/beer.png', gradient: 'from-indigo-900/50 to-transparent' },
-  { id: 9, name: 'Tea', image: '/categories/tea.png', gradient: 'from-teal-900/50 to-transparent' },
-  { id: 10, name: 'Coffee', image: '/categories/coffee.png', gradient: 'from-brown-900/50 to-transparent' }
-];
 
 const MainPage = () => {
+  const dispatch = useDispatch();
+  const { categories, status } = useSelector((state) => state.categories);
   const [currentPage, setCurrentPage] = useState(0);
   const [direction, setDirection] = useState('right');
   const categoriesPerPage = 4;
-  const totalPages = Math.ceil(categories.length / categoriesPerPage);
+  const totalPages = Math.ceil((categories?.length || 0) / categoriesPerPage);
+  const { isDark } = useTheme();
+
+  const colorSchemes = [
+    {
+      light: 'from-emerald-500/50 to-emerald-700/50',
+      dark: 'from-emerald-600/50 to-emerald-800/50',
+      border: 'border-emerald-500/20'
+    },
+    {
+      light: 'from-blue-500/50 to-blue-700/50',
+      dark: 'from-blue-600/50 to-blue-800/50',
+      border: 'border-blue-500/20'
+    },
+    {
+      light: 'from-purple-500/50 to-purple-700/50',
+      dark: 'from-purple-600/50 to-purple-800/50',
+      border: 'border-purple-500/20'
+    },
+    {
+      light: 'from-amber-500/50 to-amber-700/50',
+      dark: 'from-amber-600/50 to-amber-800/50',
+      border: 'border-amber-500/20'
+    },
+    {
+      light: 'from-rose-500/50 to-rose-700/50',
+      dark: 'from-rose-600/50 to-rose-800/50',
+      border: 'border-rose-500/20'
+    },
+    {
+      light: 'from-teal-500/50 to-teal-700/50',
+      dark: 'from-teal-600/50 to-teal-800/50',
+      border: 'border-teal-500/20'
+    }
+  ];
+  
+  // Function to get consistent color for a category
+  const getCategoryColor = (categoryId) => {
+    // Use modulo to cycle through colors
+    const colorIndex = (categoryId - 1) % colorSchemes.length;
+    return colorSchemes[colorIndex];
+  };
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   const handlePrevPage = () => {
     if (currentPage > 0) {
@@ -37,9 +76,14 @@ const MainPage = () => {
   };
 
   const getCurrentCategories = () => {
+    if (!categories) return [];
     const start = currentPage * categoriesPerPage;
     return categories.slice(start, start + categoriesPerPage);
   };
+
+  if (status === 'loading') {
+    return <Preloader />;
+  }
 
   return (
     <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
@@ -174,10 +218,11 @@ const MainPage = () => {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              className={`p-2 rounded-lg transition-colors duration-300 ${currentPage === 0
-                  ? 'bg-[#1E1E1E] border-gray-800 text-gray-600 cursor-not-allowed'
-                  : 'bg-[#1E1E1E] border-gray-800 hover:bg-primary hover:border-transparent'
-                }`}
+              className={`p-2 rounded-lg transition-colors duration-300 ${
+                currentPage === 0
+                  ? 'bg-cardBg border-border text-textSecondary cursor-not-allowed'
+                  : 'bg-cardBg border-border hover:bg-primary hover:border-transparent'
+              }`}
               onClick={handlePrevPage}
               disabled={currentPage === 0}
               aria-label="Previous page"
@@ -186,10 +231,11 @@ const MainPage = () => {
             </Button>
             <Button
               variant="outline"
-              className={`p-2 rounded-lg transition-colors duration-300 ${currentPage === totalPages - 1
-                  ? 'bg-[#1E1E1E] border-gray-800 text-gray-600 cursor-not-allowed'
-                  : 'bg-primary border-transparent hover:bg-[#FF6D33]'
-                }`}
+              className={`p-2 rounded-lg transition-colors duration-300 ${
+                currentPage === totalPages - 1
+                  ? 'bg-cardBg border-border text-textSecondary cursor-not-allowed'
+                  : 'bg-primary border-transparent hover:bg-primaryHover'
+              }`}
               onClick={handleNextPage}
               disabled={currentPage === totalPages - 1}
               aria-label="Next page"
@@ -199,27 +245,64 @@ const MainPage = () => {
           </div>
         </div>
 
-        {/* Featured Categories */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 relative overflow-hidden">
-          {getCurrentCategories().map((category) => (
-            <Link
-              key={category.id}
-              to={`/category/${category.name.toLowerCase()}`}
-              className={`animate-${direction === 'right' ? 'slide-right' : 'slide-left'}`}
-            >
-              <div className="relative rounded-full aspect-square overflow-hidden group cursor-pointer">
-                <div className={`absolute inset-0 bg-gradient-to-t ${category.gradient}`} />
-                <img
-                  src={category.image}
-                  alt={category.name}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <h3 className="text-2xl font-bold text-white text-center">{category.name}</h3>
+        {/* Featured Categories Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {getCurrentCategories().map((category) => {
+            const colorScheme = getCategoryColor(category.categoryId);
+            return (
+              <Link
+                key={category.categoryId}
+                to={`/category/${encodeURIComponent(category.name.toLowerCase())}`}
+                className={`animate-${direction === 'right' ? 'slide-right' : 'slide-left'}`}
+              >
+                <div className="relative rounded-full aspect-square overflow-hidden group cursor-pointer transition-all duration-500 hover:scale-[1.02]">
+                  {/* Outer glow effect */}
+                  <div className={`absolute -inset-0.5 rounded-full bg-gradient-to-b ${isDark ? colorScheme.dark : colorScheme.light} opacity-30 blur-sm transition-opacity duration-500 group-hover:opacity-50`} />
+                  
+                  {/* Main content container */}
+                  <div className="relative rounded-full overflow-hidden h-full">
+                    {/* Background Gradient */}
+                    <div className={`absolute inset-0 bg-gradient-to-b ${isDark ? colorScheme.dark : colorScheme.light} opacity-90 transition-all duration-500 group-hover:opacity-100`} />
+                    
+                    {/* Category Image */}
+                    <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
+                      <img
+                        src={category.imageUrl || '/categories/default.png'}
+                        alt={category.name}
+                        className="w-full h-full object-cover opacity-60 group-hover:opacity-75 transition-all duration-500"
+                      />
+                    </div>
+                    
+                    {/* Gradient Overlays */}
+                    <div className="absolute inset-0">
+                      {/* Full overlay gradient for better text readability */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/70"></div>
+                    </div>
+                    
+                    {/* Content Container */}
+                    <div className="absolute inset-0 p-8 flex flex-col justify-between items-center text-center">
+                      {/* Top Content */}
+                      <div className="w-full transform translate-y-0 group-hover:-translate-y-2 transition-transform duration-500">
+                        <h3 className="text-xl sm:text-2xl font-bold text-white drop-shadow-lg px-4">
+                          {category.name}
+                        </h3>
+                      </div>
+                      
+                      {/* Bottom Content */}
+                      <div className="w-full transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 mb-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-white/90 text-sm font-medium">
+                            {category.productCount || 0} Products
+                          </span>
+                          <ArrowRight className="w-4 h-4 text-white/90" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Pagination Indicators */}
@@ -227,8 +310,9 @@ const MainPage = () => {
           {Array.from({ length: totalPages }).map((_, index) => (
             <button
               key={index}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${currentPage === index ? 'bg-primary w-4' : 'bg-gray-600'
-                }`}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                currentPage === index ? 'bg-primary w-6' : 'bg-border hover:bg-primary/50'
+              }`}
               onClick={() => {
                 setDirection(index > currentPage ? 'right' : 'left');
                 setCurrentPage(index);

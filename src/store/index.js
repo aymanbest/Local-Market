@@ -3,13 +3,19 @@ import authReducer from './slices/authSlice';
 import cartReducer from './slices/cartSlice';
 import categoryReducer from './slices/categorySlice';
 import productReducer from './slices/productSlice';
+import producerApplicationReducer from './slices/producerApplicationSlice';
+import addressReducer from './slices/addressSlice';
+import reviewReducer from './slices/reviewSlice';
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
     cart: cartReducer,
     categories: categoryReducer,
-    products: productReducer
+    products: productReducer,
+    producerApplication: producerApplicationReducer,
+    address: addressReducer,
+    reviews: reviewReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

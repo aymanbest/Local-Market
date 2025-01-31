@@ -2,8 +2,36 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, DollarSign, Building2, Shield, Wallet, Users, BadgeCheck } from 'lucide-react';
 import Button from './ui/Button';
+import { useSelector } from 'react-redux';
 
 const BecomeSeller = () => {
+  const { user } = useSelector(state => state.auth);
+
+  // Only show for customers with NO_APPLICATION or DECLINED status
+  if (!user || user.role !== 'customer' || user.applicationStatus === 'PENDING' || user.applicationStatus === 'APPROVED') {
+    return null;
+  }
+
+  if (user.applicationStatus === 'DECLINED') {
+    return (
+      <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 mb-8">
+            <h2 className="text-xl font-semibold text-red-500 mb-2">Application Declined</h2>
+            <p className="text-textSecondary mb-4">
+              Your previous application was declined. You can reapply after 15 days from the decline date.
+            </p>
+            <Link to="/register">
+              <Button className="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-xl">
+                Reapply Now
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
       {/* Hero Section with Diagonal Design */}
