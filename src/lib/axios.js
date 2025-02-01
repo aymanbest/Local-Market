@@ -14,13 +14,13 @@ api.interceptors.response.use(
     if (error.response?.data?.message === "Token not found" || 
         error.response?.status === 401) {
       // Clear localStorage
-      localStorage.clear();
+      // localStorage.clear();
       
-      // Redirect to login page
-      window.location.href = '/login';
+      // // Redirect to login page
+      // window.location.href = '/login';
       
-      // Show message to user
-      alert('Session expired. Please login again.');
+      // // Show message to user
+      // alert('Session expired. Please login again.');
     }
     return Promise.reject(error);
   }

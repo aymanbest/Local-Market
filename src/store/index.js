@@ -6,6 +6,8 @@ import productReducer from './slices/productSlice';
 import producerApplicationReducer from './slices/producerApplicationSlice';
 import addressReducer from './slices/addressSlice';
 import reviewReducer from './slices/reviewSlice';
+import analyticsReducer from './slices/analyticsSlice';
+import userReducer from './slices/userSlice';
 
 const store = configureStore({
   reducer: {
@@ -15,7 +17,9 @@ const store = configureStore({
     products: productReducer,
     producerApplication: producerApplicationReducer,
     address: addressReducer,
-    reviews: reviewReducer
+    reviews: reviewReducer,
+    analytics: analyticsReducer,
+    users: userReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

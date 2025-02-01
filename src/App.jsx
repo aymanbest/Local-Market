@@ -6,13 +6,11 @@ import Header from './components/Header';
 import MainPage from './components/MainPage';
 import CustomerLayout from './layouts/CustomerLayout';
 import ProducerLayout from './layouts/producer/ProducerLayout';
-import AdminLayout from './layouts/admin/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
 import Register from './components/Register';
 import Cart from './components/Cart';
 import AccountPage from './components/AccountPage';
-import AdminHeader from './components/admin/AdminHeader';
 import ProducerHeader from './components/producer/ProducerHeader';
 import { ThemeProvider } from './context/ThemeContext';
 import Store from './components/Store';
@@ -28,6 +26,8 @@ import OrderHistory from './components/OrderHistory';
 // import SecurityPage from './components/SecurityPage';
 import SellerApplication from './components/SellerApplication';
 import MyReviews from './components/MyReviews';
+import AdminLayout from './layouts/AdminLayout';
+
 
 function App() {
   const [initialLoading, setInitialLoading] = useState(true);
@@ -52,7 +52,7 @@ function App() {
         <Router>
           {(initialLoading || isLoading) && <Preloader />}
           <div className={`min-h-screen bg-background transition-colors duration-300 ${initialLoading ? 'hidden' : ''}`}>
-            <ConditionalHeader />
+            <Header />
             <div className="pt-16">
               <Routes>
                 <Route path="/" element={<MainPage />} />
@@ -63,7 +63,6 @@ function App() {
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/customer/*" element={<CustomerLayout />} />
                 <Route path="/producer/*" element={<ProducerLayout />} />
-                <Route path="/admin/*" element={<AdminLayout />} />
                 {/* <Route element={<ProtectedRoute />}> */}
                 <Route
                   path="/account"
@@ -84,6 +83,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+
                 <Route path="/category/:categoryName" element={<Store />} />
                 <Route path="/store" element={<Store />} />
                 <Route path="/become-seller" element={<BecomeSeller />} />
@@ -95,6 +95,7 @@ function App() {
                     <MyReviews />
                   </ProtectedRoute>
                 } />
+                <Route path="/admin/*" element={<AdminLayout />} />
               </Routes>
             </div>
           </div>
@@ -103,19 +104,19 @@ function App() {
     </ThemeProvider>
   );
 }
-function ConditionalHeader() {
-  const location = useLocation();
+// function ConditionalHeader() {
+//   const location = useLocation();
 
-  if (location.pathname.startsWith('/admin')) {
-    return <AdminHeader />;
-  }
+//   if (location.pathname.startsWith('/admin')) {
+//     return null;
+//   }
 
-  if (location.pathname.startsWith('/producer')) {
-    return <ProducerHeader />;
-  }
+//   if (location.pathname.startsWith('/producer')) {
+//     return <ProducerHeader />;
+//   }
 
-  return <Header />;
-}
+//   return <Header />;
+// }
 
 export default App;
 

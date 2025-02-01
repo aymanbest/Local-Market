@@ -80,7 +80,14 @@ export default {
         textSecondary: 'var(--color-text-secondary)',
         border: 'var(--color-border)',
         inputBg: 'var(--color-input-bg)',
+        'gray-750': '#2d374b',
+        'gray-800': '#1f2937',
+        'gray-900': '#111827',
       },
+      backgroundColor: {
+        'gray-800': '#1f2937',
+        'gray-900': '#111827',
+      }
     },
   },
   plugins: [],

@@ -6,7 +6,11 @@ export const ThemeProvider = ({ children }) => {
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('theme');
-      return saved ? JSON.parse(saved) : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      try {
+        return saved ? JSON.parse(saved) : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      } catch {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
     }
     return false;
   });
@@ -29,4 +33,6 @@ export const ThemeProvider = ({ children }) => {
   );
 };
 
-export const useTheme = () => useContext(ThemeContext); 
+export const useTheme = () => useContext(ThemeContext);
+
+export default ThemeContext; 
