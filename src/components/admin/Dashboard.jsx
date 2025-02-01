@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Card } from '../../components/ui/Card';
 import { Users, DollarSign, ShoppingCart, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
@@ -207,7 +207,7 @@ const Dashboard = () => {
 
   // Pagination improvements
   const MAX_VISIBLE_PAGES = 5;
-  const PaginationControls = () => {
+  const PaginationControls = ({ currentPage, setCurrentPage, totalPages, jumpToPage, setJumpToPage, handleJumpToPage, indexOfFirstItem, indexOfLastItem, totalItems }) => {
     const getVisiblePages = () => {
       const totalPageNumbers = Math.min(MAX_VISIBLE_PAGES, totalPages);
       
@@ -277,10 +277,10 @@ const Dashboard = () => {
             <p className="text-sm text-textSecondary">
               Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to{' '}
               <span className="font-medium">
-                {Math.min(indexOfLastItem, transactions?.transactions?.length || 0)}
+                {Math.min(indexOfLastItem, totalItems)}
               </span>{' '}
               of{' '}
-              <span className="font-medium">{transactions?.transactions?.length || 0}</span> results
+              <span className="font-medium">{totalItems}</span> results
             </p>
           </div>
           <div className="flex items-center space-x-4">
@@ -373,6 +373,100 @@ const Dashboard = () => {
       </div>
     );
   };
+
+  // Create a new memoized component for Recent Transactions
+  const RecentTransactions = React.memo(({ transactions }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [jumpToPage, setJumpToPage] = useState('');
+    const itemsPerPage = 5;
+
+    const {
+      currentTransactions,
+      totalPages,
+      indexOfFirstItem,
+      indexOfLastItem
+    } = useMemo(() => {
+      const indexOfLast = currentPage * itemsPerPage;
+      const indexOfFirst = indexOfLast - itemsPerPage;
+      const current = transactions?.slice(indexOfFirst, indexOfLast) || [];
+      const total = Math.ceil((transactions?.length || 0) / itemsPerPage);
+
+      return {
+        currentTransactions: current,
+        totalPages: total,
+        indexOfFirstItem: indexOfFirst,
+        indexOfLastItem: indexOfLast
+      };
+    }, [currentPage, transactions]);
+
+    const handleJumpToPage = useCallback((e) => {
+      e.preventDefault();
+      const pageNumber = parseInt(jumpToPage);
+      if (pageNumber && pageNumber > 0 && pageNumber <= totalPages) {
+        setCurrentPage(pageNumber);
+        setJumpToPage('');
+      }
+    }, [jumpToPage, totalPages]);
+
+    return (
+      <Card className={`bg-cardBg border-border ${isDark ? 'dark:bg-[#1E1E1E]' : ''}`}>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-text">Recent Transactions</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-left border-b border-border">
+                  <th className="pb-3 text-textSecondary font-medium">Transaction ID</th>
+                  <th className="pb-3 text-textSecondary font-medium">Customer</th>
+                  <th className="pb-3 text-textSecondary font-medium">Producer</th>
+                  <th className="pb-3 text-textSecondary font-medium">Amount</th>
+                  <th className="pb-3 text-textSecondary font-medium">Status</th>
+                  <th className="pb-3 text-textSecondary font-medium">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentTransactions.map((transaction, index) => (
+                  <tr key={index} className="border-b border-border">
+                    <td className="py-4 text-text">#{transaction.transactionId}</td>
+                    <td className="py-4 text-text">{transaction.customerName}</td>
+                    <td className="py-4 text-text">{transaction.producerName}</td>
+                    <td className="py-4 text-text">{formatCurrency(transaction.amount)}</td>
+                    <td className="py-4">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                        transaction.status === 'Completed' 
+                          ? 'bg-primary/10 text-primary' 
+                          : 'bg-amber-500/10 text-amber-500'
+                      }`}>
+                        {transaction.status}
+                      </span>
+                    </td>
+                    <td className="py-4 text-textSecondary">
+                      {new Date(transaction.date).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <PaginationControls
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+            jumpToPage={jumpToPage}
+            setJumpToPage={setJumpToPage}
+            handleJumpToPage={handleJumpToPage}
+            indexOfFirstItem={indexOfFirstItem}
+            indexOfLastItem={indexOfLastItem}
+            totalItems={transactions?.length || 0}
+          />
+        </div>
+      </Card>
+    );
+  });
+
+  RecentTransactions.displayName = 'RecentTransactions';
 
   return (
     <div className="min-h-screen bg-background p-8 transition-colors duration-200">
@@ -482,54 +576,9 @@ const Dashboard = () => {
         </div>
 
         {/* Transactions Table */}
-        <Card 
-          className={`bg-cardBg border-border ${
-            isDark ? 'dark:bg-[#1E1E1E]' : ''
-          }`}
-        >
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-text">Recent Transactions</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left border-b border-border">
-                    <th className="pb-3 text-textSecondary font-medium">Transaction ID</th>
-                    <th className="pb-3 text-textSecondary font-medium">Customer</th>
-                    <th className="pb-3 text-textSecondary font-medium">Producer</th>
-                    <th className="pb-3 text-textSecondary font-medium">Amount</th>
-                    <th className="pb-3 text-textSecondary font-medium">Status</th>
-                    <th className="pb-3 text-textSecondary font-medium">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentTransactions.map((transaction, index) => (
-                    <tr key={index} className="border-b border-border">
-                      <td className="py-4 text-text">#{transaction.transactionId}</td>
-                      <td className="py-4 text-text">{transaction.customerName}</td>
-                      <td className="py-4 text-text">{transaction.producerName}</td>
-                      <td className="py-4 text-text">{formatCurrency(transaction.amount)}</td>
-                      <td className="py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                          transaction.status === 'Completed' 
-                            ? 'bg-primary/10 text-primary' 
-                            : 'bg-amber-500/10 text-amber-500'
-                        }`}>
-                          {transaction.status}
-                        </span>
-                      </td>
-                      <td className="py-4 text-textSecondary">
-                        {new Date(transaction.date).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <PaginationControls />
-          </div>
-        </Card>
+        <RecentTransactions 
+          transactions={transactions?.transactions || []} 
+        />
       </div>
     </div>
   );

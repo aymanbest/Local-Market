@@ -4,7 +4,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../store/slices/authSlice';
 import { Eye, EyeClosed } from 'lucide-react';
 
-
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

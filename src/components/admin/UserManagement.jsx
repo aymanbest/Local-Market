@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsers, updateUser, deleteUser } from '../../store/slices/userSlice';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/Table';
@@ -6,6 +6,188 @@ import { Card } from '../ui/Card';
 import Button from '../ui/Button';
 import { Search, Filter, ArrowUpDown, Edit2, Trash2, X, UserCog, Shield, Users, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Activity, Gauge, Lock, UserCheck, Building2, Key } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+
+// Create a memoized UsersTable component
+const UsersTable = React.memo(({ users, onEdit, onDelete, isDark }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [jumpToPage, setJumpToPage] = useState('');
+  const itemsPerPage = 5;
+
+  const {
+    paginatedUsers,
+    totalPages,
+    filteredUsers
+  } = useMemo(() => {
+    const paginated = users.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    );
+    const total = Math.ceil(users.length / itemsPerPage);
+
+    return {
+      paginatedUsers: paginated,
+      totalPages: total,
+      filteredUsers: users
+    };
+  }, [users, currentPage]);
+
+  const handleJumpToPage = useCallback((e) => {
+    e.preventDefault();
+    const page = parseInt(jumpToPage);
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      setJumpToPage('');
+    }
+  }, [jumpToPage, totalPages]);
+
+  const getRoleBadgeClass = useCallback((role) => {
+    const classes = {
+      ADMIN: 'bg-red-500/20 text-red-500 dark:bg-red-500/10 dark:text-red-400',
+      PRODUCER: 'bg-purple-500/20 text-purple-500 dark:bg-purple-500/10 dark:text-purple-400',
+      CUSTOMER: 'bg-blue-500/20 text-blue-500 dark:bg-blue-500/10 dark:text-blue-400'
+    };
+    return classes[role] || classes.CUSTOMER;
+  }, []);
+
+  return (
+    <Card className={`bg-cardBg border-border overflow-hidden ${isDark ? 'dark:bg-[#1E1E1E]' : ''}`}>
+      <div className="p-6">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="text-left border-b border-border">
+                <th className="pb-3 text-textSecondary font-medium">User</th>
+                <th className="pb-3 text-textSecondary font-medium">Email</th>
+                <th className="pb-3 text-textSecondary font-medium">Role</th>
+                <th className="pb-3 text-textSecondary font-medium">Created At</th>
+                <th className="pb-3 text-textSecondary font-medium">Last Login</th>
+                <th className="pb-3 text-textSecondary font-medium text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedUsers.map((user) => (
+                <tr key={user.userId} className="border-b border-border">
+                  <td className="py-4">
+                    <div className="flex items-center space-x-3">
+                      <div>
+                        <p className="font-medium text-text">{`${user.firstname} ${user.lastname}`}</p>
+                        <p className="text-sm text-textSecondary">{user.username}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 text-text">{user.email}</td>
+                  <td className="py-4">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getRoleBadgeClass(user.role)}`}>
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="py-4 text-textSecondary">{new Date(user.createdAt).toLocaleDateString()}</td>
+                  <td className="py-4 text-textSecondary">{new Date(user.lastLogin).toLocaleDateString()}</td>
+                  <td className="py-4 text-right">
+                    <div className="flex items-center justify-end space-x-2">
+                      <button
+                        onClick={() => onEdit(user)}
+                        className="p-2 hover:bg-primary/10 rounded-lg transition-colors duration-200"
+                      >
+                        <Edit2 className="w-4 h-4 text-primary" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(user)}
+                        className="p-2 hover:bg-red-500/10 rounded-lg transition-colors duration-200"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="mt-6 flex items-center justify-between">
+          <p className="text-sm text-textSecondary">
+            Showing <span className="font-medium text-text">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+            <span className="font-medium text-text">
+              {Math.min(currentPage * itemsPerPage, filteredUsers.length)}
+            </span> of{' '}
+            <span className="font-medium text-text">{filteredUsers.length}</span> users
+          </p>
+          
+          <div className="flex items-center space-x-4">
+            <form onSubmit={handleJumpToPage} className="flex items-center space-x-2">
+              <label htmlFor="jump-to-page" className="text-sm text-textSecondary">
+                Go to page:
+              </label>
+              <div className="relative">
+                <input
+                  id="jump-to-page"
+                  type="number"
+                  min="1"
+                  max={totalPages}
+                  value={jumpToPage}
+                  onChange={(e) => setJumpToPage(e.target.value)}
+                  className="w-16 hide-spinner rounded-md border border-border bg-cardBg pl-2 pr-6 py-1 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary appearance-none transition-colors duration-200"
+                  placeholder={currentPage}
+                />
+                <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col -space-y-px">
+                  <button
+                    type="button"
+                    onClick={() => setJumpToPage(prev => Math.min((parseInt(prev) || 0) + 1, totalPages).toString())}
+                    className="flex items-center justify-center h-3 w-3 rounded-sm hover:bg-primary/10 transition-colors duration-150"
+                    disabled={parseInt(jumpToPage) >= totalPages}
+                  >
+                    <ChevronUp className="h-2.5 w-2.5 text-textSecondary hover:text-primary transition-colors duration-150" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setJumpToPage(prev => Math.max((parseInt(prev) || 2) - 1, 1).toString())}
+                    className="flex items-center justify-center h-3 w-3 rounded-sm hover:bg-primary/10 transition-colors duration-150"
+                    disabled={parseInt(jumpToPage) <= 1}
+                  >
+                    <ChevronDown className="h-2.5 w-2.5 text-textSecondary hover:text-primary transition-colors duration-150" />
+                  </button>
+                </div>
+              </div>
+              <Button
+                type="submit"
+                variant="outline"
+                size="sm"
+                className="border border-border hover:bg-cardBg transition-colors duration-200"
+              >
+                Go
+              </Button>
+            </form>
+
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border border-border hover:bg-cardBg transition-colors duration-200"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => prev - 1)}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border border-border hover:bg-cardBg transition-colors duration-200"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => prev + 1)}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+});
+
+UsersTable.displayName = 'UsersTable';
 
 const UserManagement = () => {
   const dispatch = useDispatch();
@@ -56,14 +238,15 @@ const UserManagement = () => {
     }
   }, [users]);
 
-  // Filter users based on role and search term
-  const filteredUsers = allUsers
-    .filter(user => roleFilter ? user.role === roleFilter : true)
-    .filter(user =>
-      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      `${user.firstname} ${user.lastname}`.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  const filteredUsers = useMemo(() => {
+    return allUsers
+      .filter(user => roleFilter ? user.role === roleFilter : true)
+      .filter(user =>
+        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        `${user.firstname} ${user.lastname}`.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+  }, [allUsers, roleFilter, searchTerm]);
 
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * itemsPerPage,
@@ -229,141 +412,12 @@ const UserManagement = () => {
         </Card>
 
         {/* Users Table */}
-        <Card className={`bg-cardBg border-border overflow-hidden ${isDark ? 'dark:bg-[#1E1E1E]' : ''}`}>
-          <div className="p-6">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left border-b border-border">
-                    <th className="pb-3 text-textSecondary font-medium">User</th>
-                    <th className="pb-3 text-textSecondary font-medium">Email</th>
-                    <th className="pb-3 text-textSecondary font-medium">Role</th>
-                    <th className="pb-3 text-textSecondary font-medium">Created At</th>
-                    <th className="pb-3 text-textSecondary font-medium">Last Login</th>
-                    <th className="pb-3 text-textSecondary font-medium text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedUsers.map((user) => (
-                    <tr key={user.userId} className="border-b border-border">
-                      <td className="py-4">
-                        <div className="flex items-center space-x-3">
-                          <div>
-                            <p className="font-medium text-text">{`${user.firstname} ${user.lastname}`}</p>
-                            <p className="text-sm text-textSecondary">{user.username}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 text-text">{user.email}</td>
-                      <td className="py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getRoleBadgeClass(user.role)}`}>
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="py-4 text-textSecondary">{new Date(user.createdAt).toLocaleDateString()}</td>
-                      <td className="py-4 text-textSecondary">{new Date(user.lastLogin).toLocaleDateString()}</td>
-                      <td className="py-4 text-right">
-                        <div className="flex items-center justify-end space-x-2">
-                          <button
-                            onClick={() => handleEdit(user)}
-                            className="p-2 hover:bg-primary/10 rounded-lg transition-colors duration-200"
-                          >
-                            <Edit2 className="w-4 h-4 text-primary" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(user)}
-                            className="p-2 hover:bg-red-500/10 rounded-lg transition-colors duration-200"
-                          >
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination Controls */}
-            <div className="mt-6 flex items-center justify-between">
-              <p className="text-sm text-textSecondary">
-                Showing <span className="font-medium text-text">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
-                <span className="font-medium text-text">
-                  {Math.min(currentPage * itemsPerPage, filteredUsers.length)}
-                </span> of{' '}
-                <span className="font-medium text-text">{filteredUsers.length}</span> users
-              </p>
-              
-              <div className="flex items-center space-x-4">
-                {/* Jump to page form */}
-                <form onSubmit={handleJumpToPage} className="flex items-center space-x-2">
-                  <label htmlFor="jump-to-page" className="text-sm text-textSecondary">
-                    Go to page:
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="jump-to-page"
-                      type="number"
-                      min="1"
-                      max={totalPages}
-                      value={jumpToPage}
-                      onChange={(e) => setJumpToPage(e.target.value)}
-                      className="w-16 hide-spinner rounded-md border border-border bg-cardBg pl-2 pr-6 py-1 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary appearance-none transition-colors duration-200"
-                      placeholder={currentPage}
-                    />
-                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col -space-y-px">
-                      <button
-                        type="button"
-                        onClick={() => setJumpToPage(prev => Math.min((parseInt(prev) || 0) + 1, totalPages).toString())}
-                        className="flex items-center justify-center h-3 w-3 rounded-sm hover:bg-primary/10 transition-colors duration-150"
-                        disabled={parseInt(jumpToPage) >= totalPages}
-                      >
-                        <ChevronUp className="h-2.5 w-2.5 text-textSecondary hover:text-primary transition-colors duration-150" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setJumpToPage(prev => Math.max((parseInt(prev) || 2) - 1, 1).toString())}
-                        className="flex items-center justify-center h-3 w-3 rounded-sm hover:bg-primary/10 transition-colors duration-150"
-                        disabled={parseInt(jumpToPage) <= 1}
-                      >
-                        <ChevronDown className="h-2.5 w-2.5 text-textSecondary hover:text-primary transition-colors duration-150" />
-                      </button>
-                    </div>
-                  </div>
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    size="sm"
-                    className="border border-border hover:bg-cardBg transition-colors duration-200"
-                  >
-                    Go
-                  </Button>
-                </form>
-
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border border-border hover:bg-cardBg transition-colors duration-200"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(prev => prev - 1)}
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border border-border hover:bg-cardBg transition-colors duration-200"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(prev => prev + 1)}
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
+        <UsersTable
+          users={filteredUsers}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          isDark={isDark}
+        />
 
         {/* Edit Modal */}
         {showEditModal && (

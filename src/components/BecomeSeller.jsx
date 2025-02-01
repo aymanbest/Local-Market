@@ -7,31 +7,35 @@ import { useSelector } from 'react-redux';
 const BecomeSeller = () => {
   const { user } = useSelector(state => state.auth);
 
-  // Only show for customers with NO_APPLICATION or DECLINED status
-  if (!user || user.role !== 'customer' || user.applicationStatus === 'PENDING' || user.applicationStatus === 'APPROVED') {
-    return null;
-  }
+  // If user is logged in, check their status
+  if (user) {
+    // Don't show for producers, admins, or customers with pending/approved status
+    if (user.role !== 'customer' || user.applicationStatus === 'PENDING' || user.applicationStatus === 'APPROVED') {
+      return null;
+    }
 
-  if (user.applicationStatus === 'DECLINED') {
-    return (
-      <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
-          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 mb-8">
-            <h2 className="text-xl font-semibold text-red-500 mb-2">Application Declined</h2>
-            <p className="text-textSecondary mb-4">
-              Your previous application was declined. You can reapply after 15 days from the decline date.
-            </p>
-            <Link to="/register">
-              <Button className="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-xl">
-                Reapply Now
-              </Button>
-            </Link>
+    if (user.applicationStatus === 'DECLINED') {
+      return (
+        <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 mb-8">
+              <h2 className="text-xl font-semibold text-red-500 mb-2">Application Declined</h2>
+              <p className="text-textSecondary mb-4">
+                Your previous application was declined. You can reapply after 15 days from the decline date.
+              </p>
+              <Link to="/register">
+                <Button className="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-xl">
+                  Reapply Now
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
+  // Show the main content for guests and eligible customers
   return (
     <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
       {/* Hero Section with Diagonal Design */}
@@ -78,11 +82,13 @@ const BecomeSeller = () => {
             <div className="relative hidden md:block">
               <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
               <div className="relative z-10">
-                <img 
-                  src="/select-animate.svg" 
-                  alt="Seller Illustration" 
+                <object 
+                  data="/select-animate.svg" 
+                  type="image/svg+xml"
                   className="w-full max-w-lg mx-auto"
-                />
+                  aria-label="Seller Illustration"
+                >
+                </object>
               </div>
             </div>
           </div>

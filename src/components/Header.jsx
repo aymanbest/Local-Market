@@ -39,14 +39,42 @@ const Header = () => {
     { path: '/faq', label: 'FAQ' },
   ];
 
-  const navigationItems = isAdmin ? adminNavigationItems : regularNavigationItems;
+  // Add Become Seller link based on conditions
+  const getNavigationItems = (isAuthenticated, user) => {
+    let items = [...regularNavigationItems];
+    
+    // Show for guests or customers with NO_APPLICATION status
+    if (!isAuthenticated || (user?.role === 'customer' && user?.applicationStatus !== 'PENDING' && user?.applicationStatus !== 'APPROVED')) {
+      items.push({ 
+        path: '/become-seller', 
+        label: 'Become a Seller',
+        icon: Building2 
+      });
+    }
+    
+    // Show pending status for customers with PENDING application
+    if (isAuthenticated && user?.role === 'customer' && user?.applicationStatus === 'PENDING') {
+      items.push({ 
+        path: '#', 
+        label: 'Application Pending',
+        icon: Building2,
+        disabled: true,
+        className: 'text-yellow-500 cursor-not-allowed'
+      });
+    }
+    
+    return items;
+  };
+
+  // Update the navigationItems assignment
+  const navigationItems = isAdmin ? adminNavigationItems : getNavigationItems(isAuthenticated, user);
+
+  const handleLinkClick = () => {
+    setShowMobileMenu(false);
+  };
 
   // Mobile Menu Component
   const MobileMenu = () => {
-    const handleLinkClick = () => {
-      setShowMobileMenu(false);
-    };
-
     return (
       <div className={`fixed inset-0 overflow-y-auto z-50 transition-colors duration-300 ${
         isDark ? 'bg-mainBlack' : 'bg-white'
@@ -65,8 +93,8 @@ const Header = () => {
             <li key={item.path} className="px-7 relative">
               <Link 
                 to={item.path} 
-                onClick={handleLinkClick} 
                 className={`rounded-lg px-4 py-2 block transition-colors duration-300 ${
+                  item.disabled ? 'text-gray-400 cursor-not-allowed' : 
                   isActivePath(item.path) 
                     ? isDark 
                       ? 'bg-bioGreen text-white' 
@@ -75,10 +103,11 @@ const Header = () => {
                       ? 'text-gray-400 hover:bg-gray-800' 
                       : 'text-gray-600 hover:bg-gray-100'
                 }`}
+                onClick={item.disabled ? (e) => e.preventDefault() : handleLinkClick}
               >
                 {item.icon && <item.icon className="w-5 h-5" />}
                 {item.label}
-                {isActivePath(item.path) && (
+                {!item.disabled && isActivePath(item.path) && (
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full" />
                 )}
               </Link>
@@ -166,8 +195,9 @@ const Header = () => {
                 {navigationItems.map((item) => (
                   <Link
                     key={item.path}
-                    to={item.path}
+                    to={item.disabled ? '#' : item.path}
                     className={`relative transition-colors duration-300 flex items-center gap-2 ${
+                      item.disabled ? item.className : 
                       isActivePath(item.path)
                         ? isDark 
                           ? 'text-bioGreen font-semibold' 
@@ -176,10 +206,11 @@ const Header = () => {
                           ? 'text-gray-400 hover:text-bioGreen'
                           : 'text-gray-600 hover:text-primary'
                     }`}
+                    onClick={item.disabled ? (e) => e.preventDefault() : handleLinkClick}
                   >
                     {item.icon && <item.icon className="w-5 h-5" />}
                     {item.label}
-                    {isActivePath(item.path) && (
+                    {!item.disabled && isActivePath(item.path) && (
                       <>
                         <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary rounded-full shadow-[0_0_10px_rgba(169,196,108,0.7)] animate-pulse" />
                         <div className="absolute -bottom-1 left-0 w-full h-8 bg-gradient-to-t from-primary/20 to-transparent rounded-full blur-sm" />
@@ -202,7 +233,25 @@ const Header = () => {
                   </Link>
                 )}
                 <span className="h-6 w-px bg-border transition-colors duration-300"></span>
-                {isAuthenticated && user && (
+                
+                {/* Add this section for non-authenticated users */}
+                {!isAuthenticated ? (
+                  <div className="flex items-center gap-4">
+                    <Link 
+                      to="/login" 
+                      className="text-text hover:text-primary transition-colors"
+                    >
+                      Login
+                    </Link>
+                    <Link 
+                      to="/register" 
+                      className="bg-primary hover:bg-primaryHover text-white rounded-full px-6 h-10 flex items-center gap-2 transition-colors duration-300"
+                    >
+                      <CircleUser className="w-5 h-5" />
+                      Register
+                    </Link>
+                  </div>
+                ) : (
                   <div className="relative">
                     <Link to={isAdmin ? "/admin/profile" : "/account"} className="h-12 flex items-center gap-3 pr-4 pl-1">
                       <CircleUser className="w-10 h-10 text-textSecondary hover:text-primary transition-colors" />

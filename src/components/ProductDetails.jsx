@@ -6,6 +6,7 @@ import { addToCart } from '../store/slices/cartSlice';
 import { CheckCircle, ShoppingCart, ArrowRight, Upload, Info, Plus, Minus, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { checkReviewEligibility, submitReview } from '../store/slices/reviewSlice';
+// import { toast } from 'react-hot-toast';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -20,6 +21,8 @@ const ProductDetails = () => {
   const [comment, setComment] = useState('');
   const { eligibility, loading: reviewLoading } = useSelector(state => state.reviews);
   const { isAuthenticated } = useSelector(state => state.auth);
+  const { items: cartItems } = useSelector(state => state.cart);
+  const [isLoading, setIsLoading] = useState(true);
 
   const product = location.state?.product || selectedProduct;
 
@@ -30,15 +33,31 @@ const ProductDetails = () => {
 
   const handleAddToCart = () => {
     if (product) {
+      // Check if product is already in cart
+      const existingItem = cartItems.find(item => item.id === product.productId);
+      
+      // Check if adding more would exceed stock limit (if you have stock limits)
+      // TODO: Add stock limit check
+      const newQuantity = existingItem 
+        ? existingItem.quantity + quantity 
+        : quantity;
+
+      // Create cart item
       const cartItem = {
         id: product.productId,
         productId: product.productId,
         name: product.name,
         price: product.price,
         imageUrl: product.imageUrl,
-        quantity: quantity
+        quantity: quantity,
+        addedAt: new Date().toISOString()
       };
+
+      // Dispatch add to cart action
       dispatch(addToCart(cartItem));
+
+      // Show success notification
+      // toast.success('Added to cart successfully!');
     }
   };
 
@@ -50,8 +69,10 @@ const ProductDetails = () => {
         name: product.name,
         price: product.price,
         imageUrl: product.imageUrl,
-        quantity: quantity
+        quantity: quantity,
+        addedAt: new Date().toISOString()
       };
+      
       dispatch(addToCart(cartItem));
       navigate('/cart');
     }
@@ -59,7 +80,11 @@ const ProductDetails = () => {
 
   useEffect(() => {
     if (!location.state?.product && id) {
-      dispatch(fetchProductById(id));
+      setIsLoading(true);
+      dispatch(fetchProductById(id))
+        .finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
     }
   }, [dispatch, id, location.state]);
 
@@ -76,12 +101,24 @@ const ProductDetails = () => {
       rating,
       comment
     };
-    await dispatch(submitReview(reviewData));
+    dispatch(submitReview(reviewData));
     setShowReviewForm(false);
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   if (!product) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-text">Product not found</div>
+      </div>
+    );
   }
 
   return (

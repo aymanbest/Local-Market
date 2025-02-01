@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../lib/axios';
 import { submitApplication } from './producerApplicationSlice';
 
+
 export const initializeAuthFromToken = () => {
   const token = localStorage.getItem('token');
   if (!token) return null;
