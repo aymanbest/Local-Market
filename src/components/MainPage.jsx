@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { ArrowRight, Heart, PackageOpen, SquareChartGantt, ShieldCheck, ChevronLeft, ChevronRight, Clock, Gem, DollarSign, Headphones, Shield } from 'lucide-react';
+import { ArrowRight, Heart, PackageOpen, SquareChartGantt, ShieldCheck, ChevronLeft, ChevronRight, Clock, Gem, DollarSign, Headphones, Shield, User } from 'lucide-react';
 import { fetchCategories } from '../store/slices/categorySlice';
 import Button from './ui/Button';
 import Preloader from './Preloader';
 import { useTheme } from '../context/ThemeContext';
+import { motion } from 'framer-motion';
 
 
 const MainPage = () => {
@@ -85,6 +86,23 @@ const MainPage = () => {
     return <Preloader />;
   }
 
+  // Hero Section container
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.3
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
     <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
       {/* Hero Section */}
@@ -94,12 +112,20 @@ const MainPage = () => {
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative pt-20 pb-20">
-            <div className="flex flex-col lg:flex-row items-center gap-16">
+            <motion.div 
+              className="flex flex-col lg:flex-row items-center gap-16"
+              variants={container}
+              initial="hidden"
+              animate="show"
+            >
               {/* Left Content */}
-              <div className="flex-1 text-left relative z-10">
+              <motion.div className="flex-1 text-left relative z-10">
                 <div className="space-y-8">
                   {/* Badge */}
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                  <motion.div 
+                    variants={item}
+                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20"
+                  >
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -107,28 +133,40 @@ const MainPage = () => {
                     <span className="text-sm font-medium text-primary">
                       Now serving your local community
                     </span>
-                  </div>
+                  </motion.div>
 
                   {/* Main Title */}
-                  <h1 className="text-6xl font-recoleta leading-tight  tracking-tight">
+                  <motion.h1 
+                    variants={item}
+                    className="text-6xl font-recoleta leading-tight tracking-tight"
+                  >
                     <span className="block text-text">ENJOY FRESH</span>
                     <span className="block mt-1">
                       <span className="text-primary">LOCAL</span> PRODUCTS
                     </span>
-                  </h1>
+                  </motion.h1>
                   
-                  <h2 className="text-2xl text-textSecondary font-medium">
+                  <motion.h2 
+                    variants={item}
+                    className="text-2xl text-textSecondary font-medium"
+                  >
                     Your <span className="text-primary font-semibold">#1</span> Local{" "}
                     <span className="text-primary font-semibold">Organic </span>Marketplace
-                  </h2>
+                  </motion.h2>
                   
-                  <p className="text-lg text-textSecondary/80 max-w-xl">
+                  <motion.p 
+                    variants={item}
+                    className="text-lg text-textSecondary/80 max-w-xl"
+                  >
                     We connect you directly with local farmers and artisans.
                     Fresh, organic, and sustainably sourced products delivered
                     right to your doorstep.
-                  </p>
+                  </motion.p>
 
-                  <div className="flex items-center gap-6">
+                  <motion.div 
+                    variants={item}
+                    className="flex items-center gap-6"
+                  >
                     <Link to="/store">
                       <Button className="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-full text-lg flex items-center gap-3 group shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-300">
                         Visit Store
@@ -140,11 +178,7 @@ const MainPage = () => {
                       <div className="flex -space-x-3">
                         {[1, 2, 3].map((i) => (
                           <div key={i} className="w-10 h-10 rounded-full border-2 border-background bg-cardBg overflow-hidden">
-                            <img 
-                              src={`/Producers/Producers${i}.jpg`} 
-                              alt="Local Producers"
-                              className="w-full h-full object-cover"
-                            />
+                            <User className="w-full h-full object-cover" />
                           </div>
                         ))}
                       </div>
@@ -153,18 +187,23 @@ const MainPage = () => {
                         <p className="text-textSecondary/60">Trusted Partners</p>
                       </div>
                     </div> */}
-                  </div>
+                  </motion.div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Right Content - SVG Animation */}
-              <div className="flex-1 relative">
+              <motion.div 
+                className="flex-1 relative"
+                variants={item}
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <div className="relative z-10 w-full max-w-lg mx-auto">
                   {/* Decorative Elements */}
                   <div className="absolute -bottom-4 -left-4 w-72 h-72 dark:bg-[#A9C46C]/20 bg-[#5D8736]/20 rounded-full blur-3xl"></div>
                   
                   {/* SVG Container with enhanced styling */}
-                  <div className="relative bg-gradient-to-b from-transparent to-background/5 rounded-2xl backdrop-blur-sm p-8">
+                  <div className="relative bg-gradient-to-b from-transparent to-background/5 rounded-2xl p-8">
                     <object
                       type="image/svg+xml"
                       data="/product-hunt-animate.svg"
@@ -175,14 +214,20 @@ const MainPage = () => {
                     </object>
                   </div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </div>
 
       {/* Stats Section */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <motion.div 
+        className="max-w-7xl mx-auto px-4 py-12"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="bg-cardBg backdrop-blur-sm rounded-xl p-8 border border-cardBorder transition-colors duration-300">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div className="space-y-2">
@@ -207,7 +252,7 @@ const MainPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Categories Section */}
       <div className="max-w-7xl mx-auto px-4 py-12">
@@ -247,60 +292,67 @@ const MainPage = () => {
 
         {/* Featured Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {getCurrentCategories().map((category) => {
+          {getCurrentCategories().map((category, index) => {
             const colorScheme = getCategoryColor(category.categoryId);
             return (
-              <Link
-                key={category.categoryId}
-                to={`/category/${encodeURIComponent(category.name.toLowerCase())}`}
-                className={`animate-${direction === 'right' ? 'slide-right' : 'slide-left'}`}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
               >
-                <div className="relative rounded-full aspect-square overflow-hidden group cursor-pointer transition-all duration-500 hover:scale-[1.02]">
-                  {/* Outer glow effect */}
-                  <div className={`absolute -inset-0.5 rounded-full bg-gradient-to-b ${isDark ? colorScheme.dark : colorScheme.light} opacity-30 blur-sm transition-opacity duration-500 group-hover:opacity-50`} />
-                  
-                  {/* Main content container */}
-                  <div className="relative rounded-full overflow-hidden h-full">
-                    {/* Background Gradient */}
-                    <div className={`absolute inset-0 bg-gradient-to-b ${isDark ? colorScheme.dark : colorScheme.light} opacity-90 transition-all duration-500 group-hover:opacity-100`} />
+                <Link
+                  key={category.categoryId}
+                  to={`/category/${encodeURIComponent(category.name.toLowerCase())}`}
+                  className={`animate-${direction === 'right' ? 'slide-right' : 'slide-left'}`}
+                >
+                  <div className="relative rounded-full aspect-square overflow-hidden group cursor-pointer transition-all duration-500 hover:scale-[1.02]">
+                    {/* Outer glow effect */}
+                    <div className={`absolute -inset-0.5 rounded-full bg-gradient-to-b ${isDark ? colorScheme.dark : colorScheme.light} opacity-30 blur-sm transition-opacity duration-500 group-hover:opacity-50`} />
                     
-                    {/* Category Image */}
-                    <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
-                      <img
-                        src={category.imageUrl || '/categories/default.png'}
-                        alt={category.name}
-                        className="w-full h-full object-cover opacity-60 group-hover:opacity-75 transition-all duration-500"
-                      />
-                    </div>
-                    
-                    {/* Gradient Overlays */}
-                    <div className="absolute inset-0">
-                      {/* Full overlay gradient for better text readability */}
-                      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/70"></div>
-                    </div>
-                    
-                    {/* Content Container */}
-                    <div className="absolute inset-0 p-8 flex flex-col justify-between items-center text-center">
-                      {/* Top Content */}
-                      <div className="w-full transform translate-y-0 group-hover:-translate-y-2 transition-transform duration-500">
-                        <h3 className="text-xl sm:text-2xl font-bold text-white drop-shadow-lg px-4">
-                          {category.name}
-                        </h3>
+                    {/* Main content container */}
+                    <div className="relative rounded-full overflow-hidden h-full">
+                      {/* Background Gradient */}
+                      <div className={`absolute inset-0 bg-gradient-to-b ${isDark ? colorScheme.dark : colorScheme.light} opacity-90 transition-all duration-500 group-hover:opacity-100`} />
+                      
+                      {/* Category Image */}
+                      <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
+                        <img
+                          src={category.imageUrl || '/categories/default.png'}
+                          alt={category.name}
+                          className="w-full h-full object-cover opacity-60 group-hover:opacity-75 transition-all duration-500"
+                        />
                       </div>
                       
-                      {/* Bottom Content */}
-                      <div className="w-full transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 mb-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <span className="text-white/90 text-sm font-medium">
-                            {category.productCount || 0} Products
-                          </span>
-                          <ArrowRight className="w-4 h-4 text-white/90" />
+                      {/* Gradient Overlays */}
+                      <div className="absolute inset-0">
+                        {/* Full overlay gradient for better text readability */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/70"></div>
+                      </div>
+                      
+                      {/* Content Container */}
+                      <div className="absolute inset-0 p-8 flex flex-col justify-between items-center text-center">
+                        {/* Top Content */}
+                        <div className="w-full transform translate-y-0 group-hover:-translate-y-2 transition-transform duration-500">
+                          <h3 className="text-xl sm:text-2xl font-bold text-white drop-shadow-lg px-4">
+                            {category.name}
+                          </h3>
+                        </div>
+                        
+                        {/* Bottom Content */}
+                        <div className="w-full transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 mb-4">
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-white/90 text-sm font-medium">
+                              {category.productCount || 0} Products
+                            </span>
+                            <ArrowRight className="w-4 h-4 text-white/90" />
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </motion.div>
             );
           })}
         </div>
@@ -324,14 +376,29 @@ const MainPage = () => {
       </div>
 
       {/* Why Choose Us Section */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      <motion.div 
+        className="max-w-7xl mx-auto px-4 py-16"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+      >
         <h2 className="text-4xl font-bold text-center mb-16 text-text">
           WHY SHOULD YOU <span className="text-primary">CHOOSE US?</span>
         </h2>
         
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <motion.div 
+          className="grid grid-cols-2 md:grid-cols-6 gap-4"
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+        >
           {/* Secure Payment */}
-          <div className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg transition-all duration-300">
+          <motion.div 
+            variants={item}
+            className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg"
+          >
             <div className="w-min mb-2">
               <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#A62BDA] to-100%">
                 <ShieldCheck className="w-10 h-10 mx-auto text-white" />
@@ -341,10 +408,13 @@ const MainPage = () => {
             <p className="text-sm text-textSecondary leading-relaxed">
               We offer secure payment options including credit card and cryptocurrency. All transactions are protected with industry-standard encryption.
             </p>
-          </div>
+          </motion.div>
 
           {/* Superior Quality */}
-          <div className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg transition-all duration-300">
+          <motion.div 
+            variants={item}
+            className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg"
+          >
             <div className="w-min mb-2">
               <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#31B3CC] to-100%">
                 <Gem className="w-10 h-10 mx-auto text-white" />
@@ -354,10 +424,13 @@ const MainPage = () => {
             <p className="text-sm text-textSecondary leading-relaxed">
               Our marketplace features only the highest quality local products. Each seller is carefully vetted to ensure premium standards.
             </p>
-          </div>
+          </motion.div>
 
           {/* Best Prices */}
-          <div className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg transition-all duration-300">
+          <motion.div 
+            variants={item}
+            className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg"
+          >
             <div className="w-min mb-2">
               <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#FF9900] to-100%">
                 <DollarSign className="w-10 h-10 mx-auto text-white" />
@@ -367,13 +440,16 @@ const MainPage = () => {
             <p className="text-sm text-textSecondary leading-relaxed">
               By connecting you directly with local sellers, we eliminate middlemen to offer the most competitive prices in your area.
             </p>
-          </div>
+          </motion.div>
 
           {/* Empty div for spacing */}
           <div className="hidden md:block"></div>
 
           {/* 24×7 Support */}
-          <div className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg transition-all duration-300">
+          <motion.div 
+            variants={item}
+            className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg"
+          >
             <div className="w-min mb-2">
               <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#F46036] to-100%">
                 <Headphones className="w-10 h-10 mx-auto text-white" />
@@ -383,10 +459,13 @@ const MainPage = () => {
             <p className="text-sm text-textSecondary leading-relaxed">
               Our dedicated support team is available around the clock to assist both buyers and sellers with any questions or concerns.
             </p>
-          </div>
+          </motion.div>
 
           {/* Fast Delivery */}
-          <div className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg transition-all duration-300">
+          <motion.div 
+            variants={item}
+            className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg"
+          >
             <div className="w-min mb-2">
               <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#ED45CD] to-100%">
                 <Clock className="w-10 h-10 mx-auto text-white" />
@@ -396,9 +475,9 @@ const MainPage = () => {
             <p className="text-sm text-textSecondary leading-relaxed">
               With our network of local sellers, you can arrange quick pickup or delivery of your purchases within your community.
             </p>
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

@@ -49,11 +49,58 @@ export const fetchUserReviews = createAsyncThunk(
   }
 );
 
+// New thunks for admin review management
+export const fetchPendingReviews = createAsyncThunk(
+  'reviews/fetchPending',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const token = getState().auth.token;
+      const response = await api.get('/api/reviews/pending', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const approveReview = createAsyncThunk(
+  'reviews/approve',
+  async (reviewId, { rejectWithValue, getState }) => {
+    try {
+      const token = getState().auth.token;
+      const response = await api.post(`/api/reviews/${reviewId}/approve`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const declineReview = createAsyncThunk(
+  'reviews/decline',
+  async (reviewId, { rejectWithValue, getState }) => {
+    try {
+      const token = getState().auth.token;
+      const response = await api.post(`/api/reviews/${reviewId}/decline`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const reviewSlice = createSlice({
   name: 'reviews',
   initialState: {
     eligibility: null,
     userReviews: [],
+    pendingReviews: [],
     loading: false,
     error: null,
     success: false
@@ -107,6 +154,29 @@ const reviewSlice = createSlice({
       .addCase(fetchUserReviews.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      // Add new cases for admin review management
+      .addCase(fetchPendingReviews.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPendingReviews.fulfilled, (state, action) => {
+        state.loading = false;
+        state.pendingReviews = action.payload;
+      })
+      .addCase(fetchPendingReviews.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(approveReview.fulfilled, (state, action) => {
+        state.pendingReviews = state.pendingReviews.filter(
+          review => review.reviewId !== action.payload.reviewId
+        );
+      })
+      .addCase(declineReview.fulfilled, (state, action) => {
+        state.pendingReviews = state.pendingReviews.filter(
+          review => review.reviewId !== action.payload.reviewId
+        );
       });
   }
 });

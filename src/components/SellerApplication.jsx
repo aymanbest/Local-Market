@@ -21,6 +21,7 @@ const SellerApplication = () => {
     categoryIds: [],
     customCategory: null,
     businessAddress: '',
+    businessPhoneNumber: '',
     cityRegion: '',
     customCityRegion: '',
     yearsOfExperience: '',
@@ -112,6 +113,20 @@ const SellerApplication = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, businessDescription: e.target.value }))}
                     rows={4}
                     className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-textSecondary mb-1">
+                    Business Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={formData.businessPhoneNumber}
+                    onChange={(e) => setFormData(prev => ({ ...prev, businessPhoneNumber: e.target.value }))}
+                    className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="Enter your business phone number"
                   />
                 </div>
 

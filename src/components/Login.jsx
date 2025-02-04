@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, redirect } from 'react-router-dom';
 import { loginUser } from '../store/slices/authSlice';
 import { Eye, EyeClosed } from 'lucide-react';
 
-const Login = () => {
+const Login = ({ adminOnly = false }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -18,6 +18,12 @@ const Login = () => {
       const resultAction = await dispatch(loginUser({ email, password }));
       if (loginUser.fulfilled.match(resultAction)) {
         const role = resultAction.payload.user.role.toLowerCase();
+        
+        if (adminOnly && role !== 'admin') {
+          // Show error: "This login is for administrators only"
+          navigate('/');
+          return;
+        }
         
         // Navigate based on role
         switch (role) {
@@ -44,7 +50,7 @@ const Login = () => {
       <div className="w-full max-w-md">
         {/* Title */}
         <h1 className="text-4xl font-recoleta text-text text-center mb-2">
-          WELCOME TO OUR MARKET
+          WELCOME TO OUR MARKET {adminOnly ? '(ADMIN)' : ''}
         </h1>
         <p className="text-center text-gray-400 mb-8">
           Don't have an account?{' '}

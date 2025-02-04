@@ -9,6 +9,8 @@ import reviewReducer from './slices/reviewSlice';
 import analyticsReducer from './slices/analyticsSlice';
 import userReducer from './slices/userSlice';
 import pendingProductsReducer from './slices/pendingProductsSlice';
+import producerApplicationsReducer from './slices/producerApplicationsSlice';
+import securityReducer from './slices/securitySlice';
 
 const store = configureStore({
   reducer: {
@@ -21,7 +23,9 @@ const store = configureStore({
     reviews: reviewReducer,
     analytics: analyticsReducer,
     users: userReducer,
-    pendingProducts: pendingProductsReducer
+    pendingProducts: pendingProductsReducer,
+    producerApplications: producerApplicationsReducer,
+    security: securityReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -26,8 +26,8 @@ const DeclineModal = React.memo(({ isOpen, onClose, onDecline: onDeclineProps })
   
   return (
     <div className="fixed inset-0 flex items-center justify-center z-[9999]">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="bg-cardBg backdrop-blur-md rounded-lg p-6 w-full max-w-md relative mx-4 shadow-xl border border-border">
+      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
+      <div className="bg-cardBg rounded-lg p-6 w-full max-w-md relative mx-4 shadow-xl border border-border">
         <div className="space-y-4">
           <h3 className="text-xl font-bold text-text">Decline Product</h3>
           <textarea
@@ -133,8 +133,8 @@ const ProductManagement = () => {
   // View Modal Component
   const ViewModal = () => (
     <div className="fixed inset-0 flex items-center justify-center z-[9999]">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowViewModal(false)} />
-      <div className="bg-cardBg backdrop-blur-md rounded-lg p-6 w-full max-w-2xl relative mx-4 shadow-xl border border-border">
+      <div className="absolute inset-0 bg-black/70" onClick={() => setShowViewModal(false)} />
+      <div className="bg-cardBg rounded-lg p-6 w-full max-w-2xl relative mx-4 shadow-xl border border-border">
         {selectedProduct && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -198,22 +198,25 @@ const ProductManagement = () => {
 
   return (
     <div className="min-h-screen bg-background p-4 transition-colors duration-300">
-      {/* Header Section with Stats */}
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-cardBg border border-border rounded-xl p-6 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-primary/10">
-                <Package className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold text-text">{totalPendingProducts}</h3>
-                <p className="text-textSecondary text-sm">Pending Products</p>
+        {/* Modern Stats Header */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 rounded-2xl border border-border p-8">
+          <div className="absolute inset-0 bg-grid-white/5 [mask-image:linear-gradient(0deg,transparent,black)]" />
+          <div className="relative flex items-center justify-between">
+            <div className="space-y-2">
+              <h2 className="text-4xl font-bold text-text">Product Management</h2>
+              <p className="text-textSecondary">Monitor and manage products</p>
+            </div>
+            <div className="flex items-center gap-6">
+
+              <div className="text-center">
+                <div className="text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  {totalPendingProducts}
+                </div>
+                <div className="text-sm text-textSecondary mt-1">Pending Products</div>
               </div>
             </div>
           </div>
-          
-          {/* Add more stat cards as needed */}
         </div>
 
         {/* Redesigned Search Section - Store style */}

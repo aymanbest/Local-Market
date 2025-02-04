@@ -1,13 +1,15 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, LogOut, Shield, ClipboardList } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '../store/slices/authSlice';
 
-const AccountPage = () => {
+const AccountPage = ({ adminOnly = false }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useSelector(state => state.auth);
+  const isInAdminSection = location.pathname.startsWith('/admin');
 
   const handleLogout = async () => {
     try {
@@ -44,14 +46,32 @@ const AccountPage = () => {
 
         <div className="container px-4 pb-24">
           <div className="grid md:grid-cols-2 gap-6 mt-6">
-            <Link to="/account/security" className="border border-border p-4 rounded-xl hover:bg-cardBg transition">
+            <Link to={adminOnly ? "/admin/profile/security" : "/account/security"} className="border border-border p-4 rounded-xl hover:bg-cardBg transition">
               <h2 className="text-2xl font-recoleta uppercase font-bold">Security</h2>
               <span className="text-textSecondary">Change your password .. etc</span>
             </Link>
-            <Link to="/account/orders" className="border border-border p-4 rounded-xl hover:bg-cardBg transition">
-              <h2 className="text-2xl font-recoleta uppercase font-bold">Order History</h2>
-              <span className="text-textSecondary">View your order bundles and details</span>
-            </Link>
+            
+            {!adminOnly && (
+              <>
+                <Link to="/account/orders" className="border border-border p-4 rounded-xl hover:bg-cardBg transition">
+                  <h2 className="text-2xl font-recoleta uppercase font-bold">Order History</h2>
+                  <span className="text-textSecondary">View your order bundles and details</span>
+                </Link>
+
+                <Link to="/account/reviews" className="border border-border p-4 rounded-xl hover:bg-cardBg transition">
+                  <h2 className="text-2xl font-recoleta uppercase font-bold">My Reviews</h2>
+                  <span className="text-textSecondary">View and manage your product reviews</span>
+                </Link>
+              </>
+            )}
+
+            {user?.role === 'admin' && !isInAdminSection && (
+              <Link to="/admin/users" className="border border-primary/30 bg-primary/5 p-4 rounded-xl hover:bg-primary/10 transition">
+                <h2 className="text-2xl font-recoleta uppercase font-bold text-primary">Admin Dashboard</h2>
+                <span className="text-textSecondary">Manage users, products, and more</span>
+              </Link>
+            )}
+
             {user?.role === 'customer' && (
               <>
                 {user.applicationStatus === 'NO_APPLICATION' && (
@@ -74,10 +94,6 @@ const AccountPage = () => {
                 )}
               </>
             )}
-            <Link to="/account/reviews" className="border border-border p-4 rounded-xl hover:bg-cardBg transition">
-              <h2 className="text-2xl font-recoleta uppercase font-bold">My Reviews</h2>
-              <span className="text-textSecondary">View and manage your product reviews</span>
-            </Link>
           </div>
         </div>
       </div>

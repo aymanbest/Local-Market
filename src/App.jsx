@@ -27,6 +27,7 @@ import OrderHistory from './components/OrderHistory';
 import SellerApplication from './components/SellerApplication';
 import MyReviews from './components/MyReviews';
 import AdminLayout from './layouts/AdminLayout';
+import SecurityPage from './components/SecurityPage';
 
 
 function App() {
@@ -53,7 +54,7 @@ function App() {
           {(initialLoading || isLoading) && <Preloader />}
           <div className={`min-h-screen bg-background transition-colors duration-300 ${initialLoading ? 'hidden' : ''}`}>
             <Header />
-            <div className="pt-16">
+            <div className="pt-28 md:pt-32">
               <Routes>
                 <Route path="/" element={<MainPage />} />
                 <Route path="/login" element={<Login />} />
@@ -96,6 +97,15 @@ function App() {
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/*" element={<AdminLayout />} />
+                <Route path="/admin/login" element={<Login adminOnly />} />
+                <Route 
+                  path="/account/security" 
+                  element={
+                    <ProtectedRoute>
+                      <SecurityPage />
+                    </ProtectedRoute>
+                  } 
+                />
               </Routes>
             </div>
           </div>

@@ -1,22 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
-  ShoppingCart, LogIn, CircleUser, Leaf, Sun, Moon, Menu, X, Building2,
-  LayoutDashboard, Users, Package, StarIcon, BarChart2
+  ShoppingCart, CircleUser, Leaf, Sun, Moon, Menu, X,
+  Building2, LayoutDashboard, Users, Package, StarIcon, Home, Store, HelpCircle, MessageCircle, FileQuestion, LogIn, UserPlus, LogOut, Settings, ChevronRight
 } from 'lucide-react';
-import Button from './ui/Button';
 import { logoutUser } from '../store/slices/authSlice';
 import { useTheme } from '../context/ThemeContext';
+import Button from './ui/Button';
 
 const Header = () => {
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector(state => state.auth);
   const { items } = useSelector(state => state.cart);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { isDark, toggleTheme } = useTheme();
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (showMobileMenu) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [showMobileMenu]);
 
   const isAdmin = location.pathname.startsWith('/admin');
 
@@ -29,6 +48,7 @@ const Header = () => {
     { path: '/admin/users', label: 'Users', icon: Users },
     { path: '/admin/products', label: 'Products', icon: Package },
     { path: '/admin/reviews', label: 'Reviews', icon: StarIcon },
+    { path: '/admin/applications', label: 'Applications', icon: Building2 },
   ];
 
   const regularNavigationItems = [
@@ -76,209 +96,491 @@ const Header = () => {
   // Mobile Menu Component
   const MobileMenu = () => {
     return (
-      <div className={`fixed inset-0 overflow-y-auto z-50 transition-colors duration-300 ${
-        isDark ? 'bg-mainBlack' : 'bg-white'
-      }`}>
-        <div className="flex justify-end pt-7 px-7">
-          <button 
-            onClick={() => setShowMobileMenu(false)}
-            className="rounded-full bg-cardBg flex justify-center gap-2 items-center w-12 h-12 border border-border"
-          >
-            <X className="w-6 h-6 text-text" />
-            <span className="sr-only">Close</span>
-          </button>
-        </div>
-        <ul className="py-7 space-y-2">
-          {navigationItems.map((item) => (
-            <li key={item.path} className="px-7 relative">
+      <div className={`
+        fixed inset-0 transition-all duration-500
+        ${showMobileMenu 
+          ? 'bg-black/60 z-50' 
+          : 'opacity-0 pointer-events-none'
+        }
+      `}>
+        {/* Mobile Menu Panel */}
+        <div className={`
+          fixed inset-y-0 right-0 w-[85%] max-w-md
+          transform transition-all duration-500 ease-out
+          ${showMobileMenu ? 'translate-x-0' : 'translate-x-full'}
+          ${isDark 
+            ? 'bg-[#0a0a0a]' 
+            : 'bg-white'
+          }
+        `}>
+          {/* Decorative Background Elements */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className={`
+              absolute -top-1/4 right-0 w-1/2 aspect-square rounded-full
+              bg-primary/5 blur-2xl
+            `} />
+            <div className={`
+              absolute -bottom-1/4 left-0 w-1/2 aspect-square rounded-full
+              bg-primary/5 blur-2xl
+            `} />
+          </div>
+
+          {/* Content Container */}
+          <div className="relative h-full flex flex-col">
+            {/* Header Section */}
+            <div className="p-6 flex items-center justify-between">
               <Link 
-                to={item.path} 
-                className={`rounded-lg px-4 py-2 block transition-colors duration-300 ${
-                  item.disabled ? 'text-gray-400 cursor-not-allowed' : 
-                  isActivePath(item.path) 
-                    ? isDark 
-                      ? 'bg-bioGreen text-white' 
-                      : 'bg-primary text-white'
-                    : isDark
-                      ? 'text-gray-400 hover:bg-gray-800' 
-                      : 'text-gray-600 hover:bg-gray-100'
-                }`}
-                onClick={item.disabled ? (e) => e.preventDefault() : handleLinkClick}
+                to="/" 
+                className="flex items-center gap-3"
+                onClick={() => setShowMobileMenu(false)}
               >
-                {item.icon && <item.icon className="w-5 h-5" />}
-                {item.label}
-                {!item.disabled && isActivePath(item.path) && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full" />
-                )}
+                <div className="relative">
+                  <div className="absolute inset-0 rotate-45 bg-gradient-to-r from-primary/50 to-transparent rounded-lg blur-lg"></div>
+                  <Leaf className="w-8 h-8 text-primary relative z-10" />
+                </div>
+                <span className="font-recoleta text-2xl text-text">LocalMarket</span>
               </Link>
-            </li>
-          ))}
-        </ul>
-        <div className="flex px-7 items-center gap-6 justify-end">
-          {!isAuthenticated && (
-            <>
-              <Link to="/login" onClick={handleLinkClick} className="text-text hover:text-primary transition-colors">Login</Link>
-              <Link to="/register" onClick={handleLinkClick} className="bg-primary hover:bg-primaryHover text-white rounded-full px-6 h-12 flex items-center gap-2 transition-colors duration-300">
-                <CircleUser className="w-6 h-6" />
-                Register
-              </Link>
-            </>
-          )}
+              <button
+                onClick={() => setShowMobileMenu(false)}
+                className={`
+                  relative p-2.5 rounded-xl group
+                  ${isDark ? 'hover:bg-white/10' : 'hover:bg-black/5'}
+                  transition-all duration-300
+                `}
+              >
+                <X className={`
+                  w-6 h-6 text-text
+                  transform transition-transform duration-300
+                  group-hover:rotate-90
+                `} />
+              </button>
+            </div>
+
+            {/* Main Navigation */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="px-6 py-4 space-y-6">
+                {/* Primary Navigation */}
+                <div className="space-y-2">
+                  {[
+                    { icon: Home, label: 'Home', path: '/' },
+                    { icon: Store, label: 'Store', path: '/store' },
+                    { 
+                      icon: ShoppingCart, 
+                      label: 'Cart', 
+                      path: '/cart',
+                      badge: items.length > 0 && items.length
+                    },
+                    { 
+                      icon: CircleUser, 
+                      label: 'Profile', 
+                      path: isAuthenticated ? '/account' : '/login' 
+                    }
+                  ].map((item, index) => (
+                    <Link
+                      key={index}
+                      to={item.path}
+                      onClick={() => setShowMobileMenu(false)}
+                      className={`
+                        group flex items-center justify-between p-3 rounded-xl
+                        transition-all duration-300
+                        ${isActivePath(item.path)
+                          ? isDark 
+                            ? 'bg-white/10 text-white' 
+                            : 'bg-black/5 text-gray-900'
+                          : isDark
+                            ? 'text-gray-300 hover:bg-white/5' 
+                            : 'text-gray-600 hover:bg-black/5'
+                        }
+                      `}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`
+                          p-2 rounded-xl
+                          ${isActivePath(item.path)
+                            ? 'bg-primary text-white'
+                            : isDark
+                              ? 'bg-white/10' 
+                              : 'bg-black/5'
+                          }
+                          transition-colors duration-300
+                        `}>
+                          <item.icon className="w-5 h-5" />
+                        </div>
+                        <span className="font-medium">{item.label}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {item.badge && (
+                          <span className="
+                            px-2 py-1 text-xs font-medium rounded-full
+                            bg-primary text-white
+                          ">
+                            {item.badge}
+                          </span>
+                        )}
+                        <ChevronRight className={`
+                          w-5 h-5 text-gray-400
+                          transition-transform duration-300
+                          group-hover:translate-x-1
+                        `} />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Support Section */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium text-textSecondary px-2 mb-3">
+                    Support
+                  </h3>
+                  {[
+                    { icon: HelpCircle, label: 'Help Center', path: '/help' },
+                    { icon: MessageCircle, label: 'Contact Us', path: '/contact' },
+                    { icon: FileQuestion, label: 'FAQ', path: '/faq' }
+                  ].map((item, index) => (
+                    <Link
+                      key={index}
+                      to={item.path}
+                      onClick={() => setShowMobileMenu(false)}
+                      className={`
+                        group flex items-center justify-between p-3 rounded-xl
+                        transition-all duration-300
+                        ${isDark 
+                          ? 'text-gray-300 hover:bg-white/5' 
+                          : 'text-gray-600 hover:bg-black/5'
+                        }
+                      `}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`
+                          p-2 rounded-xl
+                          ${isDark ? 'bg-white/10' : 'bg-black/5'}
+                        `}>
+                          <item.icon className="w-5 h-5" />
+                        </div>
+                        <span className="font-medium">{item.label}</span>
+                      </div>
+                      <ChevronRight className={`
+                        w-5 h-5 text-gray-400
+                        transition-transform duration-300
+                        group-hover:translate-x-1
+                      `} />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="p-6 space-y-4">
+              {!isAuthenticated ? (
+                <div className="space-y-3">
+                  <Link
+                    to="/login"
+                    onClick={() => setShowMobileMenu(false)}
+                    className={`
+                      flex items-center justify-center gap-2 w-full py-3 px-6 
+                      rounded-xl font-medium transition-all duration-300
+                      ${isDark 
+                        ? 'bg-white/10 text-white hover:bg-white/20' 
+                        : 'bg-black/5 text-gray-900 hover:bg-black/10'
+                      }
+                    `}
+                  >
+                    <LogIn className="w-5 h-5" />
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setShowMobileMenu(false)}
+                    className="
+                      flex items-center justify-center gap-2 w-full py-3 px-6 
+                      rounded-xl font-medium
+                      bg-gradient-to-r from-primary to-primaryHover
+                      text-white transform transition-all duration-300
+                      hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/25
+                    "
+                  >
+                    <UserPlus className="w-5 h-5" />
+                    Register
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className={`
+                    p-3 rounded-xl
+                    ${isDark ? 'bg-white/5' : 'bg-black/5'}
+                  `}>
+                    <div className="flex items-center gap-3">
+                      <CircleUser className="w-10 h-10 text-primary" />
+                      <div className="flex-1">
+                        <span className="block text-sm text-textSecondary">Welcome back</span>
+                        <span className="block text-base font-medium text-text">
+                          {user.lastName || 'Admin'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          dispatch(logoutUser());
+                          setShowMobileMenu(false);
+                        }}
+                        className="p-2 rounded-xl text-red-500 hover:bg-red-500/10"
+                      >
+                        <LogOut className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={toggleTheme}
+                    className={`
+                      flex items-center justify-between w-full p-3 rounded-xl
+                      ${isDark 
+                        ? 'bg-white/10 text-yellow-400' 
+                        : 'bg-black/5 text-gray-600'
+                      }
+                    `}
+                  >
+                    <span className="font-medium">
+                      {isDark ? 'Light Mode' : 'Dark Mode'}
+                    </span>
+                    {isDark ? (
+                      <Sun className="w-5 h-5" />
+                    ) : (
+                      <Moon className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     );
   };
 
-  // Mobile Header
-  const MobileHeader = () => (
-    <div className="md:hidden flex p-3 gap-2 flex-1">
-      <div className="flex items-center space-x-4">
-        <button onClick={toggleTheme} className="rounded-full bg-cardBg flex justify-center gap-2 items-center w-12 h-12 border border-border">
-          {isDark ? <Sun className="w-6 h-6 text-text" /> : <Moon className="w-6 h-6 text-text" />}
-        </button>
-        <Leaf className="w-6 h-6 text-primary" />
-      </div>
-      <Link to="/cart" className="relative rounded-full bg-cardBg flex justify-center gap-2 items-center h-12 px-4 border border-border">
-        <ShoppingCart className="w-6 h-6 text-text" />
-        <span className="text-sm text-text">{items.length}</span>
-      </Link>
-      <button 
-        onClick={() => setShowMobileMenu(true)}
-        className="rounded-full bg-cardBg flex justify-center gap-2 items-center w-12 h-12 ml-auto border border-border"
-      >
-        <Menu className="w-6 h-6 text-text" />
-        <span className="sr-only">Menu</span>
-      </button>
-    </div>
-  );
-
   return (
     <>
-      {/* Desktop Header */}
-      <div className="hidden md:block px-4 pt-4">
-        <header className={`
-          ${isAdmin 
-            ? isDark 
-              ? 'bg-bgGrey border-borderGrey' 
-              : 'bg-white border-gray-200'
-            : isDark 
-              ? 'bg-headerBg' 
-              : 'bg-white'
-          } 
-          text-text rounded-xl max-w-7xl mx-auto transition-colors duration-300 border`}
-        >
-          <div className="px-6 py-3">
+      {/* Desktop Header - Hidden on Mobile */}
+      <header className={`hidden md:block fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+        isScrolled ? 'py-3' : 'py-5'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className={`
+            relative rounded-full border transition-all duration-300
+            ${isScrolled 
+              ? isDark 
+                ? 'border-white/10 bg-black/85' 
+                : 'border-black/10 bg-white/85'
+              : isDark
+                ? 'border-white/20 bg-black/75' 
+                : 'border-black/20 bg-white/75'
+            }
+            p-2
+          `}>
             <div className="flex items-center justify-between">
-              {/* Logo and Theme Toggle */}
-              <div className="flex items-center space-x-4">
-                {isAdmin ? (
-                  <h1 className="text-2xl font-bold text-bioGreen">Admin Portal</h1>
-                ) : (
-                  <a href="/" className="text-primary hover:text-primaryHover transition-colors">
-                    <Leaf className="w-6 h-6" />
-                  </a>
-                )}
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 rounded-full hover:bg-cardBg transition-colors"
-                >
-                  {isDark ? (
-                    <Sun className="w-6 h-6 text-primary animate-spin-slow" />
-                  ) : (
-                    <Moon className="w-6 h-6 text-primary animate-spin-slow" />
-                  )}
-                </button>
+              {/* Logo Section */}
+              <div className="flex items-center gap-3">
+                <Link to="/" className="flex items-center gap-2">
+                  <div className="relative">
+                    <div className="absolute inset-0 rotate-45 bg-gradient-to-r from-primary/50 to-transparent rounded-lg blur-lg"></div>
+                    <Leaf className="w-8 h-8 text-primary relative z-10" />
+                  </div>
+                  <span className="font-recoleta text-xl text-text">LocalMarket</span>
+                </Link>
               </div>
 
               {/* Navigation */}
-              <nav className="hidden md:flex items-center space-x-8 font-medium">
+              <nav className="hidden md:flex items-center gap-6">
                 {navigationItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.disabled ? '#' : item.path}
-                    className={`relative transition-colors duration-300 flex items-center gap-2 ${
-                      item.disabled ? item.className : 
-                      isActivePath(item.path)
-                        ? isDark 
-                          ? 'text-bioGreen font-semibold' 
-                          : 'text-primary font-semibold'
-                        : isDark
-                          ? 'text-gray-400 hover:text-bioGreen'
-                          : 'text-gray-600 hover:text-primary'
-                    }`}
-                    onClick={item.disabled ? (e) => e.preventDefault() : handleLinkClick}
+                    className={`relative px-4 py-2 rounded-full transition-all duration-300
+                      ${item.disabled ? item.className : 
+                        isActivePath(item.path)
+                          ? isDark 
+                            ? 'text-primary bg-white/10' 
+                            : 'text-primary bg-black/5'
+                          : 'text-text hover:text-primary'
+                      }
+                    `}
                   >
-                    {item.icon && <item.icon className="w-5 h-5" />}
-                    {item.label}
+                    <span className="relative z-10 flex items-center gap-2">
+                      {item.icon && <item.icon className="w-4 h-4" />}
+                      {item.label}
+                    </span>
                     {!item.disabled && isActivePath(item.path) && (
-                      <>
-                        <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary rounded-full shadow-[0_0_10px_rgba(169,196,108,0.7)] animate-pulse" />
-                        <div className="absolute -bottom-1 left-0 w-full h-8 bg-gradient-to-t from-primary/20 to-transparent rounded-full blur-sm" />
-                      </>
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent rounded-full blur-sm"></div>
                     )}
                   </Link>
                 ))}
               </nav>
 
               {/* Right Section */}
-              <div className="flex items-center space-x-6">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={toggleTheme}
+                  className={`p-2 rounded-full transition-all duration-300 ${
+                    isDark ? 'bg-white/10 text-yellow-400' : 'bg-black/5 text-gray-600'
+                  }`}
+                >
+                  {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                </button>
+
                 {!isAdmin && (
-                  <Link to="/cart" className="relative group flex items-center gap-2">
-                    <ShoppingCart className="w-6 h-6 text-text group-hover:text-primary transition-colors" />
-                    {items.length > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-primary text-text text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
-                        {items.length}
-                      </span>
-                    )}
+                  <Link to="/cart" className="relative group">
+                    <div className={`p-2 rounded-full transition-all duration-300 ${
+                      isDark ? 'bg-white/10' : 'bg-black/5'
+                    }`}>
+                      <ShoppingCart className="w-5 h-5 text-text group-hover:text-primary transition-colors" />
+                      {items.length > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs font-medium rounded-full flex items-center justify-center">
+                          {items.length}
+                        </span>
+                      )}
+                    </div>
                   </Link>
                 )}
-                <span className="h-6 w-px bg-border transition-colors duration-300"></span>
-                
-                {/* Add this section for non-authenticated users */}
+
                 {!isAuthenticated ? (
-                  <div className="flex items-center gap-4">
-                    <Link 
-                      to="/login" 
-                      className="text-text hover:text-primary transition-colors"
-                    >
-                      Login
+                  <div className="flex items-center gap-3">
+                    <Link to="/login">
+                      <button className={`
+                        relative px-4 py-2 rounded-full overflow-hidden group
+                        ${isDark ? 'text-white/80' : 'text-gray-700'}
+                        transition-all duration-300
+                      `}>
+                        <span className="relative z-10">Login</span>
+                        <div className={`
+                          absolute inset-0 scale-x-0 group-hover:scale-x-100
+                          transition-transform duration-300 origin-left
+                          ${isDark ? 'bg-white/10' : 'bg-black/5'}
+                        `} />
+                      </button>
                     </Link>
-                    <Link 
-                      to="/register" 
-                      className="bg-primary hover:bg-primaryHover text-white rounded-full px-6 h-10 flex items-center gap-2 transition-colors duration-300"
-                    >
-                      <CircleUser className="w-5 h-5" />
-                      Register
+                    <Link to="/register">
+                      <button className="
+                        relative px-5 py-2 rounded-full overflow-hidden group
+                        transition-all duration-300
+                      ">
+                        {/* Gradient border */}
+                        <div className={`
+                          absolute inset-0 rounded-full
+                          ${isDark 
+                            ? 'bg-gradient-to-r from-primary/80 via-primary to-primaryHover' 
+                            : 'bg-gradient-to-r from-primary via-primaryHover to-primary'}
+                        `} />
+                        
+                        {/* Inner background */}
+                        <div className={`
+                          absolute inset-[1px] rounded-full
+                          ${isDark ? 'bg-black/60' : 'bg-white'}
+                          transition-all duration-300 group-hover:inset-[1.5px]
+                        `} />
+                        
+                        {/* Text and hover effect */}
+                        <div className="relative flex items-center gap-2">
+                          <CircleUser className={`
+                            w-4 h-4 
+                            ${isDark ? 'text-primary' : 'text-primary'}
+                            transition-all duration-300 group-hover:scale-110
+                          `} />
+                          <span className={`
+                            relative bg-gradient-to-r from-primary to-primaryHover
+                            bg-clip-text text-transparent font-medium
+                          `}>
+                            Register
+                          </span>
+                        </div>
+                        
+                        {/* Shine effect */}
+                        <div className="
+                          absolute inset-0 opacity-0 group-hover:opacity-100
+                          transition-opacity duration-300
+                          bg-gradient-to-r from-transparent via-white/10 to-transparent
+                          -skew-x-12 translate-x-full group-hover:translate-x-[-180%]
+                        " />
+                      </button>
                     </Link>
                   </div>
                 ) : (
-                  <div className="relative">
-                    <Link to={isAdmin ? "/admin/profile" : "/account"} className="h-12 flex items-center gap-3 pr-4 pl-1">
-                      <CircleUser className="w-10 h-10 text-textSecondary hover:text-primary transition-colors" />
-                      <div>
-                        <span className="block text-textSecondary -mb-2">Hello,</span>
-                        <span className="block text-text font-semibold">
-                          {user.lastName || 'Admin'}
-                        </span>
-                      </div>
-                    </Link>
-                  </div>
+                  <Link to={isAdmin ? "/admin/profile" : "/account"} 
+                    className={`flex items-center gap-2 p-2 rounded-full transition-all duration-300 ${
+                      isDark ? 'bg-white/10 hover:bg-white/20' : 'bg-black/5 hover:bg-black/10'
+                    }`}
+                  >
+                    <CircleUser className="w-5 h-5 text-primary" />
+                    <span className="text-sm font-medium text-text">{user.lastName || 'Admin'}</span>
+                  </Link>
                 )}
               </div>
             </div>
           </div>
-        </header>
-      </div>
+        </div>
+      </header>
 
-      {/* Mobile Header */}
-      <div className="md:hidden px-4 pt-4">
-        <header className="bg-headerBg rounded-full">
-          <MobileHeader />
-        </header>
-      </div>
+      {/* Mobile Header - Visible only on Mobile */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40">
+        <div className="px-4 py-3">
+          <div className={`
+            rounded-xl border transition-all duration-300
+            ${isDark 
+              ? 'border-white/10 bg-black/85' 
+              : 'border-black/10 bg-white/85'
+            }
+          `}>
+            <div className="flex items-center justify-between p-2">
+              {/* Logo */}
+              <Link to="/" className="flex items-center gap-2">
+                <div className="relative">
+                  <div className="absolute inset-0 rotate-45 bg-gradient-to-r from-primary/50 to-transparent rounded-lg blur-lg"></div>
+                  <Leaf className="w-7 h-7 text-primary relative z-10" />
+                </div>
+                <span className="font-recoleta text-lg text-text">LocalMarket</span>
+              </Link>
 
-      {/* Mobile Menu */}
-      {showMobileMenu && <MobileMenu />}
+              {/* Actions */}
+              <div className="flex items-center gap-3">
+                {!isAdmin && (
+                  <Link to="/cart" className="relative">
+                    <div className={`p-2 rounded-full transition-all duration-300 ${
+                      isDark ? 'bg-white/10' : 'bg-black/5'
+                    }`}>
+                      <ShoppingCart className="w-5 h-5 text-text" />
+                      {items.length > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs font-medium rounded-full flex items-center justify-center">
+                          {items.length}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                )}
+
+                <button
+                  onClick={toggleTheme}
+                  className={`p-2 rounded-full transition-all duration-300 ${
+                    isDark ? 'bg-white/10 text-yellow-400' : 'bg-black/5 text-gray-600'
+                  }`}
+                >
+                  {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                </button>
+
+                <button
+                  onClick={() => setShowMobileMenu(true)}
+                  className={`p-2 rounded-full transition-all duration-300 ${
+                    isDark ? 'bg-white/10' : 'bg-black/5'
+                  }`}
+                >
+                  <Menu className="w-5 h-5 text-text" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu Overlay */}
+        <MobileMenu />
+      </div>
     </>
   );
 };
