@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { mockProducerProducts } from '../../mockData';
-import { Plus, Pencil, Trash2, ArrowUpDown, Search, Filter, X, Upload, Edit2, MoreVertical, Eye } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
+import { 
+  Plus, Pencil, Trash2, ArrowUpDown, Search, Filter, X, Upload, 
+  Edit2, MoreVertical, Eye, ChevronLeft, ChevronRight, Package,
+  TrendingUp, TrendingDown, Box, DollarSign, BarChart2
+} from 'lucide-react';
+import Button from '../ui/Button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/Table';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
+import { useTheme } from '../../context/ThemeContext';
 
 const ProductManagement = () => {
   const [products, setProducts] = useState(mockProducerProducts);
@@ -37,6 +42,14 @@ const ProductManagement = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const { isDark } = useTheme();
+  
+  // Calculate quick stats
+  const totalProducts = products.length;
+  const totalValue = products.reduce((sum, product) => sum + (product.price * product.inventory), 0);
+  const lowStockProducts = products.filter(p => p.inventory < 10).length;
+  const activeProducts = products.filter(p => p.active).length;
 
   // Handle Search
   useEffect(() => {
@@ -409,54 +422,124 @@ const ProductManagement = () => {
   
 
   return (
-    <div className="space-y-6 bg-bgGrey">
-      {/* Header Section */}
-      <div className="flex justify-between items-center ">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-200">Product Management</h2>
-          <p className="text-gray-500 mt-1">Manage your product inventory and listings</p>
+    <div className="space-y-8">
+      {/* Hero Section with Stats */}
+      <div className="relative overflow-hidden rounded-2xl border border-border">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent" />
+        <div className="absolute inset-0 bg-grid-white/5 [mask-image:linear-gradient(0deg,transparent,black)]" />
+        
+        <div className="relative p-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primaryHover bg-clip-text text-transparent">
+                Product Management
+              </h1>
+              <p className="text-textSecondary">
+                Manage and monitor your product inventory
+              </p>
+            </div>
+
+            <Button 
+              onClick={() => setShowAddModal(true)}
+              className="group relative overflow-hidden bg-primary hover:bg-primaryHover text-white flex items-center space-x-2 px-6 py-3 rounded-xl transition-all duration-300"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+              <Plus className="w-5 h-5" />
+              <span>Add Product</span>
+            </Button>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+            {[
+              { 
+                label: 'Total Products', 
+                value: totalProducts, 
+                icon: Package, 
+                color: 'blue',
+                bgGradient: 'from-blue-500/10 via-blue-500/5 to-transparent'
+              },
+              { 
+                label: 'Inventory Value', 
+                value: `$${totalValue.toFixed(2)}`, 
+                icon: DollarSign, 
+                color: 'green',
+                bgGradient: 'from-green-500/10 via-green-500/5 to-transparent'
+              },
+              { 
+                label: 'Low Stock', 
+                value: lowStockProducts, 
+                icon: Box, 
+                color: 'amber',
+                bgGradient: 'from-amber-500/10 via-amber-500/5 to-transparent'
+              },
+              { 
+                label: 'Active Products', 
+                value: activeProducts, 
+                icon: BarChart2, 
+                color: 'purple',
+                bgGradient: 'from-purple-500/10 via-purple-500/5 to-transparent'
+              }
+            ].map((stat, index) => (
+              <div key={index} className="relative group">
+                {/* Decorative background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-60 group-hover:opacity-100 transition-opacity duration-300`} />
+                
+                <div className="relative p-6 rounded-xl border border-border bg-cardBg/95">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-textSecondary">{stat.label}</p>
+                      <p className="text-2xl font-bold text-text mt-1">{stat.value}</p>
+                    </div>
+                    <div className={`p-3 rounded-xl bg-${stat.color}-500/10 text-${stat.color}-500`}>
+                      <stat.icon className="w-6 h-6" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        <Button 
-          onClick={() => setShowAddModal(true)}
-          className="bg-green-600 hover:bg-green-700 text-white flex items-center space-x-2 transform hover:scale-105 transition-all duration-300"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Add Product</span>
-        </Button>
       </div>
 
-      {/* Filters and Search */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5   text-gray-400 " />
+      {/* Search and Filters */}
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="relative w-full md:w-96">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="w-5 h-5 text-textSecondary" />
+          </div>
           <input
             type="text"
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="text-white pl-10 pr-4 py-2 w-full rounded-lg border  focus:ring-2 focus:ring-green-600 focus:outline-none bg-inputGrey"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-cardBg text-text placeholder-textSecondary focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
           />
         </div>
-        <Button 
-          variant="outline" 
-          className="flex items-center space-x-2 text !text-gray-200 dark:hover:bg-green-900 dark:hover:border-green-200 hover:text-green-100 hover:border-green-500 hover:text-green-600"
-          onClick={() => setShowFilters(true)}
-        >
-          <Filter className="w-5 h-5" />
-          <span>Filters</span>
-        </Button>
-        <Button 
-          variant="outline" 
-          className="flex items-center space-x-2 text !text-gray-200 dark:hover:bg-green-900 dark:hover:border-green-200 hover:text-green-100 hover:border-green-500 hover:text-green-600"
-          onClick={() => handleSort('name')}
-        >
-          <ArrowUpDown className="w-5 h-5" />
-          <span>Sort</span>
-        </Button>
+
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(true)}
+            className="flex items-center space-x-2 border-border hover:bg-primary hover:text-white transition-all duration-300"
+          >
+            <Filter className="w-5 h-5" />
+            <span>Filters</span>
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => handleSort('name')}
+            className="flex items-center space-x-2 border-border hover:bg-primary hover:text-white transition-all duration-300"
+          >
+            <ArrowUpDown className="w-5 h-5" />
+            <span>Sort</span>
+          </Button>
+        </div>
       </div>
 
       {/* Products Table */}
-      <Card className="overflow-hidden border border-borderGrey shadow-sm hover:shadow-md transition-shadow duration-300">
+      <div className="relative overflow-hidden rounded-xl border border-border bg-cardBg backdrop-blur-md">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50/50">
@@ -541,10 +624,10 @@ const ProductManagement = () => {
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between py-4">
+      <div className="flex flex-col items-center gap-6 mt-8">
         <p className="text-sm text-gray-500">
           Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
           <span className="font-medium">

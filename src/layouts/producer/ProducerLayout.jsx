@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Leaf, Package, ClipboardList, BarChart2, LogOut, Search, Bell, BellOff, CheckCheck, Star, ShoppingCart } from 'lucide-react';
+import { Routes, Route } from 'react-router-dom';
+import { 
+  Package, ClipboardList, BarChart2, Bell, BellOff, 
+  CheckCheck, Star, ShoppingCart
+} from 'lucide-react';
 import { mockNotifications } from '../../mockData';
 import ProductManagement from '../../components/producer/ProductManagement';
 import OrderManagement from '../../components/producer/OrderManagement';
 import Analytics from '../../components/producer/Analytics';
 import Button from '../../components/ui/Button';
+import { useTheme } from '../../context/ThemeContext';
+import Header from '../../components/Header';
 
 const ProducerLayout = () => {
-  const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState(mockNotifications);
+  const { isDark } = useTheme();
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -46,15 +51,15 @@ const ProducerLayout = () => {
   };
 
   const NotificationsPanel = () => (
-    <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden z-50">
-      <div className="p-4 border-b border-gray-100">
+    <div className="absolute right-0 mt-2 w-80 bg-cardBg backdrop-blur-md rounded-2xl shadow-xl border border-border overflow-hidden z-50">
+      <div className="p-4 border-b border-border">
         <div className="flex justify-between items-center">
-          <h3 className="font-semibold text-gray-900">Notifications</h3>
+          <h3 className="font-semibold text-text">Notifications</h3>
           <Button
             variant="ghost"
             size="sm"
             onClick={markAllAsRead}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-primary hover:text-primaryHover"
           >
             <CheckCheck className="w-4 h-4" />
           </Button>
@@ -62,7 +67,7 @@ const ProducerLayout = () => {
       </div>
       <div className="max-h-[400px] overflow-y-auto">
         {notifications.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
+          <div className="p-4 text-center text-textSecondary">
             <BellOff className="w-5 h-5 mx-auto mb-2" />
             <p>No notifications</p>
           </div>
@@ -70,8 +75,8 @@ const ProducerLayout = () => {
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${
-                !notification.read ? 'bg-blue-50/50' : ''
+              className={`p-4 border-b border-border hover:bg-background/50 transition-all duration-300 cursor-pointer ${
+                !notification.read ? 'bg-primary/5' : ''
               }`}
               onClick={() => markAsRead(notification.id)}
             >
@@ -80,18 +85,18 @@ const ProducerLayout = () => {
                   {getNotificationIcon(notification.type)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-text">
                     {notification.title}
                   </p>
-                  <p className="text-sm text-gray-500 truncate">
+                  <p className="text-sm text-textSecondary truncate">
                     {notification.message}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-textSecondary mt-1">
                     {formatTimeAgo(notification.timestamp)}
                   </p>
                 </div>
                 {!notification.read && (
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
                 )}
               </div>
             </div>
@@ -101,140 +106,29 @@ const ProducerLayout = () => {
     </div>
   );
 
-  // Function to check if a path is active
-  const isActivePath = (path) => {
-    if (path === '/producer' && location.pathname === '/producer') {
-      return true;
-    }
-    return location.pathname.startsWith(path);
-  };
-
   return (
-    <div className="min-h-screen bg-mainBlack">
-      <div className="flex min-h-screen pt-10">
-        {/* Sidebar */}
-        <div className="w-20 bg-white/80 dark:bg-bgGrey backdrop-blur-md border-r border-gray-100 dark:border-gray-700 fixed h-auto rounded-lg">
-  <nav className="flex flex-col items-center py-8 space-y-8">
-    {/* Producer Link */}
-    <Link to="/producer" className="relative group">
-      <div
-        className={`p-3 rounded-xl transition-all duration-300 ${
-          isActivePath('/producer') && location.pathname === '/producer'
-            ? 'bg-green-100 text-green-600 dark:bg-green-800 dark:text-green-200'
-            : 'group-hover:bg-green-100 text-gray-600 group-hover:text-green-600 dark:group-hover:bg-green-800 dark:text-gray-300 dark:group-hover:text-green-200'
-        }`}
-      >
-        <Package className="w-7 h-7" />
-      </div>
-      {/* Tooltip */}
-      <div
-        className={`absolute left-8 top-0 -translate-y-1/2 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-          isActivePath('/producer') && location.pathname === '/producer'
-            ? 'bg-green-100 text-green-600 dark:bg-green-800 dark:text-green-200'
-            : 'bg-gray-900 text-white dark:bg-gray-800 dark:text-gray-300'
-        } opacity-0 invisible group-hover:opacity-100 group-hover:visible`}
-      >
-        Products
-        {/* Arrow */}
-        <div
-          className={`absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 border-8 border-transparent ${
-            isActivePath('/producer') && location.pathname === '/producer'
-              ? 'border-r-green-100 dark:border-r-green-800'
-              : 'border-r-gray-900 dark:border-r-gray-800'
-          }`}
-        />
-      </div>
-      {/* Active Indicator Line */}
-      {isActivePath('/producer') && location.pathname === '/producer' && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-green-600 dark:bg-green-200 rounded-r-full" />
-      )}
-    </Link>
+    <div className="min-h-screen bg-background transition-colors duration-300">
 
-    {/* Orders Link */}
-    <Link to="/producer/orders" className="relative group">
-      <div
-        className={`p-3 rounded-xl transition-all duration-300 ${
-          isActivePath('/producer/orders')
-            ? 'bg-blue-100 text-blue-600 dark:bg-blue-800 dark:text-blue-200'
-            : 'group-hover:bg-blue-100 text-gray-600 group-hover:text-blue-600 dark:group-hover:bg-blue-800 dark:text-gray-300 dark:group-hover:text-blue-200'
-        }`}
-      >
-        <ClipboardList className="w-7 h-7" />
-      </div>
-      {/* Tooltip */}
-      <div
-        className={`absolute left-8 top-0 -translate-y-1/2 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-          isActivePath('/producer/orders')
-            ? 'bg-blue-100 text-blue-600 dark:bg-blue-800 dark:text-blue-200'
-            : 'bg-gray-900 text-white dark:bg-gray-800 dark:text-gray-300'
-        } opacity-0 invisible group-hover:opacity-100 group-hover:visible`}
-      >
-        Orders
-        {/* Arrow */}
-        <div
-          className={`absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 border-8 border-transparent ${
-            isActivePath('/producer/orders')
-              ? 'border-r-blue-100 dark:border-r-blue-800'
-              : 'border-r-gray-900 dark:border-r-gray-800'
-          }`}
-        />
-      </div>
-      {/* Active Indicator Line */}
-      {isActivePath('/producer/orders') && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 dark:bg-blue-200 rounded-r-full" />
-      )}
-    </Link>
+      {/* Main Content */}
+      <div className="pt-16">
+        <main className="max-w-7xl mx-auto p-8">
+          <div className="bg-cardBg backdrop-blur-md shadow-xl border border-border rounded-2xl p-6 relative overflow-hidden">
+            {/* Decorative Elements */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-primaryHover/5 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
+            </div>
 
-    {/* Analytics Link */}
-    <Link to="/producer/analytics" className="relative group">
-      <div
-        className={`p-3 rounded-xl transition-all duration-300 ${
-          isActivePath('/producer/analytics')
-            ? 'bg-purple-100 text-purple-600 dark:bg-purple-800 dark:text-purple-200'
-            : 'group-hover:bg-purple-100 text-gray-600 group-hover:text-purple-600 dark:group-hover:bg-purple-800 dark:text-gray-300 dark:group-hover:text-purple-200'
-        }`}
-      >
-        <BarChart2 className="w-7 h-7" />
-      </div>
-      {/* Tooltip */}
-      <div
-        className={`absolute left-8 top-0 -translate-y-1/2 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-          isActivePath('/producer/analytics')
-            ? 'bg-purple-100 text-purple-600 dark:bg-purple-800 dark:text-purple-200'
-            : 'bg-gray-900 text-white dark:bg-gray-800 dark:text-gray-300'
-        } opacity-0 invisible group-hover:opacity-100 group-hover:visible`}
-      >
-        Analytics
-        {/* Arrow */}
-        <div
-          className={`absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 border-8 border-transparent ${
-            isActivePath('/producer/analytics')
-              ? 'border-r-purple-100 dark:border-r-purple-800'
-              : 'border-r-gray-900 dark:border-r-gray-800'
-          }`}
-        />
-      </div>
-      {/* Active Indicator Line */}
-      {isActivePath('/producer/analytics') && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-purple-600 dark:bg-purple-200 rounded-r-full" />
-      )}
-    </Link>
-  </nav>
-</div>
-
-
-        {/* Main Content */}
-        <div className="flex-1 pl-20">
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 bg-mainBlack">
-            <div className="bg-white/80 dark:bg-bgGrey backdrop-blur-md shadow-sm rounded-xl p-6 animate-fade-in">
+            {/* Content */}
+            <div className="relative">
               <Routes>
                 <Route path="/" element={<ProductManagement />} />
                 <Route path="/orders" element={<OrderManagement />} />
                 <Route path="/analytics" element={<Analytics />} />
               </Routes>
             </div>
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
     </div>
   );

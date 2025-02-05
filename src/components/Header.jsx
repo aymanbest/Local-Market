@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
   ShoppingCart, CircleUser, Leaf, Sun, Moon, Menu, X,
-  Building2, LayoutDashboard, Users, Package, StarIcon, Home, Store, HelpCircle, MessageCircle, FileQuestion, LogIn, UserPlus, LogOut, Settings, ChevronRight
+  Building2, LayoutDashboard, Users, Package, StarIcon, Home, Store, HelpCircle, MessageCircle, FileQuestion, LogIn, UserPlus, LogOut, Settings, ChevronRight, ClipboardList, BarChart2
 } from 'lucide-react';
 import { logoutUser } from '../store/slices/authSlice';
 import { useTheme } from '../context/ThemeContext';
@@ -38,6 +38,7 @@ const Header = () => {
   }, [showMobileMenu]);
 
   const isAdmin = location.pathname.startsWith('/admin');
+  const isProducer = location.pathname.startsWith('/producer');
 
   const isActivePath = (path) => {
     return location.pathname === path;
@@ -49,6 +50,12 @@ const Header = () => {
     { path: '/admin/products', label: 'Products', icon: Package },
     { path: '/admin/reviews', label: 'Reviews', icon: StarIcon },
     { path: '/admin/applications', label: 'Applications', icon: Building2 },
+  ];
+
+  const producerNavigationItems = [
+    { path: '/producer', label: 'Products', icon: Package },
+    { path: '/producer/orders', label: 'Orders', icon: ClipboardList },
+    { path: '/producer/analytics', label: 'Analytics', icon: BarChart2 },
   ];
 
   const regularNavigationItems = [
@@ -87,7 +94,11 @@ const Header = () => {
   };
 
   // Update the navigationItems assignment
-  const navigationItems = isAdmin ? adminNavigationItems : getNavigationItems(isAuthenticated, user);
+  const navigationItems = isAdmin 
+    ? adminNavigationItems 
+    : isProducer 
+      ? producerNavigationItems 
+      : getNavigationItems(isAuthenticated, user);
 
   const handleLinkClick = () => {
     setShowMobileMenu(false);

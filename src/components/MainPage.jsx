@@ -106,7 +106,7 @@ const MainPage = () => {
   return (
     <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-background via-background/95 to-background">
+      <div className="relative overflow-hidden bg-gradient-to-br">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         
