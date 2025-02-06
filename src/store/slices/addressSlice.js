@@ -1,24 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import api from '../../lib/axios';
 
-const GEONAMES_API = 'http://api.geonames.org/searchJSON';
-const GEONAMES_USERNAME = 'haste';
-
-export const searchCities = createAsyncThunk(
-  'address/searchCities',
+export const fetchRegions = createAsyncThunk(
+  'address/fetchRegions',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch(
-        `${GEONAMES_API}?country=MA&featureClass=P&maxRows=10&username=${GEONAMES_USERNAME}`
-      );
-      const data = await response.json();
-      
-      return data.geonames.map(city => ({
-        name: city.name,
-        adminName1: city.adminName1, // Region/State
-        population: city.population
-      }));
+      const response = await api.get('/api/regions');
+      return response.data;
     } catch (error) {
-      return rejectWithValue('Failed to fetch cities');
+      return rejectWithValue('Failed to fetch regions');
     }
   }
 );
@@ -26,25 +16,25 @@ export const searchCities = createAsyncThunk(
 const addressSlice = createSlice({
   name: 'address',
   initialState: {
-    cities: [],
+    regions: [],
     loading: false,
     error: null
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(searchCities.pending, (state) => {
+      .addCase(fetchRegions.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(searchCities.fulfilled, (state, action) => {
+      .addCase(fetchRegions.fulfilled, (state, action) => {
         state.loading = false;
-        state.cities = action.payload;
+        state.regions = action.payload;
       })
-      .addCase(searchCities.rejected, (state, action) => {
+      .addCase(fetchRegions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        state.cities = [];
+        state.regions = [];
       });
   }
 });
