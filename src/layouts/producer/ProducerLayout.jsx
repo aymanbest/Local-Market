@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { 
-  Package, ClipboardList, BarChart2, Bell, BellOff, 
+import {
+  Package, ClipboardList, BarChart2, Bell, BellOff,
   CheckCheck, Star, ShoppingCart
 } from 'lucide-react';
 import { mockNotifications } from '../../mockData';
@@ -24,7 +24,7 @@ const ProducerLayout = () => {
   };
 
   const markAsRead = (id) => {
-    setNotifications(notifications.map(n => 
+    setNotifications(notifications.map(n =>
       n.id === id ? { ...n, read: true } : n
     ));
   };
@@ -75,9 +75,8 @@ const ProducerLayout = () => {
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`p-4 border-b border-border hover:bg-background/50 transition-all duration-300 cursor-pointer ${
-                !notification.read ? 'bg-primary/5' : ''
-              }`}
+              className={`p-4 border-b border-border hover:bg-background/50 transition-all duration-300 cursor-pointer ${!notification.read ? 'bg-primary/5' : ''
+                }`}
               onClick={() => markAsRead(notification.id)}
             >
               <div className="flex items-start space-x-3">
@@ -107,32 +106,16 @@ const ProducerLayout = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background transition-colors duration-300">
-
-      {/* Main Content */}
-      <div className="pt-16">
-        <main className="max-w-7xl mx-auto p-8">
-          <div className="bg-cardBg backdrop-blur-md shadow-xl border border-border rounded-2xl p-6 relative overflow-hidden">
-            {/* Decorative Elements */}
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-primaryHover/5 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
-            </div>
-
-            {/* Content */}
-            <div className="relative">
-              <Routes>
-                <Route path="/" element={<ProductManagement />} />
-                <Route path="/orders" element={<OrderManagement />} />
-                <Route path="/analytics" element={<Analytics />} />
-              </Routes>
-            </div>
-          </div>
-        </main>
-      </div>
+    <div className="max-w-7xl mx-auto px-4">
+      <Routes>
+        <Route path="/" element={<ProductManagement />} />
+        <Route path="/orders" element={<OrderManagement />} />
+        <Route path="/analytics" element={<Analytics />} />
+      </Routes>
     </div>
   );
 };
+
 
 export default ProducerLayout;
 

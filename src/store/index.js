@@ -11,7 +11,7 @@ import userReducer from './slices/userSlice';
 import pendingProductsReducer from './slices/pendingProductsSlice';
 import producerApplicationsReducer from './slices/producerApplicationsSlice';
 import securityReducer from './slices/securitySlice';
-
+import orderReducer from './slices/orderSlice';
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -25,7 +25,8 @@ const store = configureStore({
     users: userReducer,
     pendingProducts: pendingProductsReducer,
     producerApplications: producerApplicationsReducer,
-    security: securityReducer
+    security: securityReducer,
+    orders: orderReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -2,14 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { mockProducerOrders } from '../../mockData';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
-import { Search, Filter, ArrowUpDown, Package, Clock, CheckCircle2, XCircle, AlertCircle, X, ChevronDown, LayoutGrid, LayoutList } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, Package, Clock, CheckCircle2, XCircle, AlertCircle, X, ChevronDown, LayoutGrid, LayoutList, Truck } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProducerOrders, filterOrders } from '../../store/slices/orderSlice';
 
 const OrderManagement = () => {
-  const [orders, setOrders] = useState(mockProducerOrders);
-  const [filteredOrders, setFilteredOrders] = useState(orders);
+  const dispatch = useDispatch();
+  const orders = useSelector((state) => state.orders?.items || []);
+  const filteredOrders = useSelector((state) => state.orders?.filteredOrders || []);
+  const status = useSelector((state) => state.orders?.status || 'idle');
+  const stats = useSelector((state) => state.orders?.stats || {
+    total: 0,
+    pending: 0,
+    processing: 0,
+    delivered: 0
+  });
+
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
@@ -25,10 +36,14 @@ const OrderManagement = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'Pending': { icon: Clock, className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100', text: 'Pending' },
-      'Processing': { icon: Package, className: 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100', text: 'Processing' },
-      'Delivered': { icon: CheckCircle2, className: 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100', text: 'Delivered' },
-      'Cancelled': { icon: XCircle, className: 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100', text: 'Cancelled' }
+      'PENDING_PAYMENT': { icon: Clock, className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100', text: 'Pending Payment' },
+      'PAYMENT_FAILED': { icon: XCircle, className: 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100', text: 'Payment Failed' },
+      'PAYMENT_COMPLETED': { icon: CheckCircle2, className: 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100', text: 'Payment Completed' },
+      'PROCESSING': { icon: Package, className: 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100', text: 'Processing' },
+      'SHIPPED': { icon: Truck, className: 'bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-100', text: 'Shipped' },
+      'DELIVERED': { icon: CheckCircle2, className: 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100', text: 'Delivered' },
+      'CANCELLED': { icon: XCircle, className: 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100', text: 'Cancelled' },
+      'RETURNED': { icon: AlertCircle, className: 'bg-orange-100 text-orange-700 dark:bg-orange-700 dark:text-orange-100', text: 'Returned' }
     };
 
     const config = statusConfig[status] || statusConfig['Pending'];
@@ -43,30 +58,12 @@ const OrderManagement = () => {
   };
 
   useEffect(() => {
-    let result = orders;
+    dispatch(fetchProducerOrders());
+  }, [dispatch]);
 
-    if (searchTerm) {
-      result = result.filter(order => 
-        order.id.toString().includes(searchTerm) ||
-        order.customer.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (filters.status !== 'all') {
-      result = result.filter(order => order.status === filters.status);
-    }
-
-    if (filters.minAmount) {
-      result = result.filter(order => order.total >= Number(filters.minAmount));
-    }
-
-    if (filters.maxAmount) {
-      result = result.filter(order => order.total <= Number(filters.maxAmount));
-    }
-
-    setFilteredOrders(result);
-    setCurrentPage(1);
-  }, [searchTerm, filters, orders]);
+  useEffect(() => {
+    dispatch(filterOrders({ searchTerm, filters }));
+  }, [dispatch, searchTerm, filters, orders]);
 
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
   const paginatedOrders = filteredOrders.slice(
@@ -171,6 +168,21 @@ const OrderManagement = () => {
     </motion.div>
   );
 
+  const renderOrderItems = (order) => {
+    return order.items.map(item => (
+      <div key={item.orderItemId} className="text-sm text-textSecondary">
+        {item.product.name} x {item.quantity}
+      </div>
+    ));
+  };
+
+  const filterByPrice = (order) => {
+    const price = order.totalPrice || 0;
+    const min = parseFloat(filters.minAmount) || 0;
+    const max = parseFloat(filters.maxAmount) || Infinity;
+    return price >= min && price <= max;
+  };
+
   return (
     <div className="space-y-8 p-4 md:p-8 bg-background min-h-screen transition-colors duration-300">
       <div className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 rounded-2xl border border-border p-8">
@@ -273,7 +285,14 @@ const OrderManagement = () => {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="text-lg font-semibold text-text">#{order.id}</h3>
-                      <p className="text-sm text-textSecondary">{order.customer}</p>
+                      <div className="space-y-1">
+                        <p className="font-medium text-text">
+                          {order.customer.firstname} {order.customer.lastname}
+                        </p>
+                        <p className="text-sm text-textSecondary">
+                          {order.customer.email}
+                        </p>
+                      </div>
                     </div>
                     {getStatusBadge(order.status)}
                   </div>
@@ -281,11 +300,13 @@ const OrderManagement = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-textSecondary">Products:</span>
-                      <span className="text-text font-medium">{order.products.length} items</span>
+                      <span className="text-text font-medium">{renderOrderItems(order).length} items</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-textSecondary">Total:</span>
-                      <span className="text-text font-medium">${order.total.toFixed(2)}</span>
+                      <div className="text-sm font-medium text-text">
+                        ${order.totalPrice?.toFixed(2)}
+                      </div>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-textSecondary">Date:</span>
@@ -323,18 +344,22 @@ const OrderManagement = () => {
                     className="group hover:bg-primary/5 transition-colors duration-200"
                   >
                     <TableCell className="font-medium text-text">#{order.id}</TableCell>
-                    <TableCell className="text-text">{order.customer}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium text-text">{order.products[0]}</span>
-                        {order.products.length > 1 && (
-                          <span className="text-sm text-textSecondary">
-                            +{order.products.length - 1} more items
-                          </span>
-                        )}
+                    <TableCell className="text-text">
+                      <div className="space-y-1">
+                        <p className="font-medium text-text">
+                          {order.customer.firstname} {order.customer.lastname}
+                        </p>
+                        <p className="text-sm text-textSecondary">
+                          {order.customer.email}
+                        </p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-text">${order.total.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        {renderOrderItems(order)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-text">${order.totalPrice?.toFixed(2)}</TableCell>
                     <TableCell>{getStatusBadge(order.status)}</TableCell>
                     <TableCell className="text-textSecondary">
                       {new Date(order.date).toLocaleDateString()}

@@ -52,12 +52,61 @@ export const fetchUserAnalytics = createAsyncThunk(
   }
 );
 
+export const fetchProducerOverview = createAsyncThunk(
+  'analytics/fetchProducerOverview',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const token = getState().auth.token;
+      const response = await api.get('/api/analytics/overview', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch overview');
+    }
+  }
+);
+
+export const fetchOrderStats = createAsyncThunk(
+  'analytics/fetchOrderStats',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const token = getState().auth.token;
+      const [total, processing, pending, delivered] = await Promise.all([
+        api.get('/api/analytics/total-orders', {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        api.get('/api/analytics/total-processing-orders', {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        api.get('/api/analytics/total-pending-orders', {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        api.get('/api/analytics/total-delivered-orders', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      return {
+        total: total.data,
+        processing: processing.data,
+        pending: pending.data,
+        delivered: delivered.data
+      };
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch order stats');
+    }
+  }
+);
+
 const analyticsSlice = createSlice({
   name: 'analytics',
   initialState: {
     businessMetrics: null,
     transactions: null,
     userAnalytics: null,
+    overview: null,
+    orderStats: null,
     loading: false,
     error: null
   },
@@ -66,6 +115,8 @@ const analyticsSlice = createSlice({
       state.businessMetrics = null;
       state.transactions = null;
       state.userAnalytics = null;
+      state.overview = null;
+      state.orderStats = null;
       state.loading = false;
       state.error = null;
     }
@@ -108,6 +159,30 @@ const analyticsSlice = createSlice({
         state.userAnalytics = action.payload;
       })
       .addCase(fetchUserAnalytics.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchProducerOverview.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProducerOverview.fulfilled, (state, action) => {
+        state.loading = false;
+        state.overview = action.payload;
+      })
+      .addCase(fetchProducerOverview.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchOrderStats.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrderStats.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orderStats = action.payload;
+      })
+      .addCase(fetchOrderStats.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
