@@ -5,16 +5,11 @@ export const changePassword = createAsyncThunk(
   'security/changePassword',
   async ({ oldPassword, newPassword }, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
       const response = await api.post('/api/users/change-password', 
         {
           oldPassword,
+
           newPassword,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
         }
       );
       return response.data;

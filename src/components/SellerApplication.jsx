@@ -5,7 +5,6 @@ import { Building2, Store, MapPin, Globe, MessageSquare, Calendar, ChevronDown, 
 import { submitApplication } from '../store/slices/producerApplicationSlice';
 import Button from './ui/Button';
 import { fetchCategories } from '../store/slices/categorySlice';
-import { searchCities } from '../store/slices/addressSlice';
 import { useDebounce } from '../hooks/useDebounce';
 
 const SellerApplication = () => {
@@ -34,10 +33,6 @@ const SellerApplication = () => {
 
   useEffect(() => {
     dispatch(fetchCategories());
-  }, [dispatch]);
-
-  useEffect(() => {
-    dispatch(searchCities());
   }, [dispatch]);
 
   const handleSubmit = async (e) => {

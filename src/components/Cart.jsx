@@ -9,7 +9,7 @@ import PaymentForm from './PaymentForm';
 const Cart = () => {
   const dispatch = useDispatch();
   const { items } = useSelector((state) => state.cart);
-  const { user, token } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const [paymentMethod, setPaymentMethod] = useState('CARD');
   const [couponCode, setCouponCode] = useState('');
   const [email, setEmail] = useState('');
@@ -62,13 +62,8 @@ const Cart = () => {
     };
 
     try {
-      const config = token ? {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      } : {};
-
-      const response = await api.post('/api/orders/checkout', orderData, config);
+    
+      const response = await api.post('/api/orders/checkout', orderData, { withCredentials: user ? true : false });
       const orderResponse = Array.isArray(response.data) ? response.data[0] : response.data;
       
       if (orderResponse.orderId) {

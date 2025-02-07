@@ -16,11 +16,11 @@ const Login = ({ adminOnly = false }) => {
     e.preventDefault();
     try {
       const resultAction = await dispatch(loginUser({ email, password }));
+      
       if (loginUser.fulfilled.match(resultAction)) {
-        const role = resultAction.payload.user.role.toLowerCase();
+        const role = resultAction.payload.user.role;
         
         if (adminOnly && role !== 'admin') {
-          // Show error: "This login is for administrators only"
           navigate('/');
           return;
         }
@@ -39,9 +39,12 @@ const Login = ({ adminOnly = false }) => {
           default:
             navigate('/');
         }
+      } else if (loginUser.rejected.match(resultAction)) {
+        // Handle login error
+        console.error('Login failed:', resultAction.payload);
       }
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Login error:', error);
     }
   };
 

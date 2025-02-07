@@ -7,9 +7,7 @@ export const fetchProducerOrders = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token;
-      const response = await api.get('/api/orders/producer-orders', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/orders/producer-orders');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
@@ -23,9 +21,7 @@ export const fetchOrdersByStatus = createAsyncThunk(
   async (status, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token;
-      const response = await api.get(`/api/orders/producer-orders/status/${status}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`/api/orders/producer-orders/status/${status}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
@@ -39,9 +35,7 @@ export const updateOrderStatus = createAsyncThunk(
   async ({ orderId, status }, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token;
-      const response = await api.put(`/api/orders/${orderId}/status?status=${status}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.put(`/api/orders/${orderId}/status?status=${status}`, {});
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update order status');

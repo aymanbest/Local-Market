@@ -10,11 +10,12 @@ const PaymentForm = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const accessToken = searchParams.get('token');
-  const { token } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [orderData, setOrderData] = useState(null);
   const [error, setError] = useState('');
+
   const [orderDetails, setOrderDetails] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState(null);
 
@@ -35,8 +36,7 @@ const PaymentForm = () => {
       try {
         setIsLoading(true);
         const config = {
-          params: { accessToken },
-          ...(token && { headers: { Authorization: `Bearer ${token}` } })
+          params: { accessToken }
         };
         
         const response = await api.get('/api/orders', config);
@@ -61,7 +61,8 @@ const PaymentForm = () => {
     if (accessToken) {
       fetchOrderDetails();
     }
-  }, [accessToken, token, navigate]);
+  }, [accessToken, navigate]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,8 +70,7 @@ const PaymentForm = () => {
     setError('');
 
     const config = {
-      params: { accessToken },
-      ...(token && { headers: { Authorization: `Bearer ${token}` } })
+      params: { accessToken }
     };
 
     const paymentData = {
@@ -90,9 +90,11 @@ const PaymentForm = () => {
       const response = await api.post(
         `/api/orders/pay`, 
         paymentData,
-        config
+        config,
+        { withCredentials: user ? true : false }
       );
       
+
       // Format the order data before setting it
       const formattedOrderData = {
         ordercheckout: accessToken,

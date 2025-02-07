@@ -6,11 +6,7 @@ export const submitApplication = createAsyncThunk(
   async (applicationData, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token;
-      const response = await api.post('/api/producer-applications', applicationData, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await api.post('/api/producer-applications', applicationData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

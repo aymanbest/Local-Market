@@ -6,10 +6,7 @@ export const checkReviewEligibility = createAsyncThunk(
   'reviews/checkEligibility',
   async (productId, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
-      const response = await api.get(`/api/reviews/eligibility/${productId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`/api/reviews/eligibility/${productId}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -22,10 +19,7 @@ export const submitReview = createAsyncThunk(
   'reviews/submit',
   async (reviewData, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
-      const response = await api.post('/api/reviews', reviewData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.post('/api/reviews', reviewData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -39,9 +33,7 @@ export const fetchUserReviews = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token;
-      const response = await api.get('/api/reviews', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/reviews');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -54,14 +46,12 @@ export const fetchPendingReviews = createAsyncThunk(
   'reviews/fetchPending',
   async (_, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
-      const response = await api.get('/api/reviews/pending', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/reviews/pending');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
+
   }
 );
 
@@ -69,11 +59,9 @@ export const approveReview = createAsyncThunk(
   'reviews/approve',
   async (reviewId, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
-      const response = await api.post(`/api/reviews/${reviewId}/approve`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.post(`/api/reviews/${reviewId}/approve`, {});
       return response.data;
+
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
@@ -84,11 +72,9 @@ export const declineReview = createAsyncThunk(
   'reviews/decline',
   async (reviewId, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
-      const response = await api.post(`/api/reviews/${reviewId}/decline`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.post(`/api/reviews/${reviewId}/decline`, {});
       return response.data;
+
     } catch (error) {
       return rejectWithValue(error.response.data);
     }

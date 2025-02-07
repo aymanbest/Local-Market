@@ -8,8 +8,7 @@ export const fetchBusinessMetrics = createAsyncThunk(
     try {
       const token = getState().auth.token;
       const response = await api.get('/api/analytics/business-metrics', {
-        params: { startDate, endDate },
-        headers: { Authorization: `Bearer ${token}` }
+        params: { startDate, endDate }
       });
       return response.data;
     } catch (error) {
@@ -25,8 +24,7 @@ export const fetchTransactionData = createAsyncThunk(
     try {
       const token = getState().auth.token;
       const response = await api.get('/api/analytics/transactions', {
-        params: { startDate, endDate },
-        headers: { Authorization: `Bearer ${token}` }
+        params: { startDate, endDate }
       });
       return response.data;
     } catch (error) {
@@ -42,8 +40,7 @@ export const fetchUserAnalytics = createAsyncThunk(
     try {
       const token = getState().auth.token;
       const response = await api.get('/api/analytics/users', {
-        params: { startDate, endDate },
-        headers: { Authorization: `Bearer ${token}` }
+        params: { startDate, endDate }
       });
       return response.data;
     } catch (error) {
@@ -57,9 +54,7 @@ export const fetchProducerOverview = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token;
-      const response = await api.get('/api/analytics/overview', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/analytics/overview');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch overview');
@@ -73,19 +68,12 @@ export const fetchOrderStats = createAsyncThunk(
     try {
       const token = getState().auth.token;
       const [total, processing, pending, delivered] = await Promise.all([
-        api.get('/api/analytics/total-orders', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        api.get('/api/analytics/total-processing-orders', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        api.get('/api/analytics/total-pending-orders', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        api.get('/api/analytics/total-delivered-orders', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        api.get('/api/analytics/total-orders'),
+        api.get('/api/analytics/total-processing-orders'),
+        api.get('/api/analytics/total-pending-orders'),
+        api.get('/api/analytics/total-delivered-orders')
       ]);
+
 
       return {
         total: total.data,

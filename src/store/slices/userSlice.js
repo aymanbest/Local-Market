@@ -5,12 +5,8 @@ export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
   async (role = null, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
       const response = await api.get('/api/users', {
-        params: role ? { role } : {},
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        params: role ? { role } : {}
       });
       return response.data;
     } catch (error) {
@@ -23,12 +19,7 @@ export const updateUser = createAsyncThunk(
   'users/updateUser',
   async ({ id, userData }, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
-      const response = await api.put(`/api/users/${id}`, userData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await api.put(`/api/users/${id}`, userData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update user');
@@ -40,12 +31,7 @@ export const deleteUser = createAsyncThunk(
   'users/deleteUser',
   async (id, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
-      await api.delete(`/api/users/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      await api.delete(`/api/users/${id}`);
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to delete user');

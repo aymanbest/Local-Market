@@ -6,9 +6,7 @@ export const fetchPendingApplications = createAsyncThunk(
   'producerApplications/fetchPending',
   async (_, { getState }) => {
     const token = getState().auth.token;
-    const response = await api.get('/api/producer-applications/pending', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await api.get('/api/producer-applications/pending');
     return response.data;
   }
 );
@@ -17,13 +15,9 @@ export const fetchPendingApplications = createAsyncThunk(
 export const approveApplication = createAsyncThunk(
   'producerApplications/approve',
   async ({ applicationId, approveCC }, { getState }) => {
-    const token = getState().auth.token;
     const response = await api.post(
       `/api/producer-applications/${applicationId}/approve${approveCC !== undefined ? `?approveCC=${approveCC}` : ''}`,
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` }
-      }
+        {}
     );
     return { applicationId, data: response.data };
   }
@@ -33,16 +27,13 @@ export const approveApplication = createAsyncThunk(
 export const declineApplication = createAsyncThunk(
   'producerApplications/decline',
   async ({ applicationId, reason }, { getState }) => {
-    const token = getState().auth.token;
     const response = await api.post(
       `/api/producer-applications/${applicationId}/decline`,
-      { reason },
-      {
-        headers: { Authorization: `Bearer ${token}` }
-      }
+      { reason }
     );
     return { applicationId, data: response.data };
   }
+
 );
 
 const producerApplicationsSlice = createSlice({

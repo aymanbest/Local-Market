@@ -1,26 +1,28 @@
 import axios from 'axios';
+import store from '../store';
+import { clearAuth } from '../store/slices/authSlice';
 
-const api = axios.create({
+const createApi = (withCredentials = true) => axios.create({
   baseURL: 'http://localhost:8080',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials
 });
+
+const api = createApi();
 
 // Add a response interceptor
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.data?.message === "Token not found" || 
-        error.response?.status === 401) {
-      // Clear localStorage
-      // localStorage.clear();
-      
-      // // Redirect to login page
-      // window.location.href = '/login';
-      
-      // // Show message to user
-      // alert('Session expired. Please login again.');
+  async (error) => {
+    if (error.response?.status === 401) {
+      // Clear the auth state
+      store.dispatch(clearAuth());
+      // Redirect to login page without showing alert
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
