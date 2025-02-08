@@ -17,12 +17,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      // Clear the auth state
-      store.dispatch(clearAuth());
-      // Redirect to login page without showing alert
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-      }
+      console.log("error 401",error);
     }
     return Promise.reject(error);
   }

@@ -19,9 +19,16 @@ export const fetchProductsByCategory = createAsyncThunk(
 
 export const fetchProductById = createAsyncThunk(
   'categories/fetchProductById',
-  async (productId) => {
-    const response = await api.get(`/api/products/${productId}`);
-    return response.data;
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/api/products/${id}`);
+      return response.data;
+    } catch (error) {
+      if (error.response?.status !== 401) {
+        return rejectWithValue(error.response?.data?.message || 'Failed to fetch product');
+      }
+      throw error;
+    }
   }
 );
 

@@ -6,6 +6,7 @@ import { addToCart } from '../store/slices/cartSlice';
 import { CheckCircle, ShoppingCart, ArrowRight, Upload, Info, Plus, Minus, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { checkReviewEligibility, submitReview } from '../store/slices/reviewSlice';
+import { initializeState } from '../store/slices/authSlice';
 // import { toast } from 'react-hot-toast';
 
 const ProductDetails = () => {
@@ -23,6 +24,7 @@ const ProductDetails = () => {
   const { isAuthenticated } = useSelector(state => state.auth);
   const { items: cartItems } = useSelector(state => state.cart);
   const [isLoading, setIsLoading] = useState(true);
+  const authState = useSelector(state => state.auth);
 
   const product = location.state?.product || selectedProduct;
 
@@ -79,13 +81,22 @@ const ProductDetails = () => {
   };
 
   useEffect(() => {
-    if (!location.state?.product && id) {
-      setIsLoading(true);
-      dispatch(fetchProductById(id))
-        .finally(() => setIsLoading(false));
-    } else {
-      setIsLoading(false);
-    }
+    const fetchData = async () => {
+      if (!location.state?.product && id) {
+        setIsLoading(true);
+        try {
+          await dispatch(fetchProductById(id)).unwrap();
+        } catch (error) {
+          console.error('Error fetching product:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
   }, [dispatch, id, location.state]);
 
   useEffect(() => {
@@ -93,6 +104,19 @@ const ProductDetails = () => {
       dispatch(checkReviewEligibility(product.productId));
     }
   }, [dispatch, isAuthenticated, product]);
+
+  useEffect(() => {
+    if (!isAuthenticated && authState.status === 'idle') {
+      // Create an async function to handle the initialization
+      const init = async () => {
+        const initialState = await initializeState();
+        // Update the auth state using the auth slice reducer
+        dispatch({ type: 'auth/setState', payload: initialState });
+      };
+      
+      init();
+    }
+  }, [isAuthenticated, authState.status, dispatch]);
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();

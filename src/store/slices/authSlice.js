@@ -1,35 +1,42 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../lib/axios';
 import { submitApplication } from './producerApplicationSlice';
+import store from '../../store';
+import { initializeWebSocket, disconnectWebSocket } from './notificationSlice';
 
 // Get current user data
-const initializeState = async () => {
+export const initializeState = async () => {
   try {
     const response = await api.get('/api/auth/me');
     const userData = response.data;
     
-    return {
-      user: {
-        id: userData.userId,
-        email: userData.email,
-        role: userData.role.toLowerCase(),
-        firstName: userData.firstname,
-        lastName: userData.lastname,
-        username: userData.username,
-        applicationStatus: userData.applicationStatus
-      },
-      isAuthenticated: true,
-      status: 'succeeded',
-      error: null
-    };
+    if (userData) {
+      store.dispatch(initializeWebSocket());
+      return {
+        user: {
+          id: userData.userId,
+          email: userData.email,
+          role: userData.role.toLowerCase(),
+          firstName: userData.firstname,
+          lastName: userData.lastname,
+          username: userData.username,
+          applicationStatus: userData.applicationStatus
+        },
+        isAuthenticated: true,
+        status: 'succeeded',
+        error: null
+      };
+    }
   } catch (error) {
-    return {
-      user: null,
-      isAuthenticated: false,
-      status: 'idle',
-      error: null
-    };
+    console.error('Error initializing auth state:', error);
   }
+  
+  return {
+    user: null,
+    isAuthenticated: false,
+    status: 'idle',
+    error: null
+  };
 };
 
 export const registerUser = createAsyncThunk(
@@ -52,10 +59,10 @@ export const registerUser = createAsyncThunk(
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async ({ email, password }, { rejectWithValue }) => {
+  async ({ email, password }, { rejectWithValue, dispatch }) => {
     try {
       // First, make the login request
-      await api.post('/api/auth/login', {
+      const loginResponse = await api.post('/api/auth/login', {
         email,
         password
       });
@@ -64,18 +71,29 @@ export const loginUser = createAsyncThunk(
       const response = await api.get('/api/auth/me');
       const userData = response.data;
       
-      return {
-        user: {
-          id: userData.userId,
-          email: userData.email,
-          role: userData.role.toLowerCase(),
-          firstName: userData.firstname,
-          lastName: userData.lastname,
-          username: userData.username,
-          applicationStatus: userData.applicationStatus
-        }
-      };
+      if (userData) {
+        const authData = {
+          user: {
+            id: userData.userId,
+            email: userData.email,
+            role: userData.role.toLowerCase(),
+            firstName: userData.firstname,
+            lastName: userData.lastname,
+            username: userData.username,
+            applicationStatus: userData.applicationStatus
+          },
+          isAuthenticated: true,
+          status: 'succeeded',
+          error: null
+        };
+        
+        // Initialize WebSocket after getting user data but before returning
+        await dispatch(initializeWebSocket());
+        
+        return authData;
+      }
     } catch (error) {
+      console.error('Login error:', error);
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
   }
@@ -86,6 +104,8 @@ export const logoutUser = createAsyncThunk(
   async (_, { rejectWithValue, dispatch }) => {
     try {
       await api.post('/api/auth/logout');
+      // Disconnect WebSocket before clearing auth
+      await dispatch(disconnectWebSocket());
       dispatch(clearAuth());
       return null;
     } catch (error) {
@@ -103,6 +123,9 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.status = 'idle';
       state.error = null;
+    },
+    setState: (state, action) => {
+      return action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -156,6 +179,6 @@ const authSlice = createSlice({
   }
 });
 
-export const { clearAuth } = authSlice.actions;
+export const { clearAuth, setState } = authSlice.actions;
 export default authSlice.reducer;
 

@@ -7,6 +7,7 @@ export const checkReviewEligibility = createAsyncThunk(
   async (productId, { rejectWithValue, getState }) => {
     try {
       const response = await api.get(`/api/reviews/eligibility/${productId}`);
+      console.log("response review eligibility",response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
