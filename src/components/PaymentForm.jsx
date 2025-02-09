@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { CreditCard, Bitcoin, Calendar, HelpCircle } from 'lucide-react';
+import { CreditCard, Bitcoin, Calendar, HelpCircle, Lock, Shield } from 'lucide-react';
 import api from '../lib/axios';
 import PaymentSuccess from './PaymentSuccess';
-import { FaCcVisa, FaCcMastercard, FaBitcoin } from 'react-icons/fa';
+import { FaCcVisa, FaCcMastercard, FaBitcoin, FaLock, FaShieldAlt } from 'react-icons/fa';
 
 const PaymentForm = () => {
   const navigate = useNavigate();
@@ -157,24 +157,37 @@ const PaymentForm = () => {
       {paymentCompleted && orderData ? (
         <PaymentSuccess orderData={orderData} />
       ) : (
-        <section className="py-8 md:py-16 bg-background">
+        <section className="py-8 md:py-16 bg-gradient-to-b from-background to-background/95">
           <div className="mx-auto max-w-screen-xl px-4">
             <div className="mx-auto max-w-5xl">
-              <h2 className="text-xl font-semibold text-text sm:text-2xl">
-                {paymentMethod === 'CARD' ? 'Card Payment' : 'Bitcoin Payment'}
-              </h2>
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold text-text sm:text-3xl">
+                  Secure Checkout
+                </h2>
+                <div className="flex items-center gap-2 text-green-500">
+                  <FaLock className="h-5 w-5" />
+                  <span className="text-sm font-medium">SSL Encrypted</span>
+                </div>
+              </div>
 
               <div className="mt-6 sm:mt-8 lg:flex lg:items-start lg:gap-12">
-                <form onSubmit={handleSubmit} className="w-full rounded-lg border border-border bg-cardBg p-4 shadow-sm sm:p-6 lg:max-w-xl lg:p-8">
+                <form onSubmit={handleSubmit} className="w-full rounded-xl border border-border/40 bg-cardBg p-6 shadow-lg backdrop-blur-sm sm:p-8 lg:max-w-xl">
+                  <div className="mb-6 flex items-center gap-2 pb-4 border-b border-border/40">
+                    <Shield className="h-5 w-5 text-primary" />
+                    <span className="text-sm font-medium text-text">
+                      {paymentMethod === 'CARD' ? 'Secure Card Payment' : 'Secure Bitcoin Payment'}
+                    </span>
+                  </div>
+
                   {paymentMethod === 'CARD' ? (
-                    <div className="mb-6 grid grid-cols-2 gap-4">
-                      <div className="col-span-2 sm:col-span-1">
-                        <label className="mb-2 block text-sm font-medium text-textSecondary">
+                    <div className="mb-8 grid grid-cols-2 gap-6">
+                      <div className="col-span-2">
+                        <label className="mb-2 block text-sm font-medium text-text">
                           Card Holder Name*
                         </label>
                         <input
                           type="text"
-                          className="block w-full rounded-lg border border-border bg-inputBg p-2.5 text-sm text-text focus:border-primary focus:ring-1 focus:ring-primary"
+                          className="block w-full rounded-lg border border-border/60 bg-inputBg p-3 text-base text-text placeholder:text-textSecondary/70 focus:border-primary focus:bg-cardBg focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                           placeholder="John Doe"
                           value={formData.cardHolderName}
                           onChange={(e) => setFormData({...formData, cardHolderName: e.target.value})}
@@ -182,46 +195,49 @@ const PaymentForm = () => {
                         />
                       </div>
 
-                      <div className="col-span-2 sm:col-span-1">
-                        <label className="mb-2 block text-sm font-medium text-textSecondary">
+                      <div className="col-span-2">
+                        <label className="mb-2 block text-sm font-medium text-text">
                           Card Number*
                         </label>
                         <div className="relative">
                           <input
                             type="text"
-                            className="block w-full rounded-lg border border-border bg-inputBg p-2.5 pe-10 text-sm text-text focus:border-primary focus:ring-1 focus:ring-primary"
+                            className="block w-full rounded-lg border border-border/60 bg-inputBg p-3 pe-12 text-base text-text placeholder:text-textSecondary/70 focus:border-primary focus:bg-cardBg focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                             placeholder="1234 5678 9012 3456"
                             value={formData.cardNumber}
                             onChange={(e) => setFormData({...formData, cardNumber: e.target.value})}
                             required
                           />
-                          <CreditCard className="absolute right-3 top-2.5 h-5 w-5 text-textSecondary" />
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            <FaCcVisa className="h-6 w-auto text-[#1434CB]" />
+                            <FaCcMastercard className="h-6 w-auto text-[#EB001B]" />
+                          </div>
                         </div>
                       </div>
 
                       <div>
-                        <label className="mb-2 block text-sm font-medium text-textSecondary">
+                        <label className="mb-2 block text-sm font-medium text-text">
                           Expiry Date*
                         </label>
                         <div className="relative">
                           <input
                             type="text"
-                            className="block w-full rounded-lg border border-border bg-inputBg p-2.5 ps-9 text-sm text-text focus:border-primary focus:ring-1 focus:ring-primary"
+                            className="block w-full rounded-lg border border-border/60 bg-inputBg p-3 ps-11 text-base text-text placeholder:text-textSecondary/70 focus:border-primary focus:bg-cardBg focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                             placeholder="MM/YY"
                             value={formData.expiryDate}
                             onChange={(e) => setFormData({...formData, expiryDate: e.target.value})}
                             required
                           />
-                          <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-textSecondary" />
+                          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-textSecondary" />
                         </div>
                       </div>
 
                       <div>
-                        <label className="mb-2 flex items-center gap-1 text-sm font-medium text-textSecondary">
+                        <label className="mb-2 flex items-center gap-1 text-sm font-medium text-text">
                           CVV*
                           <button
                             type="button"
-                            className="text-textSecondary hover:text-text"
+                            className="text-textSecondary hover:text-text transition-colors"
                             title="The last 3 digits on back of card"
                           >
                             <HelpCircle className="h-4 w-4" />
@@ -229,7 +245,7 @@ const PaymentForm = () => {
                         </label>
                         <input
                           type="text"
-                          className="block w-full rounded-lg border border-border bg-inputBg p-2.5 text-sm text-text focus:border-primary focus:ring-1 focus:ring-primary"
+                          className="block w-full rounded-lg border border-border/60 bg-inputBg p-3 text-base text-text placeholder:text-textSecondary/70 focus:border-primary focus:bg-cardBg focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                           placeholder="•••"
                           value={formData.cvv}
                           onChange={(e) => setFormData({...formData, cvv: e.target.value})}
@@ -238,59 +254,83 @@ const PaymentForm = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="mb-6">
-                      <label className="mb-2 block text-sm font-medium text-textSecondary">
+                    <div className="mb-8">
+                      <label className="mb-2 block text-sm font-medium text-text">
                         Transaction Hash*
                       </label>
-                      <input
-                        type="text"
-                        className="block w-full rounded-lg border border-border bg-inputBg p-2.5 text-sm text-text focus:border-primary focus:ring-1 focus:ring-primary"
-                        placeholder="Enter your transaction hash"
-                        value={formData.transactionHash}
-                        onChange={(e) => setFormData({...formData, transactionHash: e.target.value})}
-                        required
-                      />
+                      <div className="relative">
+                        <input
+                          type="text"
+                          className="block w-full rounded-lg border border-border/60 bg-inputBg p-3 ps-11 text-base text-text placeholder:text-textSecondary/70 focus:border-primary focus:bg-cardBg focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                          placeholder="Enter your transaction hash"
+                          value={formData.transactionHash}
+                          onChange={(e) => setFormData({...formData, transactionHash: e.target.value})}
+                          required
+                        />
+                        <Bitcoin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-textSecondary" />
+                      </div>
                     </div>
                   )}
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex w-full items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primaryHover focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-base font-semibold text-white hover:bg-primaryHover focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                   >
-                    {loading ? 'Processing...' : 'Pay Now'}
+                    <FaLock className="h-4 w-4" />
+                    {loading ? 'Processing...' : 'Pay Securely Now'}
                   </button>
+
+                  <div className="mt-6 flex items-center justify-center gap-2 text-sm text-textSecondary">
+                    <FaShieldAlt className="h-4 w-4 text-green-500" />
+                    <span>Your payment information is secure</span>
+                  </div>
                 </form>
 
-                <div className="mt-6 grow sm:mt-8 lg:mt-0">
-                  <div className="space-y-4 rounded-lg border border-border bg-cardBg p-6">
-                    <div className="space-y-2">
+                <div className="mt-8 grow lg:mt-0">
+                  <div className="space-y-6 rounded-xl border border-border/40 bg-cardBg p-6 shadow-lg backdrop-blur-sm">
+                    <h3 className="text-lg font-semibold text-text">Order Summary</h3>
+                    
+                    <div className="space-y-4">
                       <dl className="flex items-center justify-between gap-4">
-                        <dt className="text-base font-normal text-textSecondary">Subtotal</dt>
+                        <dt className="text-base text-textSecondary">Subtotal</dt>
                         <dd className="text-base font-medium text-text">
-                        ${calculateTotal().toFixed(2)}
+                          ${calculateTotal().toFixed(2)}
                         </dd>
                       </dl>
                       <dl className="flex items-center justify-between gap-4">
-                        <dt className="text-base font-normal text-textSecondary">Service Fee</dt>
+                        <dt className="text-base text-textSecondary">Service Fee</dt>
                         <dd className="text-base font-medium text-text">$0.00</dd>
                       </dl>
                     </div>
 
-                    <dl className="flex items-center justify-between gap-4 border-t border-border pt-2">
-                      <dt className="text-base font-bold text-text">Total</dt>
-                      <dd className="text-base font-bold text-text">
-                      ${calculateTotal().toFixed(2)}
+                    <dl className="flex items-center justify-between gap-4 border-t border-border/40 pt-4">
+                      <dt className="text-lg font-bold text-text">Total</dt>
+                      <dd className="text-lg font-bold text-primary">
+                        ${calculateTotal().toFixed(2)}
                       </dd>
                     </dl>
+
+                    <div className="rounded-lg bg-green-500/10 p-4 flex items-center gap-3">
+                      <FaShieldAlt className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      <p className="text-sm text-green-700">
+                        Your transaction is protected with SSL encryption
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="mt-6 flex items-center justify-center gap-8">
-                    <FaCcVisa className="h-8 w-auto text-[#1434CB]" />
-                    <FaCcMastercard className="h-8 w-auto text-[#EB001B]" />
-                    {paymentMethod === 'BITCOIN' && (
-                      <FaBitcoin className="h-8 w-auto text-[#F7931A]" />
-                    )}
+                  <div className="mt-6 flex flex-col items-center gap-4">
+                    <div className="flex items-center gap-8">
+                      <FaCcVisa className="h-8 w-auto text-[#1434CB]" />
+                      <FaCcMastercard className="h-8 w-auto text-[#EB001B]" />
+                      {paymentMethod === 'BITCOIN' && (
+                        <FaBitcoin className="h-8 w-auto text-[#F7931A]" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-textSecondary">
+                      <Lock className="h-4 w-4" />
+                      <span>256-bit SSL Encryption</span>
+                    </div>
                   </div>
                 </div>
               </div>

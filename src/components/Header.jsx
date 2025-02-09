@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
   ShoppingCart, CircleUser, Leaf, Sun, Moon, Menu, X,
-  Building2, LayoutDashboard, Users, Package, StarIcon, Home, Store, HelpCircle, MessageCircle, FileQuestion, LogIn, UserPlus, LogOut, Settings, ChevronRight, ClipboardList, BarChart2, Bell
+  Building2, LayoutDashboard, Users, Package, StarIcon, Home, Store, HelpCircle, MessageCircle, FileQuestion, LogIn, UserPlus, LogOut, ChevronRight, ClipboardList, BarChart2, Bell, BadgePercent
 } from 'lucide-react';
 import { logoutUser } from '../store/slices/authSlice';
 import { useTheme } from '../context/ThemeContext';
@@ -122,6 +122,7 @@ const Header = () => {
     { path: '/admin/products', label: 'Products', icon: Package },
     { path: '/admin/reviews', label: 'Reviews', icon: StarIcon },
     { path: '/admin/applications', label: 'Applications', icon: Building2 },
+    { path: '/admin/coupons', label: 'Coupons', icon: BadgePercent },
   ];
 
   const producerNavigationItems = [

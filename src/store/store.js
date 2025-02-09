@@ -14,6 +14,7 @@ import securityReducer from './slices/securitySlice';
 import orderReducer from './slices/orderSlice';
 import notificationReducer from './slices/notificationSlice';
 import producerProductsReducer from './slices/producerProductsSlice';
+import couponReducer from './slices/couponSlice';
 import { initializeState, setState } from './slices/authSlice';
 
 const store = configureStore({
@@ -33,6 +34,7 @@ const store = configureStore({
     orders: orderReducer,
     notifications: notificationReducer,
     producerProducts: producerProductsReducer,
+    coupons: couponReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

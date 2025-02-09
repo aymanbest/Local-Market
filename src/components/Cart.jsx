@@ -12,6 +12,8 @@ const Cart = () => {
   const { user } = useSelector((state) => state.auth);
   const [paymentMethod, setPaymentMethod] = useState('CARD');
   const [couponCode, setCouponCode] = useState('');
+  const [couponValidation, setCouponValidation] = useState(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
   const [email, setEmail] = useState('');
   const [makeAccount, setMakeAccount] = useState(false);
   const [shippingAddress, setShippingAddress] = useState('');
@@ -28,6 +30,33 @@ const Cart = () => {
   const navigate = useNavigate();
 
   const total = items.length > 0 ? items.reduce((sum, item) => sum + item.price * item.quantity, 0) : 0;
+
+  const handleCouponValidation = async () => {
+    if (!couponCode.trim()) {
+      setError('Please enter a coupon code');
+      return;
+    }
+
+    setValidatingCoupon(true);
+    setError('');
+    
+    try {
+      const response = await api.get(`/api/coupons/validate/${couponCode}`, {
+        params: { cartTotal: total }
+      });
+      
+      setCouponValidation(response.data);
+      
+      if (!response.data.valid) {
+        setError(response.data.message);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to validate coupon');
+      setCouponValidation(null);
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
 
   const handleCheckout = async (e) => {
     e.preventDefault();
@@ -47,6 +76,7 @@ const Cart = () => {
       shippingAddress,
       phoneNumber,
       paymentMethod,
+      ...(couponValidation?.valid && { couponCode }),
       ...(user ? {} : { 
         guestEmail: email,
         ...(makeAccount && {
@@ -368,31 +398,47 @@ const Cart = () => {
                   className="block w-full rounded-lg border border-border bg-inputBg px-4 py-2 text-sm transition-all focus:border-primary focus:ring-1 focus:ring-primary text-text"
                   name="coupon"
                   value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
+                  onChange={(e) => {
+                    setCouponCode(e.target.value);
+                    setCouponValidation(null);
+                  }}
                 />
                 <button 
                   type="button" 
-                  className="whitespace-nowrap rounded-full px-5 py-1.5 text-white transition-colors duration-300 bg-primary hover:bg-primaryHover"
-                  onClick={() => {/* handle coupon application */}}
+                  className="whitespace-nowrap rounded-full px-5 py-1.5 text-white transition-colors duration-300 bg-primary hover:bg-primaryHover disabled:opacity-50"
+                  onClick={handleCouponValidation}
+                  disabled={validatingCoupon}
                 >
-                  Apply
+                  {validatingCoupon ? 'Validating...' : 'Apply'}
                 </button>
               </div>
+
+              {couponValidation?.valid && (
+                <div className="mt-2 text-sm text-green-500">
+                  {couponValidation.discountDescription}
+                </div>
+              )}
 
               <hr className="my-4 border-border" />
               
               <h3 className="mb-2 text-text">Order Summary</h3>
               <div className="flex justify-between items-center">
                 <span className="text-neutral-400">Items</span>
-                <span>0</span>
+                <span>${total.toFixed(2)}</span>
               </div>
+              {couponValidation?.valid && (
+                <div className="flex justify-between items-center text-green-500">
+                  <span>Discount</span>
+                  <span>-${couponValidation.discountAmount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center">
                 <span className="text-neutral-400">Service Fee</span>
                 <span>$0.00</span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center font-bold">
                 <span className="text-neutral-400">Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span>${(couponValidation?.valid ? couponValidation.finalPrice : total).toFixed(2)}</span>
               </div>
 
               <label className="flex items-center mt-3">
