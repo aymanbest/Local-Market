@@ -17,6 +17,7 @@ const Store = () => {
     const isLoading = useLoading();
     const location = useLocation();
     const navigate = useNavigate();
+    const user = useSelector((state) => state.auth.user);
 
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
@@ -31,6 +32,11 @@ const Store = () => {
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
+
+    const getFullImageUrl = (imageUrl) => {
+        if (!imageUrl) return 'https://placehold.co/600x400?text=No+Image';
+        return imageUrl.startsWith('http') ? imageUrl : `http://localhost:8080${imageUrl}`;
+      };
 
     // Fetch categories and products on component mount
     useEffect(() => {
@@ -57,13 +63,16 @@ const Store = () => {
             dispatch(fetchProducts())
                 .then((action) => {
                     if (action.payload) {
-                        const allProducts = action.payload.flatMap(producer => 
-                            producer.products.map(product => ({
+                        const allProducts = action.payload.flatMap(producer => {
+                            if (user && producer.producerId === user.id) {
+                                return [];
+                            }
+                            return producer.products.map(product => ({
                                 ...product,
                                 producer: producer.username,
                                 producerName: `${producer.firstname} ${producer.lastname}`
-                            }))
-                        );
+                            }));
+                        });
                         setFilteredProducts(allProducts);
                         setSearchResults(allProducts);
                     }
@@ -72,15 +81,18 @@ const Store = () => {
             dispatch(fetchProductsByCategory(selectedCategory))
                 .then((action) => {
                     if (action.payload) {
-                        const allProducts = action.payload.flatMap(producer => 
-                            producer.products || []
-                        );
+                        const allProducts = action.payload.flatMap(producer => {
+                            if (user && producer.producerId === user.id) {
+                                return [];
+                            }
+                            return producer.products || [];
+                        });
                         setFilteredProducts(allProducts);
                         setSearchResults(allProducts);
                     }
                 });
         }
-    }, [selectedCategory, dispatch]);
+    }, [selectedCategory, dispatch, user]);
 
     // Handle search
     useEffect(() => {
@@ -210,10 +222,11 @@ const Store = () => {
                                 >
                                     <div className="relative aspect-[2/1] overflow-hidden">
                                         <img
-                                            src={product.imageUrl || `https://placehold.co/600x400?text=${product.name}`}
+                                            src={getFullImageUrl(product.imageUrl)}
                                             alt={product.name}
                                             className="w-full h-full object-cover"
                                         />
+
                                     </div>
                                     <div className="p-4">
                                         <h3 className="text-lg font-semibold text-text">{product.name}</h3>
@@ -329,9 +342,10 @@ const Store = () => {
                                         >
                                             <div style={{ aspectRatio: '5 / 4' }} className="rounded-t-lg overflow-hidden w-full">
                                                 <img
-                                                    src={product.imageUrl || `https://placehold.co/600x400?text=${product.name}`}
+                                                    src={getFullImageUrl(product.imageUrl)}
                                                     alt={product.name}
                                                     className="h-full w-full shrink-0 z-10 object-cover"
+
                                                 />
                                             </div>
                                             <div className="p-4">

@@ -1,6 +1,22 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../lib/axios';
 
+// Update the validation function at the top
+const isValidStatusTransition = (currentStatus, newStatus) => {
+  const transitions = {
+    'PENDING_PAYMENT': [], // No manual transitions allowed
+    'PAYMENT_FAILED': [], // No manual transitions allowed
+    'PAYMENT_COMPLETED': ['PROCESSING'],
+    'PROCESSING': ['SHIPPED', 'CANCELLED'],
+    'SHIPPED': ['DELIVERED'],
+    'DELIVERED': ['RETURNED'],
+    'CANCELLED': [], // No further transitions
+    'RETURNED': [] // No further transitions
+  };
+
+  return transitions[currentStatus]?.includes(newStatus) || false;
+};
+
 // Fetch producer orders
 export const fetchProducerOrders = createAsyncThunk(
   'orders/fetchProducerOrders',
@@ -20,7 +36,6 @@ export const fetchOrdersByStatus = createAsyncThunk(
   'orders/fetchByStatus',
   async (status, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
       const response = await api.get(`/api/orders/producer-orders/status/${status}`);
       return response.data;
     } catch (error) {
@@ -32,13 +47,16 @@ export const fetchOrdersByStatus = createAsyncThunk(
 // Update order status
 export const updateOrderStatus = createAsyncThunk(
   'orders/updateStatus',
-  async ({ orderId, status }, { rejectWithValue, getState }) => {
+  async ({ orderId, newStatus, currentStatus }, { rejectWithValue }) => {
     try {
-      const token = getState().auth.token;
-      const response = await api.put(`/api/orders/${orderId}/status?status=${status}`, {});
+      if (!isValidStatusTransition(currentStatus, newStatus)) {
+        throw new Error('Invalid status transition');
+      }
+
+      const response = await api.put(`/api/orders/${orderId}/status?status=${newStatus}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update order status');
+      return rejectWithValue(error.message || 'Failed to update order status');
     }
   }
 );

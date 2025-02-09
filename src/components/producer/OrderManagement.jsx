@@ -7,7 +7,7 @@ import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducerOrders, filterOrders } from '../../store/slices/orderSlice';
+import { fetchProducerOrders, filterOrders, updateOrderStatus } from '../../store/slices/orderSlice';
 
 const OrderManagement = () => {
   const dispatch = useDispatch();
@@ -71,102 +71,159 @@ const OrderManagement = () => {
     currentPage * itemsPerPage
   );
 
-  const FilterModal = () => (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 flex items-center justify-center z-[9999]"
-    >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowFilters(false)} />
+  const handleStatusChange = (status) => {
+    setFilters(prev => ({
+      ...prev,
+      status: prev.status === status ? 'all' : status
+    }));
+  };
+
+  const handleStatusUpdate = async (orderId, currentStatus, newStatus) => {
+    try {
+      await dispatch(updateOrderStatus({ 
+        orderId, 
+        currentStatus,
+        newStatus 
+      })).unwrap();
+      // Refresh the orders list
+      dispatch(fetchProducerOrders());
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      // Add toast notification here if you have one
+    }
+  };
+
+  const FilterModal = () => {
+    const [localFilters, setLocalFilters] = useState(filters);
+
+    useEffect(() => {
+      setLocalFilters(filters);
+    }, [showFilters]);
+
+    const handleLocalReset = () => {
+      const resetFilters = {
+        status: 'all',
+        dateRange: 'all',
+        minAmount: '',
+        maxAmount: ''
+      };
+      setLocalFilters(resetFilters);
+    };
+
+    const handleLocalApply = () => {
+      setFilters(localFilters);
+      setShowFilters(false);
+    };
+
+    return (
       <motion.div 
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-cardBg border border-border rounded-2xl p-8 w-full max-w-md relative mx-4 shadow-2xl"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 flex items-center justify-center z-50"
+        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
       >
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="text-2xl font-recoleta text-text">
-              Filter Orders
-            </h3>
-            <Button 
-              variant="ghost" 
-              onClick={() => setShowFilters(false)}
-              className="hover:bg-red-500/10 hover:text-red-500 -mr-2 -mt-2"
-            >
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
-
+        <div 
+          className="fixed inset-0 bg-black/60" 
+          onClick={() => setShowFilters(false)} 
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+        />
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-cardBg border border-border rounded-2xl p-8 w-full max-w-md relative mx-4 shadow-2xl z-50"
+        >
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-textSecondary mb-2">Status</label>
-              <div className="grid grid-cols-2 gap-2">
-                {['Pending', 'Processing', 'Delivered', 'Cancelled'].map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => setFilters({...filters, status: status})}
-                    className={`p-3 rounded-xl border ${
-                      filters.status === status 
-                        ? 'border-primary bg-primary/10 text-primary' 
-                        : 'border-border text-textSecondary hover:border-primary/50'
-                    } transition-all duration-200`}
-                  >
-                    {status}
-                  </button>
-                ))}
+            <div className="flex justify-between items-center">
+              <h3 className="text-2xl font-recoleta text-text">Filter Orders</h3>
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowFilters(false)}
+                className="hover:bg-red-500/10 hover:text-red-500 -mr-2 -mt-2"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-textSecondary mb-2">Status</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    'PENDING_PAYMENT',
+                    'PAYMENT_FAILED', 
+                    'PAYMENT_COMPLETED',
+                    'PROCESSING',
+                    'SHIPPED',
+                    'DELIVERED',
+                    'CANCELLED',
+                    'RETURNED'
+                  ].map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => setLocalFilters(prev => ({
+                        ...prev,
+                        status: prev.status === status ? 'all' : status
+                      }))}
+                      className={`p-3 rounded-xl border ${
+                        localFilters.status === status 
+                          ? 'border-primary bg-primary/10 text-primary' 
+                          : 'border-border text-textSecondary hover:border-primary/50'
+                      } transition-all duration-200`}
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-textSecondary mb-2">Min Amount</label>
+                  <input
+                    type="number"
+                    className="w-full hide-spinner p-3 rounded-xl border border-border bg-inputBg text-text placeholder:text-textSecondary focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200"
+                    value={localFilters.minAmount}
+                    onChange={(e) => setLocalFilters(prev => ({...prev, minAmount: e.target.value}))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-textSecondary mb-2">Max Amount</label>
+                  <input
+                    type="number"
+                    className="w-full hide-spinner p-3 rounded-xl border border-border bg-inputBg text-text placeholder:text-textSecondary focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200"
+                    value={localFilters.maxAmount}
+                    onChange={(e) => setLocalFilters(prev => ({...prev, maxAmount: e.target.value}))}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-textSecondary mb-2">Min Amount</label>
-                <input
-                  type="number"
-                  className="w-full p-3 rounded-xl border border-border bg-inputBg text-text placeholder:text-textSecondary focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200"
-                  value={filters.minAmount}
-                  onChange={(e) => setFilters({...filters, minAmount: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-textSecondary mb-2">Max Amount</label>
-                <input
-                  type="number"
-                  className="w-full p-3 rounded-xl border border-border bg-inputBg text-text placeholder:text-textSecondary focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200"
-                  value={filters.maxAmount}
-                  onChange={(e) => setFilters({...filters, maxAmount: e.target.value})}
-                />
-              </div>
+            <div className="flex space-x-3 pt-4">
+              <Button
+                variant="outline"
+                className="flex-1 border-border hover:border-primary hover:text-primary transition-all duration-200"
+                onClick={handleLocalReset}
+              >
+                Reset
+              </Button>
+              <Button
+                className="flex-1 bg-primary hover:bg-primaryHover text-white transition-all duration-200"
+                onClick={handleLocalApply}
+              >
+                Apply
+              </Button>
             </div>
           </div>
-
-          <div className="flex space-x-3 pt-4">
-            <Button
-              variant="outline"
-              className="flex-1 border-border hover:border-primary hover:text-primary transition-all duration-200"
-              onClick={() => {
-                setFilters({
-                  status: 'all',
-                  dateRange: 'all',
-                  minAmount: '',
-                  maxAmount: ''
-                });
-              }}
-            >
-              Reset
-            </Button>
-            <Button
-              className="flex-1 bg-primary hover:bg-primaryHover text-white transition-all duration-200"
-              onClick={() => setShowFilters(false)}
-            >
-              Apply
-            </Button>
-          </div>
-        </div>
+        </motion.div>
       </motion.div>
-    </motion.div>
-  );
+    );
+  };
+
+  const openFilters = () => {
+    setShowFilters(true);
+  };
 
   const renderOrderItems = (order) => {
     return order.items.map(item => (
@@ -183,6 +240,51 @@ const OrderManagement = () => {
     return price >= min && price <= max;
   };
 
+  const StatusActions = ({ order }) => {
+    const availableTransitions = {
+      'PENDING_PAYMENT': [], // No manual transitions allowed
+      'PAYMENT_FAILED': [], // No manual transitions allowed
+      'PAYMENT_COMPLETED': ['PROCESSING'],
+      'PROCESSING': ['SHIPPED', 'CANCELLED'],
+      'SHIPPED': ['DELIVERED'],
+      'DELIVERED': ['RETURNED'],
+      'CANCELLED': [], // No further transitions
+      'RETURNED': [] // No further transitions
+    };
+
+    const transitions = availableTransitions[order.status] || [];
+
+    if (transitions.length === 0) return null;
+
+    return (
+      <div className="mt-4 flex gap-2">
+        {transitions.map(newStatus => (
+          <Button
+            key={newStatus}
+            variant="outline"
+            size="sm"
+            onClick={() => handleStatusUpdate(order.orderId, order.status, newStatus)}
+            className={`text-sm ${
+              newStatus === 'CANCELLED' 
+                ? 'border-red-500 text-red-500 hover:bg-red-500/10' 
+                : 'border-primary text-primary hover:bg-primary/10'
+            }`}
+          >
+            {newStatus.charAt(0) + newStatus.slice(1).toLowerCase()}
+          </Button>
+        ))}
+      </div>
+    );
+  };
+
+  // Calculate order statistics
+  const orderStats = {
+    total: orders.length,
+    pending: orders.filter(o => ['PAYMENT_COMPLETED'].includes(o.status)).length,
+    processing: orders.filter(o => ['PROCESSING'].includes(o.status)).length,
+    delivered: orders.filter(o => o.status === 'DELIVERED').length
+  };
+
   return (
     <div className="space-y-8 p-4 md:p-8 bg-background min-h-screen transition-colors duration-300">
       <div className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 rounded-2xl border border-border p-8">
@@ -197,17 +299,17 @@ const OrderManagement = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Total Orders', value: orders.length, icon: Package, color: 'blue' },
-              { label: 'Pending', value: orders.filter(o => o.status === 'Pending').length, icon: Clock, color: 'yellow' },
-              { label: 'Processing', value: orders.filter(o => o.status === 'Processing').length, icon: AlertCircle, color: 'purple' },
-              { label: 'Delivered', value: orders.filter(o => o.status === 'Delivered').length, icon: CheckCircle2, color: 'green' },
+              { label: 'Total Orders', value: orderStats.total, icon: Package, color: 'blue' },
+              { label: 'Pending', value: orderStats.pending, icon: Clock, color: 'yellow' },
+              { label: 'Processing', value: orderStats.processing, icon: AlertCircle, color: 'purple' },
+              { label: 'Delivered', value: orderStats.delivered, icon: CheckCircle2, color: 'green' },
             ].map((stat, index) => (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 key={index}
-                className="bg-cardBg/50 backdrop-blur-sm border border-border rounded-xl p-4 hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+                className="bg-cardBg/90 border border-border rounded-xl p-4 hover:shadow-lg hover:border-primary/20 transition-all duration-300"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -240,7 +342,7 @@ const OrderManagement = () => {
           <Button 
             variant="outline" 
             className="flex-1 md:flex-none items-center gap-2 border-border hover:border-primary hover:text-primary transition-all duration-200"
-            onClick={() => setShowFilters(true)}
+            onClick={openFilters}
           >
             <Filter className="w-5 h-5" />
             <span>Filters</span>
@@ -278,13 +380,13 @@ const OrderManagement = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                key={order.id}
+                key={order.orderId}
                 className="bg-cardBg border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300"
               >
                 <div className="p-6 space-y-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-lg font-semibold text-text">#{order.id}</h3>
+                      <h3 className="text-lg font-semibold text-text">#{order.orderId}</h3>
                       <div className="space-y-1">
                         <p className="font-medium text-text">
                           {order.customer.firstname} {order.customer.lastname}
@@ -311,10 +413,11 @@ const OrderManagement = () => {
                     <div className="flex justify-between text-sm">
                       <span className="text-textSecondary">Date:</span>
                       <span className="text-text font-medium">
-                        {new Date(order.date).toLocaleDateString()}
+                        {new Date(order.orderDate).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
+                  <StatusActions order={order} />
                 </div>
               </motion.div>
             ))}
@@ -340,10 +443,10 @@ const OrderManagement = () => {
               <TableBody>
                 {paginatedOrders.map((order) => (
                   <TableRow 
-                    key={order.id}
+                    key={order.orderId}
                     className="group hover:bg-primary/5 transition-colors duration-200"
                   >
-                    <TableCell className="font-medium text-text">#{order.id}</TableCell>
+                    <TableCell className="font-medium text-text">#{order.orderId}</TableCell>
                     <TableCell className="text-text">
                       <div className="space-y-1">
                         <p className="font-medium text-text">
@@ -360,9 +463,14 @@ const OrderManagement = () => {
                       </div>
                     </TableCell>
                     <TableCell className="text-text">${order.totalPrice?.toFixed(2)}</TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell>
+                      <div className="space-y-2">
+                        {getStatusBadge(order.status)}
+                        <StatusActions order={order} />
+                      </div>
+                    </TableCell>
                     <TableCell className="text-textSecondary">
-                      {new Date(order.date).toLocaleDateString()}
+                      {new Date(order.orderDate).toLocaleDateString()}
                     </TableCell>
                   </TableRow>
                 ))}

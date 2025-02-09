@@ -6,7 +6,7 @@ import { addToCart } from '../store/slices/cartSlice';
 import { CheckCircle, ShoppingCart, ArrowRight, Upload, Info, Plus, Minus, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { checkReviewEligibility, submitReview } from '../store/slices/reviewSlice';
-import { initializeState } from '../store/slices/authSlice';
+import { initializeState, setState } from '../store/slices/authSlice';
 // import { toast } from 'react-hot-toast';
 
 const ProductDetails = () => {
@@ -31,6 +31,11 @@ const ProductDetails = () => {
   const handleQuantityChange = (value) => {
     const newQuantity = Math.max(1, Math.min(40, value));
     setQuantity(newQuantity);
+  };
+
+  const getFullImageUrl = (imageUrl) => {
+    if (!imageUrl) return 'https://placehold.co/600x400?text=No+Image';
+    return imageUrl.startsWith('http') ? imageUrl : `http://localhost:8080${imageUrl}`;
   };
 
   const handleAddToCart = () => {
@@ -106,16 +111,16 @@ const ProductDetails = () => {
   }, [dispatch, isAuthenticated, product]);
 
   useEffect(() => {
-    if (!isAuthenticated && authState.status === 'idle') {
-      // Create an async function to handle the initialization
-      const init = async () => {
-        const initialState = await initializeState();
-        // Update the auth state using the auth slice reducer
-        dispatch({ type: 'auth/setState', payload: initialState });
-      };
-      
-      init();
-    }
+    const initAuth = async () => {
+      if (!isAuthenticated && authState.status === 'idle') {
+        const resultAction = await dispatch(initializeState());
+        if (initializeState.fulfilled.match(resultAction) && resultAction.payload.isAuthenticated) {
+          dispatch(setState(resultAction.payload));
+        }
+      }
+    };
+    
+    initAuth();
   }, [isAuthenticated, authState.status, dispatch]);
 
   const handleSubmitReview = async (e) => {
@@ -155,7 +160,7 @@ const ProductDetails = () => {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="bg-cardBg aspect-square overflow-hidden rounded-xl md:max-w-96 h-max border border-border">
               <img 
-                src={product.imageUrl || `https://placehold.co/600x400?text=${product.name}`}
+                src={getFullImageUrl(product.imageUrl)}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />

@@ -11,6 +11,9 @@ import Analytics from '../../components/producer/Analytics';
 import Button from '../../components/ui/Button';
 import { useTheme } from '../../context/ThemeContext';
 import Header from '../../components/Header';
+import AccountPage from '../../components/AccountPage';
+import SecurityPage from '../../components/SecurityPage';
+import ProtectedRoute from '../../components/ProtectedRoute';
 
 const ProducerLayout = () => {
   const [showNotifications, setShowNotifications] = useState(false);
@@ -109,8 +112,18 @@ const ProducerLayout = () => {
     <div className="max-w-7xl mx-auto px-4">
       <Routes>
         <Route path="/" element={<ProductManagement />} />
+        <Route path="/products" element={<ProductManagement />} />
         <Route path="/orders" element={<OrderManagement />} />
         <Route path="/analytics" element={<Analytics />} />
+        <Route path="/profile" element={<AccountPage producerOnly={true} />} />
+        <Route 
+          path="/profile/security" 
+          element={
+            <ProtectedRoute producerOnly>
+              <SecurityPage producerOnly={true} />
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
     </div>
   );

@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff, Lock } from 'lucide-react';
 import { changePassword, resetStatus } from '../store/slices/securitySlice';
 
-const SecurityPage = ({ adminOnly = false }) => {
+const SecurityPage = ({ adminOnly = false, producerOnly = false }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error, success } = useSelector((state) => state.security);
@@ -66,7 +66,13 @@ const SecurityPage = ({ adminOnly = false }) => {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-4xl font-recoleta font-semibold uppercase">Security Settings</h1>
           <Link 
-            to={adminOnly ? "/admin/profile" : "/account"} 
+            to={
+              adminOnly 
+                ? "/admin/profile" 
+                : producerOnly
+                  ? "/producer/profile"
+                  : "/account"
+            } 
             className="rounded-full border border-border hover:bg-cardBg transition flex gap-2 items-center px-4 py-2"
           >
             <ArrowLeft className="w-5 h-5" />

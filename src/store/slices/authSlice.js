@@ -1,43 +1,47 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../lib/axios';
 import { submitApplication } from './producerApplicationSlice';
-import store from '../../store';
 import { initializeWebSocket, disconnectWebSocket } from './notificationSlice';
 
-// Get current user data
-export const initializeState = async () => {
-  try {
-    const response = await api.get('/api/auth/me');
-    const userData = response.data;
-    
-    if (userData) {
-      store.dispatch(initializeWebSocket());
-      return {
-        user: {
-          id: userData.userId,
-          email: userData.email,
-          role: userData.role.toLowerCase(),
-          firstName: userData.firstname,
-          lastName: userData.lastname,
-          username: userData.username,
-          applicationStatus: userData.applicationStatus
-        },
-        isAuthenticated: true,
-        status: 'succeeded',
-        error: null
-      };
-    }
-  } catch (error) {
-    console.error('Error initializing auth state:', error);
-  }
-  
-  return {
-    user: null,
-    isAuthenticated: false,
-    status: 'idle',
-    error: null
-  };
+const initialState = {
+  user: null,
+  isAuthenticated: false,
+  status: 'idle',
+  error: null
 };
+
+// Get current user data
+export const initializeState = createAsyncThunk(
+  'auth/initialize',
+  async (_, { dispatch }) => {
+    try {
+      const response = await api.get('/api/auth/me');
+      const userData = response.data;
+      
+      if (userData) {
+        await dispatch(initializeWebSocket());
+        return {
+          user: {
+            id: userData.userId,
+            email: userData.email,
+            role: userData.role.toLowerCase(),
+            firstName: userData.firstname,
+            lastName: userData.lastname,
+            username: userData.username,
+            applicationStatus: userData.applicationStatus
+          },
+          isAuthenticated: true,
+          status: 'succeeded',
+          error: null
+        };
+      }
+    } catch (error) {
+      console.error('Error initializing auth state:', error);
+      return initialState;
+    }
+    return initialState;
+  }
+);
 
 export const registerUser = createAsyncThunk(
   'auth/register',
@@ -116,17 +120,12 @@ export const logoutUser = createAsyncThunk(
 
 const authSlice = createSlice({
   name: 'auth',
-  initialState: await initializeState(),
+  initialState,
   reducers: {
-    clearAuth: (state) => {
-      state.user = null;
-      state.isAuthenticated = false;
-      state.status = 'idle';
-      state.error = null;
-    },
     setState: (state, action) => {
-      return action.payload;
-    }
+      return { ...state, ...action.payload };
+    },
+    clearAuth: () => initialState,
   },
   extraReducers: (builder) => {
     builder
@@ -175,10 +174,19 @@ const authSlice = createSlice({
         if (state.user) {
           state.user.applicationStatus = 'PENDING';
         }
+      })
+      .addCase(initializeState.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(initializeState.fulfilled, (state, action) => {
+        return { ...state, ...action.payload };
+      })
+      .addCase(initializeState.rejected, (state) => {
+        return initialState;
       });
   }
 });
 
-export const { clearAuth, setState } = authSlice.actions;
+export const { setState, clearAuth } = authSlice.actions;
 export default authSlice.reducer;
 

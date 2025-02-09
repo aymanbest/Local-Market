@@ -4,12 +4,13 @@ import { ArrowLeft, LogOut, Shield, ClipboardList } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '../store/slices/authSlice';
 
-const AccountPage = ({ adminOnly = false }) => {
+const AccountPage = ({ adminOnly = false, producerOnly = false }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useSelector(state => state.auth);
   const isInAdminSection = location.pathname.startsWith('/admin');
+  const isInProducerSection = location.pathname.startsWith('/producer');
 
   const handleLogout = async () => {
     try {
@@ -46,12 +47,21 @@ const AccountPage = ({ adminOnly = false }) => {
 
         <div className="container px-4 pb-24">
           <div className="grid md:grid-cols-2 gap-6 mt-6">
-            <Link to={adminOnly ? "/admin/profile/security" : "/account/security"} className="border border-border p-4 rounded-xl hover:bg-cardBg transition">
+            <Link 
+              to={
+                adminOnly 
+                  ? "/admin/profile/security" 
+                  : producerOnly 
+                    ? "/producer/profile/security"
+                    : "/account/security"
+              } 
+              className="border border-border p-4 rounded-xl hover:bg-cardBg transition"
+            >
               <h2 className="text-2xl font-recoleta uppercase font-bold">Security</h2>
               <span className="text-textSecondary">Change your password .. etc</span>
             </Link>
             
-            {!adminOnly && (
+            {!adminOnly && !producerOnly && (
               <>
                 <Link to="/account/orders" className="border border-border p-4 rounded-xl hover:bg-cardBg transition">
                   <h2 className="text-2xl font-recoleta uppercase font-bold">Order History</h2>
@@ -69,6 +79,13 @@ const AccountPage = ({ adminOnly = false }) => {
               <Link to="/admin/users" className="border border-primary/30 bg-primary/5 p-4 rounded-xl hover:bg-primary/10 transition">
                 <h2 className="text-2xl font-recoleta uppercase font-bold text-primary">Admin Dashboard</h2>
                 <span className="text-textSecondary">Manage users, products, and more</span>
+              </Link>
+            )}
+
+            {user?.role === 'producer' && !isInProducerSection && (
+              <Link to="/producer/products" className="border border-primary/30 bg-primary/5 p-4 rounded-xl hover:bg-primary/10 transition">
+                <h2 className="text-2xl font-recoleta uppercase font-bold text-primary">Producer Dashboard</h2>
+                <span className="text-textSecondary">Manage your products and orders</span>
               </Link>
             )}
 

@@ -13,6 +13,9 @@ import producerApplicationsReducer from './slices/producerApplicationsSlice';
 import securityReducer from './slices/securitySlice';
 import orderReducer from './slices/orderSlice';
 import notificationReducer from './slices/notificationSlice';
+import producerProductsReducer from './slices/producerProductsSlice';
+import { initializeState, setState } from './slices/authSlice';
+
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -28,7 +31,8 @@ const store = configureStore({
     producerApplications: producerApplicationsReducer,
     security: securityReducer,
     orders: orderReducer,
-    notifications: notificationReducer
+    notifications: notificationReducer,
+    producerProducts: producerProductsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -37,6 +41,13 @@ const store = configureStore({
         ignoredActions: ['persist/PERSIST'],
       },
     })
+});
+
+// Initialize auth state immediately after store creation
+store.dispatch(initializeState()).then((resultAction) => {
+  if (initializeState.fulfilled.match(resultAction)) {
+    store.dispatch(setState(resultAction.payload));
+  }
 });
 
 // Clear cart if it's older than 24 hours
