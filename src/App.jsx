@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import store from './store';
+import store from './store/store';
 import Header from './components/Header';
 import MainPage from './components/MainPage';
 import CustomerLayout from './layouts/CustomerLayout';
@@ -61,6 +61,7 @@ const AppContent = () => {
             <Route path="/cart" element={<Cart />} />
             <Route path="/payment" element={<PaymentForm />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/success" element={<PaymentSuccess />} />
             <Route path="/customer/*" element={<CustomerLayout />} />
             <Route path="/producer/*" element={<ProducerLayout />} />
             <Route

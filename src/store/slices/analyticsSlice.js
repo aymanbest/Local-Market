@@ -6,7 +6,6 @@ export const fetchBusinessMetrics = createAsyncThunk(
   'analytics/fetchBusinessMetrics',
   async ({ startDate, endDate }, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
       const response = await api.get('/api/analytics/business-metrics', {
         params: { startDate, endDate }
       });
@@ -22,7 +21,6 @@ export const fetchTransactionData = createAsyncThunk(
   'analytics/fetchTransactionData',
   async ({ startDate, endDate }, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
       const response = await api.get('/api/analytics/transactions', {
         params: { startDate, endDate }
       });
@@ -38,7 +36,6 @@ export const fetchUserAnalytics = createAsyncThunk(
   'analytics/fetchUserAnalytics',
   async ({ startDate, endDate }, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
       const response = await api.get('/api/analytics/users', {
         params: { startDate, endDate }
       });
@@ -53,7 +50,6 @@ export const fetchProducerOverview = createAsyncThunk(
   'analytics/fetchProducerOverview',
   async (_, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
       const response = await api.get('/api/analytics/overview');
       return response.data;
     } catch (error) {
@@ -66,7 +62,6 @@ export const fetchOrderStats = createAsyncThunk(
   'analytics/fetchOrderStats',
   async (_, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
       const [total, processing, pending, delivered] = await Promise.all([
         api.get('/api/analytics/total-orders'),
         api.get('/api/analytics/total-processing-orders'),

@@ -22,7 +22,6 @@ export const fetchProducerOrders = createAsyncThunk(
   'orders/fetchProducerOrders',
   async (_, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
       const response = await api.get('/api/orders/producer-orders');
       return response.data;
     } catch (error) {

@@ -1,25 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../lib/axios';
 
-// Helper function to get auth token
-const getAuthHeader = (getState) => {
-  const token = getState().auth.token;
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
-};
 
 export const fetchPendingProducts = createAsyncThunk(
   'pendingProducts/fetchAll',
   async (_, { getState, rejectWithValue }) => {
     try {
-      const response = await api.get('/api/products/pending', getAuthHeader(getState));
-      console.log('API Response:', response.data); // Debug log
+      const response = await api.get('/api/products/pending');
       return response.data;
     } catch (error) {
-      console.error('API Error:', error); // Debug log
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch pending products');
     }
   }
@@ -31,9 +20,7 @@ export const approveProduct = createAsyncThunk(
     try {
       const response = await api.post(
         `/api/products/${productId}/approve`, 
-        {}, // empty body
-        getAuthHeader(getState)
-      );
+        {});
       
       return response.data;
     } catch (error) {
@@ -48,9 +35,7 @@ export const declineProduct = createAsyncThunk(
     try {
       const response = await api.post(
         `/api/products/${productId}/decline`, 
-        { reason },
-        getAuthHeader(getState)
-      );
+        { reason });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to decline product');

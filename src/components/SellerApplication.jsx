@@ -241,7 +241,7 @@ const SellerApplication = () => {
                     min="0"
                     value={formData.yearsOfExperience}
                     onChange={(e) => setFormData(prev => ({ ...prev, yearsOfExperience: e.target.value }))}
-                    className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full hide-spinner px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 

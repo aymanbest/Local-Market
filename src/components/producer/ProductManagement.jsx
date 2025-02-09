@@ -420,7 +420,7 @@ const ProductManagement = () => {
                           min="0"
                           value={localProduct.quantity}
                           onChange={(e) => setLocalProduct(prev => ({...prev, quantity: e.target.value}))}
-                          className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200/50 dark:border-white/[0.05]
+                          className="w-full hide-spinner pl-12 pr-4 py-3 rounded-xl border border-gray-200/50 dark:border-white/[0.05]
                                    bg-gray-50 dark:bg-white/[0.03] text-gray-900 dark:text-white
                                    focus:ring-2 focus:ring-primary focus:border-transparent
                                    placeholder-gray-500 dark:placeholder-gray-400"
@@ -621,7 +621,7 @@ const ProductManagement = () => {
                   placeholder="Min"
                   value={tempFilters.minPrice}
                   onChange={(e) => setTempFilters({ ...tempFilters, minPrice: e.target.value })}
-                  className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.05]
+                  className="w-full hide-spinner pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.05]
                            bg-white/[0.03] placeholder-gray-500 text-gray-200 text-sm sm:text-base
                            focus:bg-white/[0.08] focus:border-white/[0.08] focus:outline-none
                            transition-all duration-200"
@@ -641,7 +641,7 @@ const ProductManagement = () => {
                   placeholder="Max"
                   value={tempFilters.maxPrice}
                   onChange={(e) => setTempFilters({ ...tempFilters, maxPrice: e.target.value })}
-                  className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.05]
+                  className="w-full hide-spinner pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.05]
                            bg-white/[0.03] placeholder-gray-500 text-gray-200 text-sm sm:text-base
                            focus:bg-white/[0.08] focus:border-white/[0.08] focus:outline-none
                            transition-all duration-200"
@@ -661,7 +661,7 @@ const ProductManagement = () => {
                   placeholder="Min"
                   value={tempFilters.minInventory}
                   onChange={(e) => setTempFilters({ ...tempFilters, minInventory: e.target.value })}
-                  className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.05]
+                  className="w-full hide-spinner pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.05]
                            bg-white/[0.03] placeholder-gray-500 text-gray-200 text-sm sm:text-base
                            focus:bg-white/[0.08] focus:border-white/[0.08] focus:outline-none
                            transition-all duration-200"
@@ -681,7 +681,7 @@ const ProductManagement = () => {
                   placeholder="Max"
                   value={tempFilters.maxInventory}
                   onChange={(e) => setTempFilters({ ...tempFilters, maxInventory: e.target.value })}
-                  className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.05]
+                  className="w-full hide-spinner pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.05]
                            bg-white/[0.03] placeholder-gray-500 text-gray-200 text-sm sm:text-base
                            focus:bg-white/[0.08] focus:border-white/[0.08] focus:outline-none
                            transition-all duration-200"

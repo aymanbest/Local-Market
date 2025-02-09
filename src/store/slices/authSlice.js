@@ -36,7 +36,6 @@ export const initializeState = createAsyncThunk(
         };
       }
     } catch (error) {
-      console.error('Error initializing auth state:', error);
       return initialState;
     }
     return initialState;
@@ -66,7 +65,7 @@ export const loginUser = createAsyncThunk(
   async ({ email, password }, { rejectWithValue, dispatch }) => {
     try {
       // First, make the login request
-      const loginResponse = await api.post('/api/auth/login', {
+      await api.post('/api/auth/login', {
         email,
         password
       });

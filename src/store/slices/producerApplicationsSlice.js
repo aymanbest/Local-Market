@@ -5,7 +5,6 @@ import api from '../../lib/axios';
 export const fetchPendingApplications = createAsyncThunk(
   'producerApplications/fetchPending',
   async (_, { getState }) => {
-    const token = getState().auth.token;
     const response = await api.get('/api/producer-applications/pending');
     return response.data;
   }

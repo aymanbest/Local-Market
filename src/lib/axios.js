@@ -1,5 +1,5 @@
 import axios from 'axios';
-import store from '../store';
+import store from '../store/store';
 import { clearAuth } from '../store/slices/authSlice';
 
 const createApi = (withCredentials = true) => axios.create({
