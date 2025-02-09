@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store';
 import Header from './components/Header';
@@ -11,7 +11,6 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Cart from './components/Cart';
 import AccountPage from './components/AccountPage';
-
 import { ThemeProvider } from './context/ThemeContext';
 import Store from './components/Store';
 import Preloader from './components/Preloader';
@@ -23,14 +22,15 @@ import PaymentSuccess from './components/PaymentSuccess';
 import OrderBundle from './components/OrderBundle';
 import useLoading from './hooks/useLoading';
 import OrderHistory from './components/OrderHistory';
-// import SecurityPage from './components/SecurityPage';
 import SellerApplication from './components/SellerApplication';
 import MyReviews from './components/MyReviews';
 import AdminLayout from './layouts/AdminLayout';
 import SecurityPage from './components/SecurityPage';
+import ToastContainer from './components/ui/ToastContainer';
+import WebSocketInitializer from './components/WebSocketInitializer';
 
-
-function App() {
+// Create a separate component for content that needs Redux
+const AppContent = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const isLoading = useLoading();
 
@@ -48,85 +48,77 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider>
-      <Provider store={store}>
-        <Router>
-          {(initialLoading || isLoading) && <Preloader />}
-          <div className={`min-h-screen bg-background transition-colors duration-300 ${initialLoading ? 'hidden' : ''}`}>
-            <Header />
-            <div className="pt-28 md:pt-32">
-              <Routes>
-                <Route path="/" element={<MainPage />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/payment" element={<PaymentForm />} />
-                <Route path="/payment-success" element={<PaymentSuccess />} />
-                <Route path="/customer/*" element={<CustomerLayout />} />
-                <Route path="/producer/*" element={<ProducerLayout />} />
-                {/* <Route element={<ProtectedRoute />}> */}
-                <Route
-                  path="/account"
-                  element={
-                    <ProtectedRoute>
-                      <AccountPage />
-                    </ProtectedRoute>
-                  }
-                />
-                {/* <Route path="/account/security" element={<SecurityPage />} /> */}
-                <Route path="/account/orders" element={<OrderHistory />} />
-                <Route path="/orders/bundle/:bundleId" element={<OrderBundle />} />
-                <Route
-                  path="/account/apply-seller"
-                  element={
-                    <ProtectedRoute>
-                      <SellerApplication />
-                    </ProtectedRoute>
-                  }
-                />
+    <Router>
+      <WebSocketInitializer />
+      {(initialLoading || isLoading) && <Preloader />}
+      <div className={`min-h-screen bg-background transition-colors duration-300 ${initialLoading ? 'hidden' : ''}`}>
+        <Header />
+        <div className="pt-28 md:pt-32">
+          <Routes>
+            <Route path="/" element={<MainPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/payment" element={<PaymentForm />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/customer/*" element={<CustomerLayout />} />
+            <Route path="/producer/*" element={<ProducerLayout />} />
+            <Route
+              path="/account"
+              element={
+                <ProtectedRoute>
+                  <AccountPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/account/orders" element={<OrderHistory />} />
+            <Route path="/orders/bundle/:bundleId" element={<OrderBundle />} />
+            <Route
+              path="/account/apply-seller"
+              element={
+                <ProtectedRoute>
+                  <SellerApplication />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/category/:categoryName" element={<Store />} />
+            <Route path="/store" element={<Store />} />
+            <Route path="/become-seller" element={<BecomeSeller />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/faq/:category" element={<FAQ />} />
+            <Route path="/store/products/:id" element={<ProductDetails />} />
+            <Route path="/account/reviews" element={
+              <ProtectedRoute>
+                <MyReviews />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/*" element={<AdminLayout />} />
+            <Route path="/admin/login" element={<Login adminOnly />} />
+            <Route 
+              path="/account/security" 
+              element={
+                <ProtectedRoute>
+                  <SecurityPage />
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
+        </div>
+        <ToastContainer />
+      </div>
+    </Router>
+  );
+};
 
-                <Route path="/category/:categoryName" element={<Store />} />
-                <Route path="/store" element={<Store />} />
-                <Route path="/become-seller" element={<BecomeSeller />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/faq/:category" element={<FAQ />} />
-                <Route path="/store/products/:id" element={<ProductDetails />} />
-                <Route path="/account/reviews" element={
-                  <ProtectedRoute>
-                    <MyReviews />
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/*" element={<AdminLayout />} />
-                <Route path="/admin/login" element={<Login adminOnly />} />
-                <Route 
-                  path="/account/security" 
-                  element={
-                    <ProtectedRoute>
-                      <SecurityPage />
-                    </ProtectedRoute>
-                  } 
-                />
-              </Routes>
-            </div>
-          </div>
-        </Router>
-      </Provider>
-    </ThemeProvider>
+function App() {
+  return (
+    <Provider store={store}>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </Provider>
   );
 }
-// function ConditionalHeader() {
-//   const location = useLocation();
-
-//   if (location.pathname.startsWith('/admin')) {
-//     return null;
-//   }
-
-//   if (location.pathname.startsWith('/producer')) {
-//     return <ProducerHeader />;
-//   }
-
-//   return <Header />;
-// }
 
 export default App;
 

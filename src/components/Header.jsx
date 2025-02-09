@@ -3,11 +3,81 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
   ShoppingCart, CircleUser, Leaf, Sun, Moon, Menu, X,
-  Building2, LayoutDashboard, Users, Package, StarIcon, Home, Store, HelpCircle, MessageCircle, FileQuestion, LogIn, UserPlus, LogOut, Settings, ChevronRight, ClipboardList, BarChart2
+  Building2, LayoutDashboard, Users, Package, StarIcon, Home, Store, HelpCircle, MessageCircle, FileQuestion, LogIn, UserPlus, LogOut, Settings, ChevronRight, ClipboardList, BarChart2, Bell
 } from 'lucide-react';
 import { logoutUser } from '../store/slices/authSlice';
 import { useTheme } from '../context/ThemeContext';
+import { markAsRead, markAllAsRead } from '../store/slices/notificationSlice';
 import Button from './ui/Button';
+
+// Add this before the Header component
+const NotificationItem = ({ notification, onRead }) => {
+  const { isDark } = useTheme();
+
+  const getIcon = (type) => {
+    switch (type) {
+      case 'NEW_ORDER':
+        return <Package className="w-5 h-5 text-blue-500" />;
+      case 'LOW_STOCK_ALERT':
+      case 'CRITICAL_STOCK_ALERT':
+        return <BarChart2 className="w-5 h-5 text-red-500" />;
+      case 'PRODUCT_APPROVED':
+        return <StarIcon className="w-5 h-5 text-green-500" />;
+      case 'ORDER_STATUS_UPDATE':
+        return <ClipboardList className="w-5 h-5 text-purple-500" />;
+      case 'DELIVERY_UPDATE':
+        return <Package className="w-5 h-5 text-indigo-500" />;
+      case 'REVIEW_STATUS_UPDATE':
+        return <MessageCircle className="w-5 h-5 text-yellow-500" />;
+      default:
+        return <Bell className="w-5 h-5 text-gray-500" />;
+    }
+  };
+
+  return (
+    <div 
+      className={`
+        p-4 border-b last:border-b-0 cursor-pointer
+        ${notification.read 
+          ? isDark 
+            ? 'bg-transparent' 
+            : 'bg-transparent' 
+          : isDark
+            ? 'bg-white/5'
+            : 'bg-black/5'
+        }
+        transition-all duration-300 hover:bg-primary/5
+      `}
+      onClick={() => onRead(notification.id)}
+    >
+      <div className="flex items-start gap-3">
+        <div className={`
+          p-2 rounded-xl
+          ${isDark ? 'bg-white/10' : 'bg-black/5'}
+        `}>
+          {getIcon(notification.type)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className={`
+            text-sm font-medium mb-1 truncate
+            ${notification.read 
+              ? 'text-textSecondary' 
+              : 'text-text'
+            }
+          `}>
+            {notification.message}
+          </p>
+          <p className="text-xs text-textSecondary">
+            {new Date(notification.timestamp).toLocaleString()}
+          </p>
+        </div>
+        {!notification.read && (
+          <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -18,6 +88,8 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isDark, toggleTheme } = useTheme();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const { notifications, unreadCount } = useSelector(state => state.notifications);
 
   // Handle scroll effect
   useEffect(() => {
@@ -524,6 +596,71 @@ const Header = () => {
                     <span className="text-sm font-medium text-text">{user.lastName || 'Admin'}</span>
                   </Link>
                 )}
+
+                {/* Notifications */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className={`
+                      p-2 rounded-full transition-all duration-300 
+                      ${isDark ? 'bg-white/10' : 'bg-black/5'}
+                      ${showNotifications ? 'bg-primary/10' : ''}
+                    `}
+                  >
+                    <Bell className={`
+                      w-5 h-5 
+                      ${showNotifications ? 'text-primary' : 'text-text'}
+                    `} />
+                    {unreadCount > 0 && (
+                      <span className="
+                        absolute -top-1 -right-1 w-5 h-5 
+                        bg-primary text-white text-xs font-medium 
+                        rounded-full flex items-center justify-center
+                      ">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Notifications Dropdown */}
+                  {showNotifications && (
+                    <div className={`
+                      absolute right-0 mt-2 w-96 rounded-xl shadow-lg
+                      ${isDark 
+                        ? 'bg-[#0a0a0a] border border-white/10' 
+                        : 'bg-white border border-black/10'
+                      }
+                      overflow-hidden z-50
+                    `}>
+                      <div className="p-4 border-b border-border flex items-center justify-between">
+                        <h3 className="font-medium text-text">Notifications</h3>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={() => dispatch(markAllAsRead())}
+                            className="text-sm text-primary hover:text-primaryHover"
+                          >
+                            Mark all as read
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-[400px] overflow-y-auto">
+                        {notifications.length > 0 ? (
+                          notifications.map((notification) => (
+                            <NotificationItem
+                              key={notification.id}
+                              notification={notification}
+                              onRead={(id) => dispatch(markAsRead(id))}
+                            />
+                          ))
+                        ) : (
+                          <div className="p-4 text-center text-textSecondary">
+                            No notifications
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

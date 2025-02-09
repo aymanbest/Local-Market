@@ -10,10 +10,11 @@ export default {
       fontFamily: {
         'staatliches': ['Staatliches', 'serif'],
         'recoleta': ['Recoleta', 'serif'],
+        'poppins': ['Poppins', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',
-        'slide-up': 'slideUp 0.5s ease-out',
+        'slide-up': 'slide-up 0.3s ease-out',
         'bounce-slow': 'bounce 3s infinite',
         'slide-left': 'slideLeft 0.3s ease-out',
         'slide-right': 'slideRight 0.3s ease-out',
@@ -21,6 +22,7 @@ export default {
         'loading-bar': 'loading 1s ease-in-out infinite',
         'spin': 'spin 1s linear infinite',
         'spin-reverse': 'spin-reverse 1s linear infinite',
+        'slide-down': 'slide-down 0.3s ease-out'
       },
       keyframes: {
         fadeIn: {
@@ -47,6 +49,26 @@ export default {
           '0%': { transform: 'rotate(360deg)' },
           '100%': { transform: 'rotate(0deg)' },
         },
+        'slide-up': {
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(1rem)'
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0)'
+          }
+        },
+        'slide-down': {
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(-1rem)'
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0)'
+          }
+        }
       },
       scale: {
         '102': '1.02',
@@ -83,6 +105,7 @@ export default {
         'gray-750': '#2d374b',
         'gray-800': '#1f2937',
         'gray-900': '#111827',
+        foreground: 'var(--foreground)',
       },
       backgroundColor: {
         'gray-800': '#1f2937',
