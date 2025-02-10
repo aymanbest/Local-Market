@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
   ShoppingCart, CircleUser, Leaf, Sun, Moon, Menu, X,
-  Building2, LayoutDashboard, Users, Package, StarIcon, Home, Store, HelpCircle, MessageCircle, FileQuestion, LogIn, UserPlus, LogOut, ChevronRight, ClipboardList, BarChart2, Bell, BadgePercent
+  Building2, LayoutDashboard, Users, Package, StarIcon, Home, Store, BookOpenText, MailOpen, MessageCircleQuestion, LogIn, UserPlus, LogOut, ChevronRight, ClipboardList, BarChart2, Bell, BadgePercent
 } from 'lucide-react';
 import { logoutUser } from '../store/slices/authSlice';
 import { useTheme } from '../context/ThemeContext';
@@ -28,7 +28,7 @@ const NotificationItem = ({ notification, onRead }) => {
       case 'DELIVERY_UPDATE':
         return <Package className="w-5 h-5 text-indigo-500" />;
       case 'REVIEW_STATUS_UPDATE':
-        return <MessageCircle className="w-5 h-5 text-yellow-500" />;
+        return <MailOpen className="w-5 h-5 text-yellow-500" />;
       default:
         return <Bell className="w-5 h-5 text-gray-500" />;
     }
@@ -132,11 +132,11 @@ const Header = () => {
   ];
 
   const regularNavigationItems = [
-    { path: '/', label: 'Home' },
-    { path: '/store', label: 'Store' },
-    { path: '/about', label: 'About' },
-    { path: '/support', label: 'Support' },
-    { path: '/faq', label: 'FAQ' },
+    { path: '/', label: 'Home', icon: Home },
+    { path: '/store', label: 'Store', icon: Store },
+    { path: '/about', label: 'About', icon: BookOpenText },
+    { path: '/support', label: 'Support', icon: MailOpen },
+    { path: '/faq', label: 'FAQ', icon: MessageCircleQuestion },
   ];
 
   // Add Become Seller link based on conditions
@@ -245,112 +245,201 @@ const Header = () => {
               <div className="px-6 py-4 space-y-6">
                 {/* Primary Navigation */}
                 <div className="space-y-2">
-                  {[
-                    { icon: Home, label: 'Home', path: '/' },
-                    { icon: Store, label: 'Store', path: '/store' },
-                    { 
-                      icon: ShoppingCart, 
-                      label: 'Cart', 
-                      path: '/cart',
-                      badge: items.length > 0 && items.length
-                    },
-                    { 
-                      icon: CircleUser, 
-                      label: 'Profile', 
-                      path: isAuthenticated ? '/account' : '/login' 
-                    }
-                  ].map((item, index) => (
-                    <Link
-                      key={index}
-                      to={item.path}
-                      onClick={() => setShowMobileMenu(false)}
-                      className={`
-                        group flex items-center justify-between p-3 rounded-xl
-                        transition-all duration-300
-                        ${isActivePath(item.path)
-                          ? isDark 
-                            ? 'bg-white/10 text-white' 
-                            : 'bg-black/5 text-gray-900'
-                          : isDark
-                            ? 'text-gray-300 hover:bg-white/5' 
-                            : 'text-gray-600 hover:bg-black/5'
-                        }
-                      `}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className={`
-                          p-2 rounded-xl
+                  {isAdmin ? (
+                    // Admin Navigation Items
+                    adminNavigationItems.map((item, index) => (
+                      <Link
+                        key={index}
+                        to={item.path}
+                        onClick={() => setShowMobileMenu(false)}
+                        className={`
+                          group flex items-center justify-between p-3 rounded-xl
+                          transition-all duration-300
                           ${isActivePath(item.path)
-                            ? 'bg-primary text-white'
+                            ? isDark 
+                              ? 'bg-white/10 text-white' 
+                              : 'bg-black/5 text-gray-900'
                             : isDark
-                              ? 'bg-white/10' 
-                              : 'bg-black/5'
+                              ? 'text-gray-300 hover:bg-white/5' 
+                              : 'text-gray-600 hover:bg-black/5'
                           }
-                          transition-colors duration-300
-                        `}>
-                          <item.icon className="w-5 h-5" />
+                        `}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`
+                            p-2 rounded-xl
+                            ${isActivePath(item.path)
+                              ? 'bg-primary text-white'
+                              : isDark
+                                ? 'bg-white/10' 
+                                : 'bg-black/5'
+                            }
+                            transition-colors duration-300
+                          `}>
+                            <item.icon className="w-5 h-5" />
+                          </div>
+                          <span className="font-medium">{item.label}</span>
                         </div>
-                        <span className="font-medium">{item.label}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        {item.badge && (
-                          <span className="
-                            px-2 py-1 text-xs font-medium rounded-full
-                            bg-primary text-white
-                          ">
-                            {item.badge}
-                          </span>
-                        )}
                         <ChevronRight className={`
                           w-5 h-5 text-gray-400
                           transition-transform duration-300
                           group-hover:translate-x-1
                         `} />
-                      </div>
-                    </Link>
-                  ))}
+                      </Link>
+                    ))
+                  ) : isProducer ? (
+                    // Producer Navigation Items
+                    producerNavigationItems.map((item, index) => (
+                      <Link
+                        key={index}
+                        to={item.path}
+                        onClick={() => setShowMobileMenu(false)}
+                        className={`
+                          group flex items-center justify-between p-3 rounded-xl
+                          transition-all duration-300
+                          ${isActivePath(item.path)
+                            ? isDark 
+                              ? 'bg-white/10 text-white' 
+                              : 'bg-black/5 text-gray-900'
+                            : isDark
+                              ? 'text-gray-300 hover:bg-white/5' 
+                              : 'text-gray-600 hover:bg-black/5'
+                          }
+                        `}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`
+                            p-2 rounded-xl
+                            ${isActivePath(item.path)
+                              ? 'bg-primary text-white'
+                              : isDark
+                                ? 'bg-white/10' 
+                                : 'bg-black/5'
+                            }
+                            transition-colors duration-300
+                          `}>
+                            <item.icon className="w-5 h-5" />
+                          </div>
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        <ChevronRight className={`
+                          w-5 h-5 text-gray-400
+                          transition-transform duration-300
+                          group-hover:translate-x-1
+                        `} />
+                      </Link>
+                    ))
+                  ) : (
+                    // Regular User Navigation Items
+                    [
+                      { icon: Home, label: 'Home', path: '/' },
+                      { icon: Store, label: 'Store', path: '/store' },
+                      { 
+                        icon: ShoppingCart, 
+                        label: 'Cart', 
+                        path: '/cart',
+                        badge: items.length > 0 && items.length
+                      },
+                      { 
+                        icon: CircleUser, 
+                        label: 'Profile', 
+                        path: isAuthenticated ? '/account' : '/login' 
+                      }
+                    ].map((item, index) => (
+                      <Link
+                        key={index}
+                        to={item.path}
+                        onClick={() => setShowMobileMenu(false)}
+                        className={`
+                          group flex items-center justify-between p-3 rounded-xl
+                          transition-all duration-300
+                          ${isActivePath(item.path)
+                            ? isDark 
+                              ? 'bg-white/10 text-white' 
+                              : 'bg-black/5 text-gray-900'
+                            : isDark
+                              ? 'text-gray-300 hover:bg-white/5' 
+                              : 'text-gray-600 hover:bg-black/5'
+                          }
+                        `}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`
+                            p-2 rounded-xl
+                            ${isActivePath(item.path)
+                              ? 'bg-primary text-white'
+                              : isDark
+                                ? 'bg-white/10' 
+                                : 'bg-black/5'
+                            }
+                            transition-colors duration-300
+                          `}>
+                            <item.icon className="w-5 h-5" />
+                          </div>
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {item.badge && (
+                            <span className="
+                              px-2 py-1 text-xs font-medium rounded-full
+                              bg-primary text-white
+                            ">
+                              {item.badge}
+                            </span>
+                          )}
+                          <ChevronRight className={`
+                            w-5 h-5 text-gray-400
+                            transition-transform duration-300
+                            group-hover:translate-x-1
+                          `} />
+                        </div>
+                      </Link>
+                    ))
+                  )}
                 </div>
 
-                {/* Support Section */}
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-textSecondary px-2 mb-3">
-                    Support
-                  </h3>
-                  {[
-                    { icon: HelpCircle, label: 'Help Center', path: '/help' },
-                    { icon: MessageCircle, label: 'Contact Us', path: '/contact' },
-                    { icon: FileQuestion, label: 'FAQ', path: '/faq' }
-                  ].map((item, index) => (
-                    <Link
-                      key={index}
-                      to={item.path}
-                      onClick={() => setShowMobileMenu(false)}
-                      className={`
-                        group flex items-center justify-between p-3 rounded-xl
-                        transition-all duration-300
-                        ${isDark 
-                          ? 'text-gray-300 hover:bg-white/5' 
-                          : 'text-gray-600 hover:bg-black/5'
-                        }
-                      `}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className={`
-                          p-2 rounded-xl
-                          ${isDark ? 'bg-white/10' : 'bg-black/5'}
-                        `}>
-                          <item.icon className="w-5 h-5" />
+                {/* Support Section - Only show for regular users */}
+                {!isAdmin && !isProducer && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-textSecondary px-2 mb-3">
+                      Support
+                    </h3>
+                    {[
+                      { icon: BookOpenText, label: 'Help Center', path: '/help' },
+                      { icon: MailOpen, label: 'Contact Us', path: '/contact' },
+                      { icon: MessageCircleQuestion, label: 'FAQ', path: '/faq' }
+                    ].map((item, index) => (
+                      <Link
+                        key={index}
+                        to={item.path}
+                        onClick={() => setShowMobileMenu(false)}
+                        className={`
+                          group flex items-center justify-between p-3 rounded-xl
+                          transition-all duration-300
+                          ${isDark 
+                            ? 'text-gray-300 hover:bg-white/5' 
+                            : 'text-gray-600 hover:bg-black/5'
+                          }
+                        `}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`
+                            p-2 rounded-xl
+                            ${isDark ? 'bg-white/10' : 'bg-black/5'}
+                          `}>
+                            <item.icon className="w-5 h-5" />
+                          </div>
+                          <span className="font-medium">{item.label}</span>
                         </div>
-                        <span className="font-medium">{item.label}</span>
-                      </div>
-                      <ChevronRight className={`
-                        w-5 h-5 text-gray-400
-                        transition-transform duration-300
-                        group-hover:translate-x-1
-                      `} />
-                    </Link>
-                  ))}
-                </div>
+                        <ChevronRight className={`
+                          w-5 h-5 text-gray-400
+                          transition-transform duration-300
+                          group-hover:translate-x-1
+                        `} />
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -512,18 +601,87 @@ const Header = () => {
                 </button>
 
                 {!isAdmin && (
-                  <Link to="/cart" className="relative group">
-                    <div className={`p-2 rounded-full transition-all duration-300 ${
-                      isDark ? 'bg-white/10' : 'bg-black/5'
-                    }`}>
-                      <ShoppingCart className="w-5 h-5 text-text group-hover:text-primary transition-colors" />
-                      {items.length > 0 && (
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs font-medium rounded-full flex items-center justify-center">
-                          {items.length}
-                        </span>
-                      )}
-                    </div>
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link to="/cart" className="relative group">
+                      <div className={`p-2 rounded-full transition-all duration-300 ${
+                        isDark ? 'bg-white/10' : 'bg-black/5'
+                      }`}>
+                        <ShoppingCart className="w-5 h-5 text-text group-hover:text-primary transition-colors" />
+                        {items.length > 0 && (
+                          <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs font-medium rounded-full flex items-center justify-center">
+                            {items.length}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+
+                    {/* Notifications */}
+                    {isAuthenticated && (
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowNotifications(!showNotifications)}
+                          className={`
+                            p-2 rounded-full transition-all duration-300 
+                            ${isDark ? 'bg-white/10' : 'bg-black/5'}
+                            ${showNotifications ? 'bg-primary/10' : ''}
+                          `}
+                        >
+                          <Bell className={`
+                            w-5 h-5 
+                            ${showNotifications ? 'text-primary' : 'text-text'}
+                          `} />
+                          {unreadCount > 0 && (
+                            <span className="
+                              absolute -top-1 -right-1 w-5 h-5 
+                              bg-primary text-white text-xs font-medium 
+                              rounded-full flex items-center justify-center
+                            ">
+                              {unreadCount}
+                            </span>
+                          )}
+                        </button>
+
+                        {/* Notifications Dropdown */}
+                        {showNotifications && (
+                          <div className={`
+                            absolute right-0 mt-2 w-96 rounded-xl shadow-lg
+                            ${isDark 
+                              ? 'bg-[#0a0a0a] border border-white/10' 
+                              : 'bg-white border border-black/10'
+                            }
+                            overflow-hidden z-50
+                          `}>
+                            <div className="p-4 border-b border-border flex items-center justify-between">
+                              <h3 className="font-medium text-text">Notifications</h3>
+                              {unreadCount > 0 && (
+                                <button
+                                  onClick={() => dispatch(markAllAsRead())}
+                                  className="text-sm text-primary hover:text-primaryHover"
+                                >
+                                  Mark all as read
+                                </button>
+                              )}
+                            </div>
+                            <div className="max-h-[400px] overflow-y-auto">
+                              {notifications.length > 0 ? (
+                                notifications.map((notification) => (
+                                  <NotificationItem
+                                    key={notification.id}
+                                    notification={notification}
+                                    onRead={(id) => dispatch(markAsRead(id))}
+                                  />
+                                ))
+                              ) : (
+                                <div className="p-4 text-center text-textSecondary">
+                                  No notifications
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {!isAuthenticated ? (
@@ -597,71 +755,6 @@ const Header = () => {
                     <span className="text-sm font-medium text-text">{user.lastName || 'Admin'}</span>
                   </Link>
                 )}
-
-                {/* Notifications */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowNotifications(!showNotifications)}
-                    className={`
-                      p-2 rounded-full transition-all duration-300 
-                      ${isDark ? 'bg-white/10' : 'bg-black/5'}
-                      ${showNotifications ? 'bg-primary/10' : ''}
-                    `}
-                  >
-                    <Bell className={`
-                      w-5 h-5 
-                      ${showNotifications ? 'text-primary' : 'text-text'}
-                    `} />
-                    {unreadCount > 0 && (
-                      <span className="
-                        absolute -top-1 -right-1 w-5 h-5 
-                        bg-primary text-white text-xs font-medium 
-                        rounded-full flex items-center justify-center
-                      ">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </button>
-
-                  {/* Notifications Dropdown */}
-                  {showNotifications && (
-                    <div className={`
-                      absolute right-0 mt-2 w-96 rounded-xl shadow-lg
-                      ${isDark 
-                        ? 'bg-[#0a0a0a] border border-white/10' 
-                        : 'bg-white border border-black/10'
-                      }
-                      overflow-hidden z-50
-                    `}>
-                      <div className="p-4 border-b border-border flex items-center justify-between">
-                        <h3 className="font-medium text-text">Notifications</h3>
-                        {unreadCount > 0 && (
-                          <button
-                            onClick={() => dispatch(markAllAsRead())}
-                            className="text-sm text-primary hover:text-primaryHover"
-                          >
-                            Mark all as read
-                          </button>
-                        )}
-                      </div>
-                      <div className="max-h-[400px] overflow-y-auto">
-                        {notifications.length > 0 ? (
-                          notifications.map((notification) => (
-                            <NotificationItem
-                              key={notification.id}
-                              notification={notification}
-                              onRead={(id) => dispatch(markAsRead(id))}
-                            />
-                          ))
-                        ) : (
-                          <div className="p-4 text-center text-textSecondary">
-                            No notifications
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
           </div>
@@ -691,18 +784,46 @@ const Header = () => {
               {/* Actions */}
               <div className="flex items-center gap-3">
                 {!isAdmin && (
-                  <Link to="/cart" className="relative">
-                    <div className={`p-2 rounded-full transition-all duration-300 ${
-                      isDark ? 'bg-white/10' : 'bg-black/5'
-                    }`}>
-                      <ShoppingCart className="w-5 h-5 text-text" />
-                      {items.length > 0 && (
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs font-medium rounded-full flex items-center justify-center">
-                          {items.length}
-                        </span>
-                      )}
-                    </div>
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link to="/cart" className="relative">
+                      <div className={`p-2 rounded-full transition-all duration-300 ${
+                        isDark ? 'bg-white/10' : 'bg-black/5'
+                      }`}>
+                        <ShoppingCart className="w-5 h-5 text-text" />
+                        {items.length > 0 && (
+                          <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs font-medium rounded-full flex items-center justify-center">
+                            {items.length}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+
+                    {/* Mobile Notifications */}
+                    {isAuthenticated && (
+                      <button
+                        onClick={() => setShowNotifications(!showNotifications)}
+                        className={`
+                          p-2 rounded-full transition-all duration-300 
+                          ${isDark ? 'bg-white/10' : 'bg-black/5'}
+                          ${showNotifications ? 'bg-primary/10' : ''}
+                        `}
+                      >
+                        <Bell className={`
+                          w-5 h-5 
+                          ${showNotifications ? 'text-primary' : 'text-text'}
+                        `} />
+                        {unreadCount > 0 && (
+                          <span className="
+                            absolute -top-1 -right-1 w-5 h-5 
+                            bg-primary text-white text-xs font-medium 
+                            rounded-full flex items-center justify-center
+                          ">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 )}
 
                 <button

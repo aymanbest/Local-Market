@@ -41,24 +41,25 @@ const PaymentSuccess = ({ orderData }) => {
     return () => window.removeEventListener('resize', detectSize);
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (location.pathname !== '/success') {
-        navigate('/');
-      }
-    }, 10000);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     if (location.pathname !== '/success') {
+  //       navigate('/');
+  //     }
+  //   }, 10000);
 
-    return () => clearTimeout(timer);
-  }, [navigate, location]);
+  //   return () => clearTimeout(timer);
+  // }, [navigate, location]);
 
   // Use mock data for development route
   const mockOrderData = {
     ordercheckout: "DEV123456",
     totalPrice: 199.99,
-    accessToken: "mock-token"
+    ordercheckout: "mock-token"
   };
 
   const displayData = location.pathname === '/success' ? mockOrderData : orderData;
+  console.log(displayData);
 
   if (!displayData && location.pathname !== '/success') {
     return (
@@ -113,7 +114,7 @@ const PaymentSuccess = ({ orderData }) => {
               Go to Home
             </Link>
             <Link 
-              to={`/orders/bundle/${displayData.ordercheckout}?token=${displayData.accessToken}`}
+              to={`/orders/bundle/${displayData.ordercheckout}?token=${displayData.ordercheckout}`}
               className="px-6 py-2.5 border border-border text-base font-medium text-text rounded-full hover:bg-cardBg transition-colors duration-300 shadow-md hover:shadow-lg"
             >
               View Order

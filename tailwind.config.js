@@ -99,6 +99,7 @@ export default {
         headerBg: 'var(--color-header-bg)',
         cardBg: 'var(--color-card-bg)',
         text: 'var(--color-text)',
+        cardBgAdd: 'var(--color-card-bg-add)',
         textSecondary: 'var(--color-text-secondary)',
         border: 'var(--color-border)',
         inputBg: 'var(--color-input-bg)',

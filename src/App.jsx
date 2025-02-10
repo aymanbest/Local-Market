@@ -28,6 +28,9 @@ import AdminLayout from './layouts/AdminLayout';
 import SecurityPage from './components/SecurityPage';
 import ToastContainer from './components/ui/ToastContainer';
 import WebSocketInitializer from './components/WebSocketInitializer';
+import Support from './components/Support';
+import About from './components/About';
+
 
 // Create a separate component for content that needs Redux
 const AppContent = () => {
@@ -88,6 +91,8 @@ const AppContent = () => {
             <Route path="/faq" element={<FAQ />} />
             <Route path="/faq/:category" element={<FAQ />} />
             <Route path="/store/products/:id" element={<ProductDetails />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/about" element={<About />} />
             <Route path="/account/reviews" element={
               <ProtectedRoute>
                 <MyReviews />

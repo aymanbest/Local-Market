@@ -9,9 +9,10 @@
   :root {
     --color-primary: #5D8736;
     --color-primary-hover: #A9C46C;
-    --color-background: #f8f9fa;
+    --color-background: #e0eae0;
     --color-header-bg: #ffffff;
-    --color-card-bg: #ffffff;
+    --color-card-bg: #ffffff93;
+    --color-card-bg-add: #ffffff;
     --color-text: #1a1a1a;
     --color-text-secondary: #4b5563;
     --color-border: #e5e7eb;
@@ -26,7 +27,8 @@
     --color-primary-hover: #5D8736;
     --color-background: #0a0a0a;
     --color-header-bg: #1E1E1E;
-    --color-card-bg: #1E1E1E;
+    --color-card-bg: #1e1e1e8c;
+    --color-card-bg-add: #1e1e1e8c;
     --color-text: #FFFFFF;
     --color-text-secondary: #d4d4d4;
     --color-border: #2f2f2f;
@@ -53,5 +55,3 @@ input[type="number"].hide-spinner::-webkit-outer-spin-button {
 input[type="number"].hide-spinner {
   -moz-appearance: textfield;
 }
-
-

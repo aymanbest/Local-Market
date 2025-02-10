@@ -228,7 +228,7 @@ const MainPage = () => {
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
       >
-        <div className="bg-cardBg backdrop-blur-sm rounded-xl p-8 border border-cardBorder transition-colors duration-300">
+        <div className="bg-cardBg backdrop-blur-sm rounded-xl p-8 border-cardBorder transition-colors duration-300">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div className="space-y-2">
               <Heart className="w-8 h-8 text-primary mx-auto" />
@@ -296,13 +296,13 @@ const MainPage = () => {
             const colorScheme = getCategoryColor(category.categoryId);
             return (
               <motion.div
+                key={category.categoryId}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
               >
                 <Link
-                  key={category.categoryId}
                   to={`/category/${encodeURIComponent(category.name.toLowerCase())}`}
                   className={`animate-${direction === 'right' ? 'slide-right' : 'slide-left'}`}
                 >
@@ -397,7 +397,7 @@ const MainPage = () => {
           {/* Secure Payment */}
           <motion.div 
             variants={item}
-            className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg"
+            className="col-span-2 rounded-lg  border-cardBorder px-5 pb-5 bg-cardBg"
           >
             <div className="w-min mb-2">
               <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#A62BDA] to-100%">
@@ -413,7 +413,7 @@ const MainPage = () => {
           {/* Superior Quality */}
           <motion.div 
             variants={item}
-            className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg"
+            className="col-span-2 rounded-lg  border-cardBorder px-5 pb-5 bg-cardBg"
           >
             <div className="w-min mb-2">
               <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#31B3CC] to-100%">
@@ -429,7 +429,7 @@ const MainPage = () => {
           {/* Best Prices */}
           <motion.div 
             variants={item}
-            className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg"
+            className="col-span-2 rounded-lg  border-cardBorder px-5 pb-5 bg-cardBg"
           >
             <div className="w-min mb-2">
               <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#FF9900] to-100%">
@@ -448,7 +448,7 @@ const MainPage = () => {
           {/* 24×7 Support */}
           <motion.div 
             variants={item}
-            className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg"
+            className="col-span-2 rounded-lg  border-cardBorder px-5 pb-5 bg-cardBg"
           >
             <div className="w-min mb-2">
               <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#F46036] to-100%">
@@ -464,7 +464,7 @@ const MainPage = () => {
           {/* Fast Delivery */}
           <motion.div 
             variants={item}
-            className="col-span-2 rounded-lg border border-cardBorder px-5 pb-5 bg-cardBg"
+            className="col-span-2 rounded-lg  border-cardBorder px-5 pb-5 bg-cardBg"
           >
             <div className="w-min mb-2">
               <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#ED45CD] to-100%">
