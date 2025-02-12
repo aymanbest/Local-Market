@@ -11,8 +11,8 @@ export const fetchCategories = createAsyncThunk(
 
 export const fetchProductsByCategory = createAsyncThunk(
   'categories/fetchProductsByCategory',
-  async (categoryId) => {
-    const response = await api.get(`/api/products/category/${categoryId}`);
+  async ({ categoryId, page = 0, size = 4, sortBy = 'name', direction = 'desc' }) => {
+    const response = await api.get(`/api/products/category/${categoryId}?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
     return response.data;
   }
 );
@@ -39,7 +39,19 @@ const categorySlice = createSlice({
     currentCategoryProducts: null,
     selectedProduct: null,
     status: 'idle',
-    error: null
+    error: null,
+    pagination: {
+      currentPage: 0,
+      totalPages: 0,
+      totalElements: 0,
+      pageSize: 4,
+      isFirst: true,
+      isLast: false
+    },
+    sorting: {
+      sortBy: 'name',
+      direction: 'desc'
+    }
   },
   reducers: {
     setSelectedProduct: (state, action) => {
@@ -64,7 +76,22 @@ const categorySlice = createSlice({
       })
       .addCase(fetchProductsByCategory.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.currentCategoryProducts = action.payload;
+        const allProducts = action.payload.content.flatMap(producer => {
+          return producer.products.map(product => ({
+            ...product,
+            producer: producer.username,
+            producerName: `${producer.firstname} ${producer.lastname}`
+          }));
+        });
+        state.currentCategoryProducts = allProducts;
+        state.pagination = {
+          currentPage: action.payload.number,
+          totalPages: action.payload.totalPages,
+          totalElements: action.payload.totalElements,
+          pageSize: action.payload.size,
+          isFirst: action.payload.first,
+          isLast: action.payload.last
+        };
       })
       .addCase(fetchProductsByCategory.rejected, (state, action) => {
         state.status = 'failed';

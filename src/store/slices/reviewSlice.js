@@ -31,10 +31,10 @@ export const submitReview = createAsyncThunk(
 // Get user's reviews
 export const fetchUserReviews = createAsyncThunk(
   'reviews/fetchUserReviews',
-  async (_, { rejectWithValue, getState }) => {
+  async ({ page = 0, size = 4, sortBy = 'createdAt', direction = 'desc' } = {}, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token;
-      const response = await api.get('/api/reviews');
+      const response = await api.get(`/api/reviews?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -90,7 +90,19 @@ const reviewSlice = createSlice({
     pendingReviews: [],
     loading: false,
     error: null,
-    success: false
+    success: false,
+    pagination: {
+      currentPage: 0,
+      totalPages: 0,
+      totalElements: 0,
+      pageSize: 4,
+      isFirst: true,
+      isLast: false
+    },
+    sorting: {
+      sortBy: 'createdAt',
+      direction: 'desc'
+    }
   },
   reducers: {
     resetReviewState: (state) => {
@@ -98,6 +110,15 @@ const reviewSlice = createSlice({
       state.loading = false;
       state.error = null;
       state.success = false;
+    },
+    updateSorting: (state, action) => {
+      state.sorting = action.payload;
+    },
+    updatePagination: (state, action) => {
+      state.pagination = {
+        ...state.pagination,
+        ...action.payload
+      };
     }
   },
   extraReducers: (builder) => {
@@ -136,7 +157,15 @@ const reviewSlice = createSlice({
       })
       .addCase(fetchUserReviews.fulfilled, (state, action) => {
         state.loading = false;
-        state.userReviews = action.payload;
+        state.userReviews = action.payload.content;
+        state.pagination = {
+          currentPage: action.payload.number,
+          totalPages: action.payload.totalPages,
+          totalElements: action.payload.totalElements,
+          pageSize: action.payload.size,
+          isFirst: action.payload.first,
+          isLast: action.payload.last
+        };
       })
       .addCase(fetchUserReviews.rejected, (state, action) => {
         state.loading = false;
@@ -168,5 +197,5 @@ const reviewSlice = createSlice({
   }
 });
 
-export const { resetReviewState } = reviewSlice.actions;
+export const { resetReviewState, updateSorting, updatePagination } = reviewSlice.actions;
 export default reviewSlice.reducer; 

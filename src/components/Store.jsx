@@ -14,8 +14,8 @@ const Store = () => {
     const dispatch = useDispatch();
     const { categories } = useSelector((state) => state.categories);
     const { currentCategoryProducts } = useSelector((state) => state.categories);
-    const { items: products } = useSelector((state) => state.products);
-    const isLoading = useLoading();
+    const { items: { products }, pagination, sorting, status } = useSelector((state) => state.products);
+    const isLoading = status === 'loading';
     const location = useLocation();
     const navigate = useNavigate();
     const user = useSelector((state) => state.auth.user);
@@ -23,10 +23,6 @@ const Store = () => {
 
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredProducts, setFilteredProducts] = useState([]);
-    const [searchResults, setSearchResults] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 6; // 3x3 grid for desktop
     const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
     const [selectedRating, setSelectedRating] = useState(0);
     const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -34,116 +30,57 @@ const Store = () => {
     const [showFiltersModal, setShowFiltersModal] = useState(false);
     const [tempFilters, setTempFilters] = useState({
         priceRange: { min: 0, max: 1000 },
-        rating: 0
+        rating: 0,
+        sorting: {
+            sortBy: 'createdAt',
+            direction: 'desc'
+        }
     });
     const [categorySearch, setCategorySearch] = useState('');
 
-    // Calculate pagination
-    const totalPages = Math.ceil(searchResults.length / itemsPerPage);
-    const paginatedProducts = searchResults.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
-
-    const getFullImageUrl = (imageUrl) => {
-        if (!imageUrl) return 'https://placehold.co/600x400?text=No+Image';
-        return imageUrl.startsWith('http') ? imageUrl : `http://localhost:8080${imageUrl}`;
-      };
+    // Update price range when products change
+    useEffect(() => {
+        if (products && products.length > 0) {
+            const prices = products.map(product => product.price);
+            const maxPrice = Math.max(...prices);
+            setPriceRange({ min: 0, max: maxPrice });
+            // Only set currentPriceRange if it hasn't been modified by user
+            if (currentPriceRange.max === 1000) {
+                setCurrentPriceRange({ min: 0, max: maxPrice });
+            }
+        }
+    }, [products]);
 
     // Fetch categories and products on component mount
     useEffect(() => {
         dispatch(fetchCategories());
-        dispatch(fetchProducts());
+        dispatch(fetchProducts({
+            page: 0,
+            size: 4,
+            sortBy: 'createdAt',
+            direction: 'desc'
+        }));
     }, [dispatch]);
-
-    // Add this useEffect to handle URL parameters
-    useEffect(() => {
-        const categoryName = location.pathname.split('/category/')[1];
-        if (categoryName) {
-            const category = categories.find(
-                cat => cat.name.toLowerCase() === decodeURIComponent(categoryName.toLowerCase())
-            );
-            if (category) {
-                setSelectedCategory(category.categoryId);
-            }
-        }
-    }, [location, categories]);
 
     // Handle category change
     useEffect(() => {
         if (selectedCategory === 'all') {
-            dispatch(fetchProducts())
-                .then((action) => {
-                    if (action.payload) {
-                        const allProducts = action.payload.flatMap(producer => {
-                            if (user && producer.producerId === user.id) {
-                                return [];
-                            }
-                            return producer.products.map(product => ({
-                                ...product,
-                                producer: producer.username,
-                                producerName: `${producer.firstname} ${producer.lastname}`
-                            }));
-                        });
-                        setFilteredProducts(allProducts);
-                        setSearchResults(allProducts);
-                    }
-                });
+            dispatch(fetchProducts({
+                page: 0,
+                size: 4,
+                sortBy: tempFilters.sorting.sortBy,
+                direction: tempFilters.sorting.direction
+            }));
         } else {
-            dispatch(fetchProductsByCategory(selectedCategory))
-                .then((action) => {
-                    if (action.payload) {
-                        const allProducts = action.payload.flatMap(producer => {
-                            if (user && producer.producerId === user.id) {
-                                return [];
-                            }
-                            return producer.products || [];
-                        });
-                        setFilteredProducts(allProducts);
-                        setSearchResults(allProducts);
-                    }
-                });
+            dispatch(fetchProductsByCategory({
+                categoryId: selectedCategory,
+                page: 0,
+                size: 4,
+                sortBy: tempFilters.sorting.sortBy,
+                direction: tempFilters.sorting.direction
+            }));
         }
-    }, [selectedCategory, dispatch, user]);
-
-    // Add this after other useEffects
-    useEffect(() => {
-        if (filteredProducts.length > 0) {
-            const prices = filteredProducts.map(product => product.price);
-            const maxPrice = Math.max(...prices);
-            setPriceRange({ min: 0, max: maxPrice });
-            setCurrentPriceRange({ min: 0, max: maxPrice });
-        }
-    }, [filteredProducts]);
-
-    // Modify the search effect to include price and rating filters
-    useEffect(() => {
-        let filtered = filteredProducts;
-        
-        // Apply search term filter
-        if (searchTerm !== '') {
-            filtered = filtered.filter(product =>
-                product.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-        
-        // Apply price range filter
-        filtered = filtered.filter(product => 
-            product.price >= currentPriceRange.min && 
-            product.price <= currentPriceRange.max
-        );
-        
-        // Apply rating filter
-        if (selectedRating > 0) {
-            filtered = filtered.filter(product => {
-                const avgRating = product.reviews?.reduce((acc, review) => acc + review.rating, 0) / product.reviews?.length || 0;
-                return avgRating >= selectedRating;
-            });
-        }
-        
-        setSearchResults(filtered);
-        setCurrentPage(1); // Reset to first page when filters change
-    }, [searchTerm, filteredProducts, currentPriceRange, selectedRating]);
+    }, [selectedCategory, tempFilters.sorting, dispatch]);
 
     const handleAddToCart = (product) => {
         const cartItem = {
@@ -157,37 +94,116 @@ const Store = () => {
         dispatch(addToCart(cartItem));
     };
 
-    // Modify the PaginationControls component to include a visibility check
+    const getFullImageUrl = (imageUrl) => {
+        if (!imageUrl) return 'https://placehold.co/600x400?text=No+Image';
+        return imageUrl.startsWith('http') ? imageUrl : `http://localhost:8080${imageUrl}`;
+      };
+
+    // Update pagination controls
     const PaginationControls = () => {
-        if (searchResults.length <= itemsPerPage) {
+        const paginationData = selectedCategory === 'all' ? pagination : useSelector(state => state.categories.pagination);
+        
+        if (!paginationData || paginationData.totalElements <= paginationData.pageSize) {
             return null;
+        }
+
+        // Generate array of page numbers
+        const pageNumbers = [];
+        for (let i = 0; i < paginationData.totalPages; i++) {
+            pageNumbers.push(i);
         }
         
         return (
             <div className="max-w-6xl mx-auto px-4 flex items-center justify-between py-4">
                 <p className="text-sm text-textSecondary">
-                    Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                    Showing <span className="font-medium">{(paginationData.currentPage || 0) * (paginationData.pageSize || 4) + 1}</span> to{' '}
                     <span className="font-medium">
-                        {Math.min(currentPage * itemsPerPage, searchResults.length)}
+                        {Math.min(((paginationData.currentPage || 0) + 1) * (paginationData.pageSize || 4), paginationData.totalElements || 0)}
                     </span> of{' '}
-                    <span className="font-medium">{searchResults.length}</span> products
+                    <span className="font-medium">{paginationData.totalElements || 0}</span> products
                 </p>
                 <div className="flex items-center space-x-2">
                     <Button 
                         variant="outline" 
                         size="sm" 
                         className="border hover:bg-cardBg text-text border-border"
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage(prev => prev - 1)}
+                        disabled={paginationData.isFirst}
+                        onClick={() => {
+                            if (selectedCategory === 'all') {
+                                dispatch(fetchProducts({ 
+                                    page: (paginationData.currentPage || 0) - 1,
+                                    size: paginationData.pageSize || 4,
+                                    sortBy: tempFilters.sorting.sortBy,
+                                    direction: tempFilters.sorting.direction
+                                }));
+                            } else {
+                                dispatch(fetchProductsByCategory({
+                                    categoryId: selectedCategory,
+                                    page: (paginationData.currentPage || 0) - 1,
+                                    size: paginationData.pageSize || 4,
+                                    sortBy: tempFilters.sorting.sortBy,
+                                    direction: tempFilters.sorting.direction
+                                }));
+                            }
+                        }}
                     >
                         Previous
                     </Button>
+                    {pageNumbers.map(pageNumber => (
+                        <Button
+                            key={pageNumber}
+                            variant={pageNumber === paginationData.currentPage ? "default" : "outline"}
+                            size="sm"
+                            className={`${
+                                pageNumber === paginationData.currentPage 
+                                    ? 'bg-primary text-white' 
+                                    : 'border hover:bg-cardBg text-text border-border'
+                            }`}
+                            onClick={() => {
+                                if (selectedCategory === 'all') {
+                                    dispatch(fetchProducts({ 
+                                        page: pageNumber,
+                                        size: paginationData.pageSize || 4,
+                                        sortBy: tempFilters.sorting.sortBy,
+                                        direction: tempFilters.sorting.direction
+                                    }));
+                                } else {
+                                    dispatch(fetchProductsByCategory({
+                                        categoryId: selectedCategory,
+                                        page: pageNumber,
+                                        size: paginationData.pageSize || 4,
+                                        sortBy: tempFilters.sorting.sortBy,
+                                        direction: tempFilters.sorting.direction
+                                    }));
+                                }
+                            }}
+                        >
+                            {pageNumber + 1}
+                        </Button>
+                    ))}
                     <Button 
                         variant="outline" 
                         size="sm"
                         className="border hover:bg-primary/10 text-primary border-primary"
-                        disabled={currentPage === totalPages}
-                        onClick={() => setCurrentPage(prev => prev + 1)}
+                        disabled={paginationData.isLast}
+                        onClick={() => {
+                            if (selectedCategory === 'all') {
+                                dispatch(fetchProducts({ 
+                                    page: (paginationData.currentPage || 0) + 1,
+                                    size: paginationData.pageSize || 4,
+                                    sortBy: tempFilters.sorting.sortBy,
+                                    direction: tempFilters.sorting.direction
+                                }));
+                            } else {
+                                dispatch(fetchProductsByCategory({
+                                    categoryId: selectedCategory,
+                                    page: (paginationData.currentPage || 0) + 1,
+                                    size: paginationData.pageSize || 4,
+                                    sortBy: tempFilters.sorting.sortBy,
+                                    direction: tempFilters.sorting.direction
+                                }));
+                            }
+                        }}
                     >
                         Next
                     </Button>
@@ -199,7 +215,6 @@ const Store = () => {
     // Modify the category selection handler
     const handleCategorySelect = (categoryId) => {
         setSelectedCategory(categoryId);
-        setCurrentPage(1);
         
         // Find the category name for the URL
         const selectedCat = categories.find(cat => cat.categoryId === categoryId);
@@ -226,13 +241,25 @@ const Store = () => {
     const handleOpenFilters = () => {
         setTempFilters({
             priceRange: currentPriceRange,
-            rating: selectedRating
+            rating: selectedRating,
+            sorting: {
+                sortBy: tempFilters.sorting.sortBy,
+                direction: tempFilters.sorting.direction
+            }
         });
         setShowFiltersModal(true);
     };
 
     const FilterModal = () => {
         const [localFilters, setLocalFilters] = useState(tempFilters);
+
+        const sortingOptions = [
+            { value: 'createdAt', label: 'Creation Date' },
+            { value: 'price', label: 'Price' },
+            { value: 'name', label: 'Name' },
+            { value: 'quantity', label: 'Quantity' },
+            { value: 'updatedAt', label: 'Last Update' }
+        ];
 
         // Sync with parent state when modal opens
         useEffect(() => {
@@ -249,7 +276,11 @@ const Store = () => {
         const handleResetFilters = () => {
             const resetFilters = {
                 priceRange: { min: priceRange.min, max: priceRange.max },
-                rating: 0
+                rating: 0,
+                sorting: {
+                    sortBy: 'createdAt',
+                    direction: 'desc'
+                }
             };
             setLocalFilters(resetFilters);
         };
@@ -281,6 +312,55 @@ const Store = () => {
                         </div>
 
                         <div className="px-6 py-4 max-h-[70vh] overflow-y-auto bg-cardBg">
+                            {/* Sorting Options */}
+                            <div className="space-y-4 mb-8">
+                                <h4 className="text-sm font-medium text-textSecondary">Sort By</h4>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <select
+                                        value={localFilters.sorting.sortBy}
+                                        onChange={(e) => setLocalFilters(prev => ({
+                                            ...prev,
+                                            sorting: { ...prev.sorting, sortBy: e.target.value }
+                                        }))}
+                                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-text"
+                                    >
+                                        {sortingOptions.map(option => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setLocalFilters(prev => ({
+                                                ...prev,
+                                                sorting: { ...prev.sorting, direction: 'asc' }
+                                            }))}
+                                            className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
+                                                localFilters.sorting.direction === 'asc'
+                                                    ? 'bg-primary text-white border-primary'
+                                                    : 'border-border text-text hover:bg-white/5'
+                                            }`}
+                                        >
+                                            Ascending
+                                        </button>
+                                        <button
+                                            onClick={() => setLocalFilters(prev => ({
+                                                ...prev,
+                                                sorting: { ...prev.sorting, direction: 'desc' }
+                                            }))}
+                                            className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
+                                                localFilters.sorting.direction === 'desc'
+                                                    ? 'bg-primary text-white border-primary'
+                                                    : 'border-border text-text hover:bg-white/5'
+                                            }`}
+                                        >
+                                            Descending
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Price Range Filter */}
                             <div className="space-y-4 mb-8">
                                 <h4 className="text-sm font-medium text-textSecondary flex items-center justify-between">
@@ -638,7 +718,7 @@ const Store = () => {
 
                         {/* Products Grid */}
                         <div className="grid grid-cols-1 gap-4">
-                            {paginatedProducts.map(product => (
+                            {(selectedCategory === 'all' ? products : currentCategoryProducts)?.map(product => (
                                 <div
                                     key={product.productId}
                                     className="bg-cardBg rounded-lg overflow-hidden border border-border transition-colors duration-300"
@@ -729,9 +809,9 @@ const Store = () => {
                             </div>
 
                             <div className="flex-1">
-                                {paginatedProducts.length > 0 ? (
+                                {products && products.length > 0 ? (
                                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 h-max">
-                                        {paginatedProducts.map(product => (
+                                        {(selectedCategory === 'all' ? products : currentCategoryProducts)?.map(product => (
                                             <a
                                                 key={product.productId}
                                                 href={`/store/products/${product.productId}`}
