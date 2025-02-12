@@ -5,6 +5,7 @@ import { Building2, Store, MapPin, Globe, MessageSquare, Calendar, ChevronDown, 
 import { submitApplication } from '../store/slices/producerApplicationSlice';
 import Button from './ui/Button';
 import { fetchCategories } from '../store/slices/categorySlice';
+import { fetchRegions } from '../store/slices/addressSlice';
 import { useDebounce } from '../hooks/useDebounce';
 
 const SellerApplication = () => {
@@ -12,7 +13,7 @@ const SellerApplication = () => {
   const navigate = useNavigate();
   const { categories } = useSelector(state => state.categories);
   const { loading, error, success } = useSelector(state => state.producerApplication);
-  const { cities, loading: citiesLoading } = useSelector(state => state.address);
+  const { regions, loading: regionsLoading } = useSelector(state => state.address);
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -33,6 +34,7 @@ const SellerApplication = () => {
 
   useEffect(() => {
     dispatch(fetchCategories());
+    dispatch(fetchRegions());
   }, [dispatch]);
 
   const handleSubmit = async (e) => {
@@ -151,12 +153,18 @@ const SellerApplication = () => {
                         onChange={handleCityRegionChange}
                         className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                       >
-                        <option value="">Select a city</option>
-                        {cities.map(city => (
-                          <option key={city.name} value={city.name}>
-                            {city.name} ({city.adminName1})
-                          </option>
-                        ))}
+                        <option value="">Select a region</option>
+                        {regionsLoading ? (
+                          <option value="" disabled>Loading regions...</option>
+                        ) : regions && regions.length > 0 ? (
+                          regions.map(region => (
+                            <option key={region} value={region}>
+                              {region}
+                            </option>
+                          ))
+                        ) : (
+                          <option value="" disabled>No regions available</option>
+                        )}
                         <option value="Other">Other</option>
                       </select>
                       {showCustomCityRegion && (

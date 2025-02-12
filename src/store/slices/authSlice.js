@@ -104,12 +104,18 @@ export const loginUser = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk(
   'auth/logoutUser',
-  async (_, { rejectWithValue, dispatch }) => {
+  async (_, { rejectWithValue, dispatch, getState }) => {
     try {
-      await api.post('/api/auth/logout');
-      // Disconnect WebSocket before clearing auth
+      // First disconnect WebSocket and clear any pending reconnections
       await dispatch(disconnectWebSocket());
+      
+      // Clear auth state before making the logout request
+      // This ensures no new WebSocket connections are attempted
       dispatch(clearAuth());
+      
+      // Then perform the actual logout
+      await api.post('/api/auth/logout');
+      
       return null;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Logout failed');

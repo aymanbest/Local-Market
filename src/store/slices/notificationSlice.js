@@ -14,75 +14,87 @@ export const initializeWebSocket = createAsyncThunk(
       return true;
     }
 
-    // If connection is connecting, wait for it
+    // If connection is connecting, just return
     if (wsConnection?.readyState === WebSocket.CONNECTING) {
       console.log('WebSocket is already connecting');
-      return new Promise((resolve) => {
-        wsConnection.onopen = () => {
-          console.log('WebSocket Connected!');
-          dispatch(setConnected(true));
-          resolve(true);
-        };
-      });
+      return false;
     }
 
-    try {
-      return new Promise((resolve, reject) => {
-        console.log('Creating new WebSocket connection');
-        wsConnection = new WebSocket(`ws://localhost:8080/ws`);
+    console.log('Creating new WebSocket connection');
+    wsConnection = new WebSocket(`ws://localhost:8080/ws`);
 
-        wsConnection.onopen = () => {
-          console.log('WebSocket Connected!');
-          dispatch(setConnected(true));
-          resolve(true);
-        };
+    wsConnection.onopen = () => {
+      console.log('WebSocket Connected!');
+      dispatch(setConnected(true));
+    };
 
-        wsConnection.onmessage = (event) => {
-          try {
-            const notification = JSON.parse(event.data);
-            console.log('Received notification:', notification);
-            dispatch(addNotification(notification));
-          } catch (error) {
-            console.error('Error parsing notification:', error);
-          }
-        };
+    wsConnection.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Handle heartbeat
+        if (data.type === 'heartbeat') {
+          // console.log('Received heartbeat');
+          wsConnection.send(JSON.stringify({ type: 'heartbeat', message: 'pong' }));
+          return;
+        }
+        
+        console.log('Received notification:', data);
+        dispatch(addNotification(data));
+      } catch (error) {
+        console.error('Error parsing notification:', error);
+      }
+    };
 
-        wsConnection.onclose = (event) => {
-          console.log('WebSocket connection closed', event.code, event.reason);
-          dispatch(setConnected(false));
-          
-          // Attempt to reconnect if the connection was closed unexpectedly
-          // and user is still authenticated
-          if (event.code !== 1000) { // 1000 is normal closure
-            const state = getState();
-            if (state.auth.isAuthenticated) {
-              setTimeout(() => {
-                console.log('Attempting to reconnect...');
-                dispatch(initializeWebSocket());
-              }, 5000);
-            }
-          }
-        };
+    wsConnection.onclose = (event) => {
+      console.log('WebSocket connection closed', event.code, event.reason);
+      dispatch(setConnected(false));
+      
+      // Attempt to reconnect if the connection was closed unexpectedly
+      // and user is still authenticated
+      if (event.code !== 1000) { // 1000 is normal closure
+        const state = getState();
+        if (state.auth.isAuthenticated) {
+          setTimeout(() => {
+            console.log('Attempting to reconnect...');
+            dispatch(initializeWebSocket());
+          }, 5000);
+        }
+      }
+    };
 
-        wsConnection.onerror = (error) => {
-          console.error('WebSocket error:', error);
-          dispatch(setError('WebSocket connection error'));
-          reject(error);
-        };
-      });
-    } catch (error) {
-      console.error('WebSocket initialization error:', error);
-      throw error;
-    }
+    wsConnection.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      dispatch(setError('WebSocket connection error'));
+    };
+
+    // Return immediately, don't wait for connection
+    return false;
   }
 );
 
 export const disconnectWebSocket = createAsyncThunk(
   'notifications/disconnect',
-  async () => {
+  async (_, { dispatch }) => {
     if (wsConnection) {
+      // Remove all event listeners to prevent any callbacks
+      wsConnection.onopen = null;
+      wsConnection.onmessage = null;
+      wsConnection.onclose = null;
+      wsConnection.onerror = null;
       wsConnection.close();
+
+      console.log('WebSocket connection closed');
+
+      // Close the connection if it's open or connecting
+      if (wsConnection.readyState === WebSocket.OPEN || 
+          wsConnection.readyState === WebSocket.CONNECTING) {
+        wsConnection.close(1000, 'User logged out');
+      }
+      
       wsConnection = null;
+      dispatch(setConnected(false));
+      dispatch(clearError());
     }
   }
 );
