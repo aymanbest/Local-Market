@@ -30,6 +30,7 @@ import ToastContainer from './components/ui/ToastContainer';
 import WebSocketInitializer from './components/WebSocketInitializer';
 import Support from './components/Support';
 import About from './components/About';
+import WelcomeCoupon from './components/WelcomeCoupon';
 
 
 // Create a separate component for content that needs Redux
@@ -111,6 +112,7 @@ const AppContent = () => {
           </Routes>
         </div>
         <ToastContainer />
+        <WelcomeCoupon />
       </div>
     </Router>
   );
