@@ -3,9 +3,9 @@ import api from '../../lib/axios';
 
 export const fetchMyProducts = createAsyncThunk(
   'producerProducts/fetchMyProducts',
-  async (_, { rejectWithValue }) => {
+  async ({ page = 0, size = 10, sortBy = 'createdAt', direction = 'desc' } = {}, { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/products/my-products');
+      const response = await api.get(`/api/products/my-products?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to fetch products');
@@ -89,6 +89,18 @@ const initialState = {
   error: null,
   createProductStatus: 'idle',
   updateProductStatus: 'idle',
+  pagination: {
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+    pageSize: 10,
+    isFirst: true,
+    isLast: false
+  },
+  sorting: {
+    sortBy: 'createdAt',
+    direction: 'desc'
+  }
 };
 
 const producerProductsSlice = createSlice({
@@ -103,6 +115,15 @@ const producerProductsSlice = createSlice({
       state.updateProductStatus = 'idle';
       state.error = null;
     },
+    updateSorting: (state, action) => {
+      state.sorting = action.payload;
+    },
+    updatePagination: (state, action) => {
+      state.pagination = {
+        ...state.pagination,
+        ...action.payload
+      };
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -113,7 +134,15 @@ const producerProductsSlice = createSlice({
       })
       .addCase(fetchMyProducts.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = action.payload;
+        state.products = action.payload.content;
+        state.pagination = {
+          currentPage: action.payload.number,
+          totalPages: action.payload.totalPages,
+          totalElements: action.payload.totalElements,
+          pageSize: action.payload.size,
+          isFirst: action.payload.first,
+          isLast: action.payload.last
+        };
       })
       .addCase(fetchMyProducts.rejected, (state, action) => {
         state.loading = false;
@@ -167,6 +196,6 @@ const producerProductsSlice = createSlice({
   },
 });
 
-export const { resetCreateStatus, resetUpdateStatus } = producerProductsSlice.actions;
+export const { resetCreateStatus, resetUpdateStatus, updateSorting, updatePagination } = producerProductsSlice.actions;
 
 export default producerProductsSlice.reducer; 

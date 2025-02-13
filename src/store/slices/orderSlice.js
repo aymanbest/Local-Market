@@ -20,13 +20,9 @@ const isValidStatusTransition = (currentStatus, newStatus) => {
 // Fetch producer orders
 export const fetchProducerOrders = createAsyncThunk(
   'orders/fetchProducerOrders',
-  async (_, { rejectWithValue, getState }) => {
-    try {
-      const response = await api.get('/api/orders/producer-orders');
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
-    }
+  async ({ page = 0, size = 10, sortBy = 'orderDate', direction = 'desc' } = {}) => {
+    const response = await api.get(`/api/orders/producer-orders?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
+    return response.data;
   }
 );
 
@@ -61,10 +57,23 @@ export const updateOrderStatus = createAsyncThunk(
 );
 
 const initialState = {
-  items: [],
+  orders: [],
+  loading: false,
+  error: null,
+  pagination: {
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+    pageSize: 10,
+    isFirst: true,
+    isLast: false
+  },
+  sorting: {
+    sortBy: 'orderDate',
+    direction: 'desc'
+  },
   filteredOrders: [],
   status: 'idle',
-  error: null,
   stats: {
     total: 0,
     pending: 0,
@@ -79,7 +88,7 @@ const orderSlice = createSlice({
   reducers: {
     filterOrders: (state, action) => {
       const { searchTerm, filters } = action.payload;
-      let result = [...state.items];
+      let result = [...state.orders];
 
       if (searchTerm) {
         result = result.filter(order => 
@@ -102,39 +111,57 @@ const orderSlice = createSlice({
       }
 
       state.filteredOrders = result;
+    },
+    updateSorting: (state, action) => {
+      state.sorting = action.payload;
+    },
+    updatePagination: (state, action) => {
+      state.pagination = {
+        ...state.pagination,
+        ...action.payload
+      };
     }
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducerOrders.pending, (state) => {
-        state.status = 'loading';
+        state.loading = true;
+        state.error = null;
       })
       .addCase(fetchProducerOrders.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.items = action.payload;
-        state.filteredOrders = action.payload;
+        state.loading = false;
+        state.orders = action.payload.content;
+        state.pagination = {
+          currentPage: action.payload.number,
+          totalPages: action.payload.totalPages,
+          totalElements: action.payload.totalElements,
+          pageSize: action.payload.size,
+          isFirst: action.payload.first,
+          isLast: action.payload.last
+        };
+        state.filteredOrders = action.payload.content;
         
         // Update stats with correct status values
         state.stats = {
-          total: action.payload.length,
-          pending: action.payload.filter(o => 
+          total: action.payload.totalElements,
+          pending: action.payload.content.filter(o => 
             o.status === 'PENDING_PAYMENT' || 
             o.status === 'PAYMENT_COMPLETED'
           ).length,
-          processing: action.payload.filter(o => 
+          processing: action.payload.content.filter(o => 
             o.status === 'PROCESSING' || 
             o.status === 'SHIPPED'
           ).length,
-          delivered: action.payload.filter(o => o.status === 'DELIVERED').length
+          delivered: action.payload.content.filter(o => o.status === 'DELIVERED').length
         };
       })
       .addCase(fetchProducerOrders.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload;
+        state.loading = false;
+        state.error = action.error.message;
       })
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
         const updatedOrder = action.payload;
-        state.items = state.items.map(order => 
+        state.orders = state.orders.map(order => 
           order.orderId === updatedOrder.orderId ? updatedOrder : order
         );
         state.filteredOrders = state.filteredOrders.map(order => 
@@ -144,5 +171,5 @@ const orderSlice = createSlice({
   }
 });
 
-export const { filterOrders } = orderSlice.actions;
+export const { filterOrders, updateSorting, updatePagination } = orderSlice.actions;
 export default orderSlice.reducer; 

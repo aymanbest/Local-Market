@@ -46,7 +46,8 @@ const ProductDetails = () => {
 
   const getFullImageUrl = (imageUrl) => {
     if (!imageUrl) return 'https://placehold.co/600x400?text=No+Image';
-    return imageUrl.startsWith('http') ? imageUrl : `http://localhost:8080${imageUrl}`;
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
+    return `http://localhost:8080${imageUrl}`;
   };
 
   const handleAddToCart = () => {

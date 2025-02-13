@@ -3,11 +3,9 @@ import api from '../../lib/axios';
 
 export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
-  async (role = null, { rejectWithValue, getState }) => {
+  async ({ page = 0, size = 10, sortBy = 'createdAt', direction = 'desc' } = {}, { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/users', {
-        params: role ? { role } : {}
-      });
+      const response = await api.get(`/api/users?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch users');
@@ -46,6 +44,18 @@ const userSlice = createSlice({
     loading: false,
     error: null,
     selectedUser: null,
+    pagination: {
+      currentPage: 0,
+      totalPages: 0,
+      totalElements: 0,
+      pageSize: 10,
+      isFirst: true,
+      isLast: false
+    },
+    sorting: {
+      sortBy: 'createdAt',
+      direction: 'desc'
+    }
   },
   reducers: {
     setSelectedUser: (state, action) => {
@@ -53,6 +63,15 @@ const userSlice = createSlice({
     },
     clearSelectedUser: (state) => {
       state.selectedUser = null;
+    },
+    updateSorting: (state, action) => {
+      state.sorting = action.payload;
+    },
+    updatePagination: (state, action) => {
+      state.pagination = {
+        ...state.pagination,
+        ...action.payload
+      };
     }
   },
   extraReducers: (builder) => {
@@ -63,7 +82,15 @@ const userSlice = createSlice({
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
-        state.users = action.payload;
+        state.users = action.payload.content;
+        state.pagination = {
+          currentPage: action.payload.number,
+          totalPages: action.payload.totalPages,
+          totalElements: action.payload.totalElements,
+          pageSize: action.payload.size,
+          isFirst: action.payload.first,
+          isLast: action.payload.last
+        };
       })
       .addCase(fetchUsers.rejected, (state, action) => {
         state.loading = false;
@@ -81,5 +108,5 @@ const userSlice = createSlice({
   }
 });
 
-export const { setSelectedUser, clearSelectedUser } = userSlice.actions;
+export const { setSelectedUser, clearSelectedUser, updateSorting, updatePagination } = userSlice.actions;
 export default userSlice.reducer; 

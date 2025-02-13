@@ -4,7 +4,7 @@ import { fetchUsers, updateUser, deleteUser } from '../../store/slices/userSlice
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/Table';
 import { Card } from '../ui/Card';
 import Button from '../ui/Button';
-import { Search, Filter, ArrowUpDown, Edit2, Trash2, X, UserCog, Shield, Users, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Activity, Gauge, Lock, UserCheck, Building2, Key } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, Edit2, Trash2, X, UserCog, Shield, Users, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Activity, Gauge, Lock, UserCheck, Building2, Key, SlidersHorizontal } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 // Create a memoized UsersTable component
@@ -191,13 +191,19 @@ UsersTable.displayName = 'UsersTable';
 
 const UserManagement = () => {
   const dispatch = useDispatch();
-  const { users, loading } = useSelector(state => state.users);
+  const { users, loading, error, pagination } = useSelector(state => state.users);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
   const [roleFilter, setRoleFilter] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [showFiltersModal, setShowFiltersModal] = useState(false);
+  const [tempFilters, setTempFilters] = useState({
+    sorting: {
+      sortBy: 'createdAt',
+      direction: 'desc'
+    }
+  });
   const [totalCounts, setTotalCounts] = useState({
     total: 0,
     producers: 0,
@@ -212,23 +218,20 @@ const UserManagement = () => {
     role: ''
   });
   const { isDark } = useTheme();
-  const [jumpToPage, setJumpToPage] = useState('');
-  const [allUsers, setAllUsers] = useState([]);
 
-  const itemsPerPage = 5;
-
-  // Initial fetch of all users
+  // Initial fetch of users with pagination
   useEffect(() => {
-    const fetchAllUsers = async () => {
-      await dispatch(fetchUsers());
-    };
-    fetchAllUsers();
-  }, [dispatch]);
+    dispatch(fetchUsers({
+      page: pagination?.currentPage || 0,
+      size: pagination?.pageSize || 10,
+      sortBy: tempFilters.sorting.sortBy,
+      direction: tempFilters.sorting.direction
+    }));
+  }, [dispatch, pagination?.currentPage, tempFilters.sorting]);
 
-  // Update allUsers and total counts when users array changes
+  // Update total counts when users array changes
   useEffect(() => {
     if (users.length > 0) {
-      setAllUsers(users);
       setTotalCounts({
         total: users.length,
         producers: users.filter(u => u.role === 'PRODUCER').length,
@@ -237,23 +240,6 @@ const UserManagement = () => {
       });
     }
   }, [users]);
-
-  const filteredUsers = useMemo(() => {
-    return allUsers
-      .filter(user => roleFilter ? user.role === roleFilter : true)
-      .filter(user =>
-        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        `${user.firstname} ${user.lastname}`.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-  }, [allUsers, roleFilter, searchTerm]);
-
-  const paginatedUsers = filteredUsers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
   const handleEdit = (user) => {
     setSelectedUser(user);
@@ -276,30 +262,193 @@ const UserManagement = () => {
     e.preventDefault();
     await dispatch(updateUser({ id: selectedUser.userId, userData: editForm }));
     setShowEditModal(false);
+    dispatch(fetchUsers({
+      page: pagination.currentPage,
+      size: pagination.pageSize,
+      sortBy: tempFilters.sorting.sortBy,
+      direction: tempFilters.sorting.direction
+    }));
   };
 
   const handleDeleteConfirm = async () => {
     await dispatch(deleteUser(selectedUser.userId));
     setShowDeleteModal(false);
+    dispatch(fetchUsers({
+      page: pagination.currentPage,
+      size: pagination.pageSize,
+      sortBy: tempFilters.sorting.sortBy,
+      direction: tempFilters.sorting.direction
+    }));
   };
 
-  const getRoleBadgeClass = (role) => {
-    const classes = {
-      ADMIN: 'bg-red-500/20 text-red-500 dark:bg-red-500/10 dark:text-red-400',
-      PRODUCER: 'bg-purple-500/20 text-purple-500 dark:bg-purple-500/10 dark:text-purple-400',
-      CUSTOMER: 'bg-blue-500/20 text-blue-500 dark:bg-blue-500/10 dark:text-blue-400'
+  const FilterModal = () => {
+    const handleApplyFilters = () => {
+      dispatch(fetchUsers({
+        page: 0,
+        size: pagination?.pageSize || 10,
+        sortBy: tempFilters.sorting.sortBy,
+        direction: tempFilters.sorting.direction
+      }));
+      setShowFiltersModal(false);
     };
-    return classes[role] || classes.CUSTOMER;
+
+    const handleResetFilters = () => {
+      setTempFilters({
+        sorting: {
+          sortBy: 'createdAt',
+          direction: 'desc'
+        }
+      });
+      dispatch(fetchUsers({
+        page: 0,
+        size: pagination?.pageSize || 10,
+        sortBy: 'createdAt',
+        direction: 'desc'
+      }));
+      setShowFiltersModal(false);
+    };
+
+    return (
+      <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowFiltersModal(false)} />
+        <div className="relative bg-cardBg rounded-xl shadow-lg w-full max-w-md">
+          <div className="p-6">
+            <h3 className="text-xl font-semibold text-text mb-4">Sort Users</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-textSecondary mb-2">Sort by</label>
+                <select
+                  value={tempFilters.sorting.sortBy}
+                  onChange={(e) => setTempFilters({
+                    ...tempFilters,
+                    sorting: { ...tempFilters.sorting, sortBy: e.target.value }
+                  })}
+                  className="w-full rounded-lg border border-border bg-cardBg text-text px-4 py-2"
+                >
+                  <option value="createdAt">Creation Date</option>
+                  <option value="lastLogin">Last Login</option>
+                  <option value="username">Username</option>
+                  <option value="role">Role</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-textSecondary mb-2">Direction</label>
+                <select
+                  value={tempFilters.sorting.direction}
+                  onChange={(e) => setTempFilters({
+                    ...tempFilters,
+                    sorting: { ...tempFilters.sorting, direction: e.target.value }
+                  })}
+                  className="w-full rounded-lg border border-border bg-cardBg text-text px-4 py-2"
+                >
+                  <option value="asc">Ascending</option>
+                  <option value="desc">Descending</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div className="px-6 py-4 border-t border-border flex items-center justify-end gap-3 bg-cardBg">
+            <button
+              onClick={handleResetFilters}
+              className="px-4 py-2 rounded-lg border border-border text-text hover:bg-white/5 transition-colors"
+            >
+              Reset
+            </button>
+            <button
+              onClick={handleApplyFilters}
+              className="px-4 py-2 rounded-lg bg-primary hover:bg-primaryHover text-white transition-colors"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
-  // Pagination handler
-  const handleJumpToPage = (e) => {
-    e.preventDefault();
-    const page = parseInt(jumpToPage);
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
+  const PaginationControls = () => {
+    if (!pagination || pagination.totalElements <= pagination.pageSize) {
+      return null;
     }
+    
+    return (
+      <div className="flex items-center justify-between py-4">
+        <p className="text-sm text-textSecondary">
+          Showing <span className="font-medium">{(pagination.currentPage) * (pagination.pageSize) + 1}</span> to{' '}
+          <span className="font-medium">
+            {Math.min((pagination.currentPage + 1) * (pagination.pageSize), pagination.totalElements)}
+          </span> of{' '}
+          <span className="font-medium">{pagination.totalElements}</span> users
+        </p>
+        <div className="flex items-center space-x-2">
+          <button 
+            className="px-4 py-2 border border-border rounded-xl text-text hover:bg-cardBg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={pagination.isFirst}
+            onClick={() => {
+              dispatch(fetchUsers({
+                page: pagination.currentPage - 1,
+                size: pagination.pageSize,
+                sortBy: tempFilters.sorting.sortBy,
+                direction: tempFilters.sorting.direction
+              }));
+            }}
+          >
+            Previous
+          </button>
+          {Array.from({ length: pagination.totalPages }).map((_, index) => (
+            <button
+              key={index}
+              className={`px-4 py-2 rounded-xl transition-colors ${
+                index === pagination.currentPage 
+                  ? 'bg-primary text-white' 
+                  : 'border border-border text-text hover:bg-cardBg'
+              }`}
+              onClick={() => {
+                dispatch(fetchUsers({
+                  page: index,
+                  size: pagination.pageSize,
+                  sortBy: tempFilters.sorting.sortBy,
+                  direction: tempFilters.sorting.direction
+                }));
+              }}
+            >
+              {index + 1}
+            </button>
+          ))}
+          <button 
+            className="px-4 py-2 border border-border rounded-xl text-text hover:bg-cardBg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={pagination.isLast}
+            onClick={() => {
+              dispatch(fetchUsers({
+                page: pagination.currentPage + 1,
+                size: pagination.pageSize,
+                sortBy: tempFilters.sorting.sortBy,
+                direction: tempFilters.sorting.direction
+              }));
+            }}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    );
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] text-red-500">
+        <span>{error}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-2 transition-colors duration-200">
@@ -310,6 +459,14 @@ const UserManagement = () => {
             <h2 className="text-3xl font-bold text-text tracking-tight">User Management</h2>
             <p className="text-textSecondary mt-1">Manage and monitor system users</p>
           </div>
+          <Button
+            onClick={() => setShowFiltersModal(true)}
+            variant="outline"
+            className="border-border hover:bg-cardBg"
+          >
+            <SlidersHorizontal className="w-4 h-4 mr-2" />
+            Sort
+          </Button>
         </div>
 
         {/* Stats Grid */}
@@ -349,33 +506,23 @@ const UserManagement = () => {
               bottomValue: 'Full system'
             },
           ].map((stat, index) => (
-            <Card key={index} className={`bg-cardBg border-border hover:bg-opacity-90 transition-all duration-300 ${isDark ? 'dark:bg-[#1E1E1E]' : ''}`}>
-              <div className="p-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-4xl font-bold text-text tracking-tight">{stat.value}</p>
-                    <h3 className="text-base font-medium text-textSecondary mt-1">{stat.label}</h3>
-                    <div className="flex items-center gap-1.5 mt-2">
-                      <stat.descriptionIcon className={`w-4 h-4 ${stat.iconColor}`} />
-                      <p className="text-sm text-textSecondary">{stat.description}</p>
-                    </div>
-                  </div>
-                  <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                    <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
-                  </div>
+            <Card key={index} className={`bg-cardBg border-border p-6 ${isDark ? 'dark:bg-[#1E1E1E]' : ''}`}>
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <span className="text-textSecondary text-sm">{stat.label}</span>
+                  <div className="text-3xl font-bold text-text">{stat.value}</div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-border">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-1">
-                      <span className="text-sm text-textSecondary">
-                        {stat.bottomLabel}
-                      </span>
-                    </div>
-                    <span className={`text-sm font-medium ${stat.iconColor}`}>
-                      {stat.bottomValue}
-                    </span>
-                  </div>
+                <div className={`p-3 rounded-xl ${stat.bgColor}`}>
+                  <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
                 </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm text-textSecondary">
+                <stat.descriptionIcon className="w-4 h-4 mr-1.5" />
+                {stat.description}
+              </div>
+              <div className="mt-4 flex items-center justify-between text-sm">
+                <span className="text-textSecondary">{stat.bottomLabel}</span>
+                <span className="font-medium text-text">{stat.bottomValue}</span>
               </div>
             </Card>
           ))}
@@ -412,12 +559,69 @@ const UserManagement = () => {
         </Card>
 
         {/* Users Table */}
-        <UsersTable
-          users={filteredUsers}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          isDark={isDark}
-        />
+        <Card className={`bg-cardBg border-border overflow-hidden ${isDark ? 'dark:bg-[#1E1E1E]' : ''}`}>
+          <div className="p-6">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left border-b border-border">
+                    <th className="pb-3 text-textSecondary font-medium">User</th>
+                    <th className="pb-3 text-textSecondary font-medium">Email</th>
+                    <th className="pb-3 text-textSecondary font-medium">Role</th>
+                    <th className="pb-3 text-textSecondary font-medium">Created At</th>
+                    <th className="pb-3 text-textSecondary font-medium">Last Login</th>
+                    <th className="pb-3 text-textSecondary font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.userId} className="border-b border-border">
+                      <td className="py-4">
+                        <div className="flex items-center space-x-3">
+                          <div>
+                            <p className="font-medium text-text">{`${user.firstname} ${user.lastname}`}</p>
+                            <p className="text-sm text-textSecondary">{user.username}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 text-text">{user.email}</td>
+                      <td className="py-4">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                          user.role === 'ADMIN'
+                            ? 'bg-red-500/20 text-red-500 dark:bg-red-500/10 dark:text-red-400'
+                            : user.role === 'PRODUCER'
+                            ? 'bg-purple-500/20 text-purple-500 dark:bg-purple-500/10 dark:text-purple-400'
+                            : 'bg-blue-500/20 text-blue-500 dark:bg-blue-500/10 dark:text-blue-400'
+                        }`}>
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="py-4 text-textSecondary">{new Date(user.createdAt).toLocaleDateString()}</td>
+                      <td className="py-4 text-textSecondary">{new Date(user.lastLogin).toLocaleDateString()}</td>
+                      <td className="py-4 text-right">
+                        <div className="flex items-center justify-end space-x-2">
+                          <button
+                            onClick={() => handleEdit(user)}
+                            className="p-2 hover:bg-primary/10 rounded-lg transition-colors duration-200"
+                          >
+                            <Edit2 className="w-4 h-4 text-primary" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user)}
+                            className="p-2 hover:bg-red-500/10 rounded-lg transition-colors duration-200"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <PaginationControls />
+          </div>
+        </Card>
 
         {/* Edit Modal */}
         {showEditModal && (
@@ -498,22 +702,6 @@ const UserManagement = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-textSecondary mb-1">
-                    Password
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    value={editForm.password || ''}
-                    onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
-                    className={`w-full rounded-lg border border-border ${
-                      isDark ? 'bg-[#2f2f2f]' : 'bg-inputBg'
-                    } text-text px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200`}
-                    placeholder="Leave blank to keep current password"
-                  />
-                </div>
-
-                <div>
                   <label htmlFor="role" className="block text-sm font-medium text-textSecondary mb-1">
                     Role
                   </label>
@@ -580,6 +768,9 @@ const UserManagement = () => {
             </div>
           </div>
         )}
+
+        {/* Filters Modal */}
+        {showFiltersModal && <FilterModal />}
       </div>
     </div>
   );

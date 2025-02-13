@@ -4,13 +4,9 @@ import api from '../../lib/axios';
 // Async thunks
 export const fetchCoupons = createAsyncThunk(
   'coupons/fetchCoupons',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await api.get('/api/coupons');
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch coupons');
-    }
+  async ({ page = 0, size = 10, sortBy = 'createdAt', direction = 'desc' } = {}) => {
+    const response = await api.get(`/api/coupons?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
+    return response.data;
   }
 );
 
@@ -67,6 +63,18 @@ const initialState = {
   coupons: [],
   loading: false,
   error: null,
+  pagination: {
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+    pageSize: 10,
+    isFirst: true,
+    isLast: false
+  },
+  sorting: {
+    sortBy: 'createdAt',
+    direction: 'desc'
+  },
   selectedCoupon: null
 };
 
@@ -79,6 +87,15 @@ const couponSlice = createSlice({
     },
     clearSelectedCoupon: (state) => {
       state.selectedCoupon = null;
+    },
+    updateSorting: (state, action) => {
+      state.sorting = action.payload;
+    },
+    updatePagination: (state, action) => {
+      state.pagination = {
+        ...state.pagination,
+        ...action.payload
+      };
     }
   },
   extraReducers: (builder) => {
@@ -90,11 +107,19 @@ const couponSlice = createSlice({
       })
       .addCase(fetchCoupons.fulfilled, (state, action) => {
         state.loading = false;
-        state.coupons = action.payload;
+        state.coupons = action.payload.content;
+        state.pagination = {
+          currentPage: action.payload.number,
+          totalPages: action.payload.totalPages,
+          totalElements: action.payload.totalElements,
+          pageSize: action.payload.size,
+          isFirst: action.payload.first,
+          isLast: action.payload.last
+        };
       })
       .addCase(fetchCoupons.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.error.message;
       })
       // Create coupon
       .addCase(createCoupon.pending, (state) => {
@@ -160,5 +185,5 @@ const couponSlice = createSlice({
   }
 });
 
-export const { setSelectedCoupon, clearSelectedCoupon } = couponSlice.actions;
+export const { setSelectedCoupon, clearSelectedCoupon, updateSorting, updatePagination } = couponSlice.actions;
 export default couponSlice.reducer; 

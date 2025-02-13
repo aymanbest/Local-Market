@@ -3,13 +3,17 @@ import { useDispatch, useSelector } from 'react-redux';
 import { 
   Plus, Pencil, Trash2, ArrowUpDown, Search, Filter, X, Upload, 
   Edit2, MoreVertical, Eye, ChevronLeft, ChevronRight, Package,
-  TrendingUp, TrendingDown, Box, DollarSign, BarChart2, AlertTriangle, Check, Text
+  TrendingUp, TrendingDown, Box, DollarSign, BarChart2, AlertTriangle, Check, Text,
+  SlidersHorizontal
 } from 'lucide-react';
 import Button from '../ui/Button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/Table';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { useTheme } from '../../context/ThemeContext';
-import { fetchMyProducts, createProduct, updateProduct, resetCreateStatus, resetUpdateStatus, deleteProduct } from '../../store/slices/producerProductsSlice';
+import { 
+  fetchMyProducts, createProduct, updateProduct, resetCreateStatus, 
+  resetUpdateStatus, deleteProduct, updateSorting, updatePagination 
+} from '../../store/slices/producerProductsSlice';
 import { fetchCategories } from '../../store/slices/categorySlice';
 // import { //toast } from 'react-hot-//toast';
 
@@ -62,20 +66,23 @@ const StatusBadge = ({ status = 'PENDING', declineReason }) => {
 
 const getFullImageUrl = (imageUrl) => {
   if (!imageUrl) return 'https://placehold.co/600x400?text=No+Image';
-  return imageUrl.startsWith('http') ? imageUrl : `http://localhost:8080${imageUrl}`;
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
+  return `http://localhost:8080${imageUrl}`;
 };
 
 const ProductManagement = () => {
   const dispatch = useDispatch();
-  const { products, loading, error, createProductStatus, updateProductStatus } = useSelector(state => state.producerProducts);
+  const { products, loading, error, createProductStatus, updateProductStatus, pagination, sorting } = useSelector(state => state.producerProducts);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [sortOrder, setSortOrder] = useState('asc');
-  const [sortField, setSortField] = useState('name');
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const itemsPerPage = 5;
+  const [showFiltersModal, setShowFiltersModal] = useState(false);
+  const [tempFilters, setTempFilters] = useState({
+    sorting: {
+      sortBy: 'createdAt',
+      direction: 'desc'
+    }
+  });
 
   // New Product State
   const [newProduct, setNewProduct] = useState({
@@ -98,8 +105,8 @@ const ProductManagement = () => {
   });
 
   const [showViewModal, setShowViewModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const { isDark } = useTheme();
   
@@ -108,7 +115,6 @@ const ProductManagement = () => {
   const totalValue = products.reduce((sum, product) => sum + (product.price * product.quantity), 0);
   const lowStockProducts = products.filter(p => p.quantity < 10).length;
   const pendingProducts = products.filter(p => p.status === 'PENDING').length;
-
 
   // Add this state
   const categories = useSelector((state) => state.categories.categories);
@@ -141,16 +147,16 @@ const ProductManagement = () => {
 
     // Sort
     result = [...result].sort((a, b) => {
-      let aValue = a[sortField];
-      let bValue = b[sortField];
+      let aValue = a[tempFilters.sorting.sortBy];
+      let bValue = b[tempFilters.sorting.sortBy];
 
       // Handle numeric fields
-      if (sortField === 'price' || sortField === 'quantity') {
+      if (tempFilters.sorting.sortBy === 'price' || tempFilters.sorting.sortBy === 'quantity') {
         aValue = Number(aValue);
         bValue = Number(bValue);
       }
 
-      if (sortOrder === 'asc') {
+      if (tempFilters.sorting.direction === 'asc') {
         return aValue > bValue ? 1 : -1;
       } else {
         return aValue < bValue ? 1 : -1;
@@ -158,24 +164,38 @@ const ProductManagement = () => {
     });
 
     setFilteredProducts(result);
-    setCurrentPage(1);
-  }, [searchTerm, filters, sortOrder, sortField, products]);
+  }, [searchTerm, filters, tempFilters.sorting.sortBy, tempFilters.sorting.direction, products]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  useEffect(() => {
+    dispatch(fetchMyProducts({
+      page: pagination.currentPage,
+      size: pagination.pageSize,
+      sortBy: sorting.sortBy,
+      direction: sorting.direction
+    }));
+  }, [dispatch, pagination.currentPage, sorting]);
+
+  // Add debug logging
+  useEffect(() => {
+    console.log('Products from API:', products);
+    console.log('Filtered Products:', filteredProducts);
+    console.log('Loading State:', loading);
+    console.log('Error State:', error);
+  }, [products, filteredProducts, loading, error]);
 
   const handleSort = (field) => {
-    if (sortField === field) {
+    if (tempFilters.sorting.sortBy === field) {
       // If clicking the same field, toggle the order
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setTempFilters(prev => ({
+        ...prev,
+        sorting: { ...prev.sorting, direction: prev.sorting.direction === 'asc' ? 'desc' : 'asc' }
+      }));
     } else {
       // If clicking a new field, set it and default to ascending order
-      setSortField(field);
-      setSortOrder('asc');
+      setTempFilters(prev => ({
+        ...prev,
+        sorting: { ...prev.sorting, sortBy: field, direction: 'asc' }
+      }));
     }
   };
 
@@ -213,6 +233,78 @@ const ProductManagement = () => {
     const product = products.find(p => p.productId === productId);
     setSelectedProduct(product);
     setShowDeleteModal(true);
+  };
+
+  // Add PaginationControls component
+  const PaginationControls = () => {
+    if (!pagination || pagination.totalElements <= pagination.pageSize) {
+      return null;
+    }
+    
+    return (
+      <div className="flex items-center justify-between py-4">
+        <p className="text-sm text-textSecondary">
+          Showing <span className="font-medium">{(pagination.currentPage) * (pagination.pageSize) + 1}</span> to{' '}
+          <span className="font-medium">
+            {Math.min((pagination.currentPage + 1) * (pagination.pageSize), pagination.totalElements)}
+          </span> of{' '}
+          <span className="font-medium">{pagination.totalElements}</span> products
+        </p>
+        <div className="flex items-center space-x-2">
+          <Button 
+            variant="outline"
+            className="border-border hover:bg-cardBg"
+            disabled={pagination.isFirst}
+            onClick={() => {
+              dispatch(fetchMyProducts({
+                page: pagination.currentPage - 1,
+                size: pagination.pageSize,
+                sortBy: sorting.sortBy,
+                direction: sorting.direction
+              }));
+            }}
+          >
+            Previous
+          </Button>
+          {Array.from({ length: pagination.totalPages }).map((_, index) => (
+            <Button
+              key={index}
+              variant={index === pagination.currentPage ? "default" : "outline"}
+              className={`${
+                index === pagination.currentPage 
+                  ? 'bg-primary text-white' 
+                  : 'border hover:bg-cardBg text-text border-border'
+              }`}
+              onClick={() => {
+                dispatch(fetchMyProducts({
+                  page: index,
+                  size: pagination.pageSize,
+                  sortBy: sorting.sortBy,
+                  direction: sorting.direction
+                }));
+              }}
+            >
+              {index + 1}
+            </Button>
+          ))}
+          <Button 
+            variant="outline"
+            className="border-border hover:bg-cardBg"
+            disabled={pagination.isLast}
+            onClick={() => {
+              dispatch(fetchMyProducts({
+                page: pagination.currentPage + 1,
+                size: pagination.pageSize,
+                sortBy: sorting.sortBy,
+                direction: sorting.direction
+              }));
+            }}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+    );
   };
 
   // Add Product Modal
@@ -570,172 +662,122 @@ const ProductManagement = () => {
   };
 
   // Filter Modal Component
-  const FilterModal = ({ isOpen, onClose, filters, setFilters }) => {
-    const [tempFilters, setTempFilters] = useState(filters);
+  const FilterModal = () => {
+    const [localFilters, setLocalFilters] = useState(tempFilters);
 
-    const handleApply = () => {
-      setFilters(tempFilters);
-      onClose();
+    const sortingOptions = [
+      { value: 'createdAt', label: 'Creation Date' },
+      { value: 'updatedAt', label: 'Last Updated' },
+      { value: 'name', label: 'Product Name' },
+      { value: 'price', label: 'Price' },
+      { value: 'quantity', label: 'Stock Quantity' }
+    ];
+
+    useEffect(() => {
+      setLocalFilters(tempFilters);
+    }, [showFiltersModal]);
+
+    const handleApplyFilters = () => {
+      dispatch(updateSorting(localFilters.sorting));
+      setTempFilters(localFilters);
+      setShowFiltersModal(false);
     };
 
-    if (!isOpen) return null;
+    const handleResetFilters = () => {
+      const resetFilters = {
+        sorting: {
+          sortBy: 'createdAt',
+          direction: 'desc'
+        }
+      };
+      setLocalFilters(resetFilters);
+    };
+
+    if (!showFiltersModal) return null;
 
     return (
-      <div className="fixed inset-0 flex items-center justify-center z-[9999] p-4">
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
-        <div className="relative bg-white dark:bg-[#1E1E1E] rounded-3xl w-full max-w-md mx-auto
-                        shadow-[0_0_40px_rgba(0,0,0,0.2)] border border-gray-200/10 dark:border-white/[0.05]
-                        max-h-[90vh] overflow-hidden flex flex-col">
-          {/* Header */}
-          <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-200/10 dark:border-white/[0.05]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-                  Filter Products
-                </h3>
-                <p className="mt-1 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                  Narrow down your product list
-                </p>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-2 sm:p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/[0.05] text-gray-500 dark:text-gray-400
-                           hover:text-gray-700 dark:hover:text-white transition-all duration-200"
+      <div className="fixed inset-0 z-[100] overflow-y-auto">
+        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <div className="fixed inset-0 bg-black/60 transition-opacity" onClick={() => setShowFiltersModal(false)} />
+          
+          <div className="relative transform overflow-hidden rounded-2xl bg-cardBg border border-border text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl z-[101]">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-cardBg">
+              <h3 className="text-xl font-semibold text-text flex items-center gap-2">
+                <Filter className="w-5 h-5" />
+                Sort Products
+              </h3>
+              <button 
+                onClick={() => setShowFiltersModal(false)} 
+                className="text-textSecondary hover:text-text transition-colors"
               >
-                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                <X className="w-6 h-6" />
               </button>
             </div>
-          </div>
 
-          {/* Content */}
-          <div className="px-4 sm:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
-            {/* Price Range */}
-            <div className="space-y-2 sm:space-y-3">
-              <label className="block text-xs sm:text-sm font-medium text-gray-300">
-                Min Price
-              </label>
-              <div className="relative">
-                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                <input
-                  type="number"
-                  placeholder="Min"
-                  value={tempFilters.minPrice}
-                  onChange={(e) => setTempFilters({ ...tempFilters, minPrice: e.target.value })}
-                  className="w-full hide-spinner pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.05]
-                           bg-white/[0.03] placeholder-gray-500 text-gray-200 text-sm sm:text-base
-                           focus:bg-white/[0.08] focus:border-white/[0.08] focus:outline-none
-                           transition-all duration-200"
-                />
+            <div className="px-6 py-4 bg-cardBg">
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium text-textSecondary">Sort By</h4>
+                <div className="grid grid-cols-1 gap-4">
+                  <select
+                    value={localFilters.sorting.sortBy}
+                    onChange={(e) => setLocalFilters(prev => ({
+                      ...prev,
+                      sorting: { ...prev.sorting, sortBy: e.target.value }
+                    }))}
+                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-text"
+                  >
+                    {sortingOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setLocalFilters(prev => ({
+                        ...prev,
+                        sorting: { ...prev.sorting, direction: 'asc' }
+                      }))}
+                      className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
+                        localFilters.sorting.direction === 'asc'
+                          ? 'bg-primary text-white border-primary'
+                          : 'border-border text-text hover:bg-white/5'
+                      }`}
+                    >
+                      Ascending
+                    </button>
+                    <button
+                      onClick={() => setLocalFilters(prev => ({
+                        ...prev,
+                        sorting: { ...prev.sorting, direction: 'desc' }
+                      }))}
+                      className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
+                        localFilters.sorting.direction === 'desc'
+                          ? 'bg-primary text-white border-primary'
+                          : 'border-border text-text hover:bg-white/5'
+                      }`}
+                    >
+                      Descending
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Max Price */}
-            <div className="space-y-2 sm:space-y-3">
-              <label className="block text-xs sm:text-sm font-medium text-gray-300">
-                Max Price
-              </label>
-              <div className="relative">
-                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                <input
-                  type="number"
-                  placeholder="Max"
-                  value={tempFilters.maxPrice}
-                  onChange={(e) => setTempFilters({ ...tempFilters, maxPrice: e.target.value })}
-                  className="w-full hide-spinner pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.05]
-                           bg-white/[0.03] placeholder-gray-500 text-gray-200 text-sm sm:text-base
-                           focus:bg-white/[0.08] focus:border-white/[0.08] focus:outline-none
-                           transition-all duration-200"
-                />
-              </div>
-            </div>
-
-            {/* Min Stock */}
-            <div className="space-y-2 sm:space-y-3">
-              <label className="block text-xs sm:text-sm font-medium text-gray-300">
-                Min Stock
-              </label>
-              <div className="relative">
-                <Package className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                <input
-                  type="number"
-                  placeholder="Min"
-                  value={tempFilters.minInventory}
-                  onChange={(e) => setTempFilters({ ...tempFilters, minInventory: e.target.value })}
-                  className="w-full hide-spinner pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.05]
-                           bg-white/[0.03] placeholder-gray-500 text-gray-200 text-sm sm:text-base
-                           focus:bg-white/[0.08] focus:border-white/[0.08] focus:outline-none
-                           transition-all duration-200"
-                />
-              </div>
-            </div>
-
-            {/* Max Stock */}
-            <div className="space-y-2 sm:space-y-3">
-              <label className="block text-xs sm:text-sm font-medium text-gray-300">
-                Max Stock
-              </label>
-              <div className="relative">
-                <Package className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                <input
-                  type="number"
-                  placeholder="Max"
-                  value={tempFilters.maxInventory}
-                  onChange={(e) => setTempFilters({ ...tempFilters, maxInventory: e.target.value })}
-                  className="w-full hide-spinner pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.05]
-                           bg-white/[0.03] placeholder-gray-500 text-gray-200 text-sm sm:text-base
-                           focus:bg-white/[0.08] focus:border-white/[0.08] focus:outline-none
-                           transition-all duration-200"
-                />
-              </div>
-            </div>
-
-            {/* Status */}
-            <div className="space-y-2 sm:space-y-3">
-              <label className="block text-xs sm:text-sm font-medium text-gray-300">
-                Status
-              </label>
-              <select
-                value={tempFilters.status}
-                onChange={(e) => setTempFilters({ ...tempFilters, status: e.target.value })}
-                className="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.05]
-                           bg-white/[0.03] text-gray-200 text-sm sm:text-base
-                           focus:bg-white/[0.08] focus:border-white/[0.08] focus:outline-none
-                           transition-all duration-200"
+            <div className="px-6 py-4 border-t border-border flex items-center justify-end gap-3 bg-cardBg">
+              <button
+                onClick={handleResetFilters}
+                className="px-4 py-2 rounded-lg border border-border text-text hover:bg-white/5 transition-colors"
               >
-                <option value="all" className="bg-gray-900 py-2">All Statuses</option>
-                <option value="PENDING" className="bg-gray-900 py-2">Pending</option>
-                <option value="APPROVED" className="bg-gray-900 py-2">Approved</option>
-                <option value="DECLINED" className="bg-gray-900 py-2">Declined</option>
-              </select>
+                Reset
+              </button>
+              <button
+                onClick={handleApplyFilters}
+                className="px-4 py-2 rounded-lg bg-primary hover:bg-primaryHover text-white transition-colors"
+              >
+                Apply Filters
+              </button>
             </div>
-          </div>
-
-          {/* Footer */}
-          <div className="px-4 sm:px-8 py-4 sm:py-6 border-t border-gray-200/10 dark:border-white/[0.05] 
-                          bg-gray-50 dark:bg-[#1E1E1E] rounded-b-3xl flex flex-col sm:flex-row gap-3 sm:justify-end">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setTempFilters({
-                  minPrice: '',
-                  maxPrice: '',
-                  minInventory: '',
-                  maxInventory: '',
-                  status: 'all'
-                });
-              }}
-              className="w-full sm:w-auto border-gray-200 dark:border-white/[0.05] text-gray-700 dark:text-gray-300 
-                       hover:bg-gray-100 dark:hover:bg-white/[0.05] hover:text-gray-900 dark:hover:text-white 
-                       transition-all duration-200"
-            >
-              Reset
-            </Button>
-            <Button
-              onClick={handleApply}
-              className="w-full sm:w-auto bg-primary hover:bg-primaryHover text-white transition-all duration-200"
-            >
-              Apply Filters
-            </Button>
           </div>
         </div>
       </div>
@@ -882,7 +924,7 @@ const ProductManagement = () => {
                 </h3>
                 <div className="flex items-center gap-2 text-white/90">
                   <DollarSign className="w-5 h-5" />
-                  <span className="text-lg font-semibold">${selectedProduct.price.toFixed(2)}</span>
+                  <span className=" text-text font-semibold">${selectedProduct.price.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -1044,10 +1086,6 @@ const ProductManagement = () => {
   );
   
 
-  useEffect(() => {
-    dispatch(fetchMyProducts());
-  }, [dispatch]);
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -1066,466 +1104,206 @@ const ProductManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-2 sm:p-4 md:p-6 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-8">
-        {/* Hero Section */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-primary/2 to-transparent 
-                      dark:from-primary/10 dark:via-primary/5 dark:to-transparent rounded-3xl border border-border">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-white/50 to-white/0 
-                        dark:from-black/50 dark:to-black/0" />
-          
-          {/* Animated Background Elements */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-1/2 -left-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-blob" />
-            <div className="absolute -bottom-1/2 -right-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-blob animation-delay-2000" />
+    <div className="space-y-8">
+      {/* Header Section */}
+      <div className="bg-cardBg border border-border rounded-2xl p-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h2 className="text-3xl font-bold text-text">Product Management</h2>
+            <p className="text-textSecondary mt-1">Manage and track your product inventory</p>
           </div>
-          
-          {/* Content */}
-          <div className="relative p-6 sm:p-8 md:p-10">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-              {/* Left Side */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-primary/0 rounded-xl blur-xl group-hover:blur-2xl transition-all duration-300" />
-                    <div className="relative p-2.5 sm:p-3 rounded-xl bg-white/50 dark:bg-white/10 backdrop-blur-sm border border-white/20 group-hover:border-white/40 transition-all duration-300">
-                      <Package className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
-                    </div>
-                  </div>
-                  <div>
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold 
-                                bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700
-                                dark:from-white dark:via-gray-100 dark:to-gray-200
-                                bg-clip-text text-transparent">
-                      Product Management
-                    </h2>
-                  </div>
-                </div>
-                <div className="relative">
-                  <div className="absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-primary/50 to-primary/0" />
-                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-lg pl-4
-                             transform hover:-translate-y-0.5 transition-transform duration-300">
-                    Streamline your inventory management with powerful tools for tracking, analyzing, 
-                    and optimizing your product portfolio.
-                  </p>
-                </div>
-              </div>
-
-              {/* Right Side */}
-              <div className="w-full sm:w-auto">
-                <Button
-                  onClick={() => setShowAddModal(true)}
-                  className="w-full sm:w-auto group relative overflow-hidden px-6 py-3
-                           bg-primary hover:bg-primary-dark text-white rounded-xl
-                           transition-all duration-300 ease-out hover:scale-105 hover:-translate-y-0.5
-                           shadow-lg hover:shadow-xl hover:shadow-primary/25
-                           flex items-center justify-center gap-2"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/25 to-white/0
-                                translate-x-[-100%] group-hover:translate-x-[100%] 
-                                transition-transform duration-1000" />
-                  <div className="relative flex items-center gap-2">
-                    <span className="relative flex h-8 w-8 items-center justify-center">
-                      <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-white opacity-75"></span>
-                      <Plus className="w-5 h-5 relative" />
-                    </span>
-                    <span className="font-medium">Add Product</span>
-                  </div>
-                </Button>
-              </div>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-textSecondary" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 rounded-xl bg-inputBg border border-border text-text placeholder:text-textSecondary focus:outline-none focus:ring-2 focus:ring-primary/20 w-64"
+              />
             </div>
-          </div>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          {[
-            { 
-              label: 'Total Products', 
-              value: totalProducts, 
-              icon: Package,
-              gradient: 'from-blue-500/10 via-blue-500/5 to-transparent'
-            },
-            { 
-              label: 'Inventory Value', 
-              value: `$${totalValue.toFixed(2)}`, 
-              icon: DollarSign,
-              gradient: 'from-green-500/10 via-green-500/5 to-transparent'
-            },
-            { 
-              label: 'Low Stock', 
-              value: lowStockProducts, 
-              icon: Box,
-              gradient: 'from-amber-500/10 via-amber-500/5 to-transparent'
-            },
-            { 
-              label: 'Pending Review', 
-              value: pendingProducts, 
-              icon: AlertTriangle,
-              gradient: 'from-yellow-500/10 via-yellow-500/5 to-transparent'
-            }
-          ].map((stat, index) => (
-            <div key={index} className="relative group">
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-60 group-hover:opacity-100 transition-opacity duration-300 rounded-xl`} />
-              <div className="relative p-3 sm:p-6 rounded-xl border border-border bg-cardBg/95">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm text-textSecondary">{stat.label}</p>
-                    <p className="text-lg sm:text-2xl font-bold text-text mt-1">{stat.value}</p>
-                  </div>
-                  <div className="p-2 sm:p-3 rounded-xl bg-primary/10">
-                    <stat.icon className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Search and Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
-          <div className="relative w-full sm:w-96">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="w-5 h-5 text-textSecondary" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-inputBg text-text placeholder-textSecondary focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
-            />
-          </div>
-
-          <div className="flex gap-3 w-full sm:w-auto">
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(true)}
-              className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 border-border hover:bg-primary hover:text-white transition-all duration-300"
+            <button 
+              onClick={() => setShowFiltersModal(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-text hover:border-primary hover:text-primary transition-all duration-200"
             >
-              <Filter className="w-5 h-5" />
-              <span>Filters</span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowSortModal(true)}
-              className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 border-border hover:bg-primary hover:text-white transition-all duration-300"
-            >
-              <ArrowUpDown className="w-5 h-5" />
+              <SlidersHorizontal className="w-5 h-5" />
               <span>Sort</span>
+            </button>
+            <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2">
+              <Plus className="w-5 h-5" />
+              Add Product
             </Button>
           </div>
         </div>
-
-        {/* Products Table - Mobile View */}
-        <div className="block sm:hidden">
-          {paginatedProducts.map((product) => (
-            <div 
-              key={product.productId}
-              className="mb-4 bg-white dark:bg-cardBg rounded-xl border border-border p-4 space-y-4"
-            >
-              <div className="flex items-center gap-4">
-                <img 
-                  src={getFullImageUrl(product.imageUrl)} 
-                  alt={product.name}
-                  className="w-16 h-16 rounded-xl object-cover border-2 border-gray-100 dark:border-border/50"
-                />
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-900 dark:text-text">{product.name}</h3>
-                  <p className="text-sm text-gray-500 dark:text-textSecondary">ID: #{product.productId}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-textSecondary">Price</p>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <DollarSign className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                    <span className="font-semibold text-gray-900 dark:text-text">
-                      {product.price.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-textSecondary">Stock</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className={`w-2 h-2 rounded-full ${
-                      product.quantity === 0 
-                        ? 'bg-red-500' 
-                        : product.quantity < 10 
-                          ? 'bg-yellow-500' 
-                          : 'bg-green-500'
-                    }`} />
-                    <span className={`text-sm font-medium ${
-                      product.quantity === 0 
-                        ? 'text-red-500 dark:text-red-400' 
-                        : product.quantity < 10 
-                          ? 'text-yellow-500 dark:text-yellow-400'
-                          : 'text-green-500 dark:text-green-400'
-                    }`}>
-                      {product.quantity} units
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500 dark:text-textSecondary mb-2">Categories</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {product.categories.map(c => (
-                    <span 
-                      key={c.categoryId} 
-                      className="px-2.5 py-1 bg-primary/10 dark:bg-primary/20 rounded-full text-xs font-medium text-primary border border-primary/20"
-                    >
-                      {c.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500 dark:text-textSecondary mb-2">Status</p>
-                <StatusBadge status={product.status} declineReason={product.declineReason} />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleView(product.productId)}
-                  className="flex-1 p-2 text-gray-500 hover:text-primary hover:bg-primary/10 
-                           dark:text-textSecondary dark:hover:bg-primary/20 rounded-lg transition-all duration-200"
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <Eye className="w-4 h-4" />
-                    <span>View</span>
-                  </div>
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleEdit(product.productId)}
-                  className="flex-1 p-2 text-gray-500 hover:text-primary hover:bg-primary/10 
-                           dark:text-textSecondary dark:hover:bg-primary/20 rounded-lg transition-all duration-200"
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <Edit2 className="w-4 h-4" />
-                    <span>Edit</span>
-                  </div>
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleDelete(product.productId)}
-                  className="flex-1 p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 
-                           dark:text-textSecondary dark:hover:bg-red-500/20 rounded-lg transition-all duration-200"
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <Trash2 className="w-4 h-4" />
-                    <span>Delete</span>
-                  </div>
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Products Table - Desktop View */}
-        <div className="hidden sm:block relative overflow-hidden rounded-xl border border-border bg-white dark:bg-cardBg shadow-xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border bg-gray-50/80 dark:bg-background/50">
-                <TableHead className="font-medium text-sm text-gray-600 dark:text-textSecondary py-5 pl-6">
-                  <div className="flex items-center gap-2">
-                    Product
-                    <button 
-                      type="button"
-                      onClick={() => handleSort('name')} 
-                      className="p-1 hover:text-primary transition-colors duration-200 cursor-pointer"
-                    >
-                      <ArrowUpDown className="w-4 h-4" />
-                    </button>
-                  </div>
-                </TableHead>
-                <TableHead className="font-medium text-sm text-gray-600 dark:text-textSecondary">Categories</TableHead>
-                <TableHead className="font-medium text-sm text-gray-600 dark:text-textSecondary">
-                  <div className="flex items-center gap-2">
-                    Price
-                    <button 
-                      type="button"
-                      onClick={() => handleSort('price')} 
-                      className="p-1 hover:text-primary transition-colors duration-200 cursor-pointer"
-                    >
-                      <ArrowUpDown className="w-4 h-4" />
-                    </button>
-                  </div>
-                </TableHead>
-                <TableHead className="font-medium text-sm text-gray-600 dark:text-textSecondary">
-                  <div className="flex items-center gap-2">
-                    Stock
-                    <button 
-                      type="button"
-                      onClick={() => handleSort('quantity')} 
-                      className="p-1 hover:text-primary transition-colors duration-200 cursor-pointer"
-                    >
-                      <ArrowUpDown className="w-4 h-4" />
-                    </button>
-                  </div>
-                </TableHead>
-                <TableHead className="font-medium text-sm text-gray-600 dark:text-textSecondary">Status</TableHead>
-                <TableHead className="font-medium text-sm text-gray-600 dark:text-textSecondary text-right pr-6">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedProducts.map((product) => (
-                <TableRow 
-                  key={product.productId}
-                  className="group border-border transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-primary/10"
-                >
-                  <TableCell className="py-4 pl-6">
-                    <div className="flex items-center gap-4">
-                      <div className="relative group/image">
-                        <img 
-                          src={getFullImageUrl(product.imageUrl)} 
-                          alt={product.name}
-                          className="w-14 h-14 rounded-xl object-cover border-2 border-gray-100 dark:border-border/50 group-hover:border-primary/50 transition-colors duration-200 shadow-sm"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent rounded-xl opacity-0 group-hover/image:opacity-100 transition-opacity duration-200" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-medium text-gray-900 dark:text-text group-hover:text-primary transition-colors duration-200">
-                          {product.name}
-                        </span>
-                        <span className="text-sm text-gray-500 dark:text-textSecondary">
-                          ID: #{product.productId}
-                        </span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1.5 max-w-[200px]">
-                      {product.categories.map(c => (
-                        <span 
-                          key={c.categoryId} 
-                          className="px-2.5 py-1 bg-primary/10 dark:bg-primary/20 rounded-full text-xs font-medium text-primary border border-primary/20 hover:border-primary/40 transition-colors duration-200"
-                        >
-                          {c.name}
-                        </span>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      <DollarSign className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                      <span className="font-semibold text-gray-900 dark:text-text">
-                        {product.price.toFixed(2)}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${
-                        product.quantity === 0 
-                          ? 'bg-red-500' 
-                          : product.quantity < 10 
-                            ? 'bg-yellow-500' 
-                            : 'bg-green-500'
-                      }`} />
-                      <span className={`text-sm font-medium ${
-                        product.quantity === 0 
-                          ? 'text-red-500 dark:text-red-400' 
-                          : product.quantity < 10 
-                            ? 'text-yellow-500 dark:text-yellow-400'
-                            : 'text-green-500 dark:text-green-400'
-                      }`}>
-                        {product.quantity} units
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={product.status} declineReason={product.declineReason} />
-                  </TableCell>
-                  <TableCell className="text-right pr-6">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        onClick={() => handleView(product.productId)}
-                        className="p-2 text-gray-500 hover:text-primary hover:bg-primary/10 
-                                 dark:text-textSecondary dark:hover:bg-primary/20 rounded-lg transition-all duration-200"
-                        title="View Details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        onClick={() => handleEdit(product.productId)}
-                        className="p-2 text-gray-500 hover:text-primary hover:bg-primary/10 
-                                 dark:text-textSecondary dark:hover:bg-primary/20 rounded-lg transition-all duration-200"
-                        title="Edit Product"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        onClick={() => handleDelete(product.productId)}
-                        className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 
-                                 dark:text-textSecondary dark:hover:bg-red-500/20 rounded-lg transition-all duration-200"
-                        title="Delete Product"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-
-        {/* Pagination */}
-        {filteredProducts.length > itemsPerPage && (
-          <div className="flex items-center justify-between mt-6">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="border-border hover:bg-primary hover:text-white transition-all duration-300"
-            >
-              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Button>
-            <span className="text-sm sm:text-base text-textSecondary">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="border-border hover:bg-primary hover:text-white transition-all duration-300"
-            >
-              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Button>
-          </div>
-        )}
       </div>
 
-      {/* Modals */}
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        {[
+          { 
+            label: 'Total Products', 
+            value: totalProducts, 
+            icon: Package,
+            gradient: 'from-blue-500/10 via-blue-500/5 to-transparent'
+          },
+          { 
+            label: 'Inventory Value', 
+            value: `$${totalValue.toFixed(2)}`, 
+            icon: DollarSign,
+            gradient: 'from-green-500/10 via-green-500/5 to-transparent'
+          },
+          { 
+            label: 'Low Stock', 
+            value: lowStockProducts, 
+            icon: Box,
+            gradient: 'from-amber-500/10 via-amber-500/5 to-transparent'
+          },
+          { 
+            label: 'Pending Review', 
+            value: pendingProducts, 
+            icon: AlertTriangle,
+            gradient: 'from-yellow-500/10 via-yellow-500/5 to-transparent'
+          }
+        ].map((stat, index) => (
+          <div key={index} className="relative group">
+            <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-60 group-hover:opacity-100 transition-opacity duration-300 rounded-xl`} />
+            <div className="relative p-3 sm:p-6 rounded-xl border border-border bg-cardBg/95">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs sm:text-sm text-textSecondary">{stat.label}</p>
+                  <p className="text-lg sm:text-2xl font-bold text-text mt-1">{stat.value}</p>
+                </div>
+                <div className="p-2 sm:p-3 rounded-xl bg-primary/10">
+                  <stat.icon className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Products Table */}
+      {loading ? (
+        <div className="text-center py-8">
+          <p>Loading products...</p>
+        </div>
+      ) : error ? (
+        <div className="text-center py-8 text-red-500">
+          <p>{error}</p>
+        </div>
+      ) : products.length === 0 ? (
+        <div className="bg-cardBg border border-border rounded-2xl p-12 text-center">
+          <Package className="w-16 h-16 text-textSecondary mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-text mb-2">No Products Yet</h3>
+          <p className="text-textSecondary mb-6">Start adding your products to your inventory.</p>
+          <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 mx-auto">
+            <Plus className="w-5 h-5" />
+            Add Your First Product
+          </Button>
+        </div>
+      ) : (
+        <>
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Categories</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Stock</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredProducts.map((product) => (
+                  <TableRow key={product.productId} className="hover:bg-cardHoverBg transition-colors">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden border border-border">
+                          <img
+                            src={getFullImageUrl(product.imageUrl)}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-text">{product.name}</h4>
+                          <p className="text-text font-semibold text-text">${product.price.toFixed(2)}</p>
+                          <p className="text-xs text-textSecondary">Stock: {product.quantity}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {product.categories.map((category) => (
+                          <span
+                            key={category.categoryId}
+                            className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs"
+                          >
+                            {category.name}
+                          </span>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="w-4 h-4 text-textSecondary" />
+                        <span className="font-medium text-text">{product.price.toFixed(2)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-1 rounded-full text-sm ${
+                          product.quantity === 0 
+                            ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300' 
+                            : product.quantity < 10 
+                              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300'
+                              : 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300'
+                        }`}>
+                          {product.quantity}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={product.status} declineReason={product.declineReason} />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleView(product.productId)}
+                          className="p-2 hover:bg-primary/10 rounded-lg transition-colors"
+                        >
+                          <Eye className="w-4 h-4 text-textSecondary hover:text-primary" />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(product.productId)}
+                          className="p-2 hover:bg-primary/10 rounded-lg transition-colors"
+                        >
+                          <Pencil className="w-4 h-4 text-textSecondary hover:text-primary" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product.productId)}
+                          className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4 text-textSecondary hover:text-red-500" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+          <PaginationControls />
+        </>
+      )}
+
+      <FilterModal />
       {showAddModal && <AddProductModal />}
-      {showFilters && <FilterModal isOpen={showFilters} onClose={() => setShowFilters(false)} filters={filters} setFilters={setFilters} />}
       {showViewModal && <ViewModal />}
       {showDeleteModal && <DeleteModal />}
-      {showSortModal && (
-        <SortModal
-          isOpen={showSortModal}
-          onClose={() => setShowSortModal(false)}
-          currentSort={sortField}
-          currentOrder={sortOrder}
-          onSort={(field, order) => {
-            setSortField(field);
-            setSortOrder(order);
-          }}
-        />
-      )}
     </div>
   );
 };

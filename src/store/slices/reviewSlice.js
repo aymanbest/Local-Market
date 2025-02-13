@@ -42,17 +42,16 @@ export const fetchUserReviews = createAsyncThunk(
   }
 );
 
-// New thunks for admin review management
+// for admin review management
 export const fetchPendingReviews = createAsyncThunk(
   'reviews/fetchPending',
-  async (_, { rejectWithValue, getState }) => {
+  async ({ page = 0, size = 10, sortBy = 'createdAt', direction = 'desc' } = {}, { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/reviews/pending');
+      const response = await api.get(`/api/reviews/pending?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch reviews');
     }
-
   }
 );
 
@@ -178,7 +177,15 @@ const reviewSlice = createSlice({
       })
       .addCase(fetchPendingReviews.fulfilled, (state, action) => {
         state.loading = false;
-        state.pendingReviews = action.payload;
+        state.pendingReviews = action.payload.content;
+        state.pagination = {
+          currentPage: action.payload.number,
+          totalPages: action.payload.totalPages,
+          totalElements: action.payload.totalElements,
+          pageSize: action.payload.size,
+          isFirst: action.payload.first,
+          isLast: action.payload.last
+        };
       })
       .addCase(fetchPendingReviews.rejected, (state, action) => {
         state.loading = false;

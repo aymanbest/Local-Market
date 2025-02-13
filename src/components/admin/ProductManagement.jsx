@@ -54,16 +54,11 @@ DeclineButton.displayName = 'DeclineButton';
 
 const ProductManagement = () => {
   const dispatch = useDispatch();
-  const pendingProducts = useSelector((state) => {
-    // console.log('Current Redux State:', state); // Debug log
-    return state.pendingProducts;
-  });
+  const pendingProducts = useSelector((state) => state.pendingProducts);
   const producers = pendingProducts?.items || [];
-  // console.log('Producers:', producers); // Debug log
+  const { pagination, sorting } = pendingProducts;
   
   const status = pendingProducts?.status || 'idle';
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(3);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -71,9 +66,13 @@ const ProductManagement = () => {
   const [direction, setDirection] = useState('right');
 
   useEffect(() => {
-    // console.log('Dispatching fetchPendingProducts'); // Debug log
-    dispatch(fetchPendingProducts());
-  }, [dispatch]);
+    dispatch(fetchPendingProducts({
+      page: pagination?.currentPage || 0,
+      size: pagination?.pageSize || 10,
+      sortBy: sorting?.sortBy || 'createdAt',
+      direction: sorting?.direction || 'desc'
+    }));
+  }, [dispatch, pagination?.currentPage, sorting]);
 
   const handleApprove = async (productId) => {
     try {
@@ -98,9 +97,11 @@ const ProductManagement = () => {
     }
   }, [selectedProduct]);
 
-  // Modify the search filtering logic
-  const filteredProducers = producers.filter(producer => {
-    const producerName = `${producer.firstname} ${producer.lastname}`.toLowerCase();
+  // Modify the search filtering logic with null checks
+  const filteredProducers = producers?.filter(producer => {
+    if (!producer) return false;
+    
+    const producerName = `${producer.firstname || ''} ${producer.lastname || ''}`.toLowerCase();
     const searchLower = searchTerm.toLowerCase();
     
     // Check producer name
@@ -108,27 +109,17 @@ const ProductManagement = () => {
       return true;
     }
     
-    // Check each product's name
-    return producer.products.some(product => 
-      product.name.toLowerCase().includes(searchLower)
-    );
-  });
+    // Check each product's name with null check
+    return producer.products?.some(product => 
+      product?.name?.toLowerCase().includes(searchLower)
+    ) || false;
+  }) || [];
 
-  // Calculate total pending products
-  const totalPendingProducts = producers.reduce((total, producer) => 
-    total + producer.products.length, 0
-  );
+  // Calculate total pending products with null check
+  const totalPendingProducts = pagination?.totalElements || 0;
 
   // console.log('Filtered Producers:', filteredProducers); // Debug log
   // console.log('Total Pending Products:', totalPendingProducts); // Debug log
-
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredProducers.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredProducers.length / itemsPerPage);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // View Modal Component
   const ViewModal = () => (
@@ -237,137 +228,158 @@ const ProductManagement = () => {
 
         {/* Products Grid */}
         <div className="grid gap-6">
-          {currentItems.map(producer => (
-            <div key={producer.producerId} className="bg-cardBg border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
-              <div className="p-6 border-b border-border">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-text">
-                      {producer.firstname} {producer.lastname}
-                    </h3>
-                    <p className="text-textSecondary text-sm">{producer.email}</p>
+          {status === 'loading' ? (
+            <div className="text-center py-12">Loading...</div>
+          ) : status === 'failed' ? (
+            <div className="text-center py-12 text-red-500">{pendingProducts.error}</div>
+          ) : producers.length === 0 ? (
+            <div className="text-center py-12">No pending products found</div>
+          ) : (
+            producers.map(producer => (
+              <div key={producer.producerId} className="bg-cardBg border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
+                <div className="p-6 border-b border-border">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-text">
+                        {producer.firstname} {producer.lastname}
+                      </h3>
+                      <p className="text-textSecondary text-sm">{producer.email}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="grid gap-4 p-6">
-                {producer.products.map(product => (
-                  <div 
-                    key={product.productId}
-                    className="flex items-center justify-between p-4 bg-background rounded-lg border border-border hover:border-primary/50 transition-all duration-200"
-                  >
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={product.imageUrl || 'https://placehold.co/600x400'}
-                        alt={product.name}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
-                      <div>
-                        <h4 className="font-medium text-text">{product.name}</h4>
-                        <p className="text-primary font-semibold">${product.price.toFixed(2)}</p>
-                        <p className="text-xs text-textSecondary">Stock: {product.quantity}</p>
+                <div className="grid gap-4 p-6">
+                  {producer.products.map(product => (
+                    <div 
+                      key={product.productId}
+                      className="flex items-center justify-between p-4 bg-background rounded-lg border border-border hover:border-primary/50 transition-all duration-200"
+                    >
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={product.imageUrl || 'https://placehold.co/600x400'}
+                          alt={product.name}
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                        <div>
+                          <h4 className="font-medium text-text">{product.name}</h4>
+                          <p className="text-primary font-semibold">${product.price.toFixed(2)}</p>
+                          <p className="text-xs text-textSecondary">Stock: {product.quantity}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={() => {
+                            setSelectedProduct(product);
+                            setShowViewModal(true);
+                          }}
+                          variant="ghost"
+                          className="hover:bg-primary/10 hover:text-primary transition-colors duration-200"
+                        >
+                          <Eye className="w-5 h-5" />
+                        </Button>
+                        <Button
+                          onClick={() => handleApprove(product.productId)}
+                          className="bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200"
+                        >
+                          <Check className="w-5 h-5" />
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setSelectedProduct(product);
+                            setShowDeclineModal(true);
+                          }}
+                          variant="ghost"
+                          className="hover:bg-red-500/10 hover:text-red-500 transition-colors duration-200"
+                        >
+                          <X className="w-5 h-5" />
+                        </Button>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          setShowViewModal(true);
-                        }}
-                        variant="ghost"
-                        className="hover:bg-primary/10 hover:text-primary transition-colors duration-200"
-                      >
-                        <Eye className="w-5 h-5" />
-                      </Button>
-                      <Button
-                        onClick={() => handleApprove(product.productId)}
-                        className="bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200"
-                      >
-                        <Check className="w-5 h-5" />
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          setShowDeclineModal(true);
-                        }}
-                        variant="ghost"
-                        className="hover:bg-red-500/10 hover:text-red-500 transition-colors duration-200"
-                      >
-                        <X className="w-5 h-5" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
-        {/* MainPage style Pagination */}
-        {filteredProducers.length > itemsPerPage && (
+        {/* Pagination Controls */}
+        {pagination && pagination.totalElements > 0 && pagination.totalPages > 1 && (
           <div className="flex flex-col items-center gap-6 mt-8">
-            {/* Page Navigation Buttons */}
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 className={`p-2 rounded-lg transition-colors duration-300 ${
-                  currentPage === 1
+                  pagination.isFirst
                     ? 'bg-cardBg border-border text-textSecondary cursor-not-allowed'
                     : 'bg-cardBg border-border hover:bg-primary hover:border-transparent'
                 }`}
                 onClick={() => {
                   setDirection('left');
-                  setCurrentPage(prev => prev - 1);
+                  dispatch(fetchPendingProducts({
+                    page: pagination.currentPage - 1,
+                    size: pagination.pageSize,
+                    sortBy: sorting.sortBy,
+                    direction: sorting.direction
+                  }));
                 }}
-                disabled={currentPage === 1}
+                disabled={pagination.isFirst}
                 aria-label="Previous page"
               >
                 <ChevronLeft className="w-6 h-6" />
               </Button>
+              {Array.from({ length: pagination.totalPages }).map((_, index) => (
+                <Button
+                  key={index}
+                  variant={index === pagination.currentPage ? "default" : "outline"}
+                  className={`${
+                    index === pagination.currentPage 
+                      ? 'bg-primary text-white' 
+                      : 'border hover:bg-cardBg text-text border-border'
+                  }`}
+                  onClick={() => {
+                    setDirection(index > pagination.currentPage ? 'right' : 'left');
+                    dispatch(fetchPendingProducts({
+                      page: index,
+                      size: pagination.pageSize,
+                      sortBy: sorting.sortBy,
+                      direction: sorting.direction
+                    }));
+                  }}
+                >
+                  {index + 1}
+                </Button>
+              ))}
               <Button
                 variant="outline"
                 className={`p-2 rounded-lg transition-colors duration-300 ${
-                  currentPage === totalPages
+                  pagination.isLast
                     ? 'bg-cardBg border-border text-textSecondary cursor-not-allowed'
                     : 'bg-primary border-transparent hover:bg-primaryHover'
                 }`}
                 onClick={() => {
                   setDirection('right');
-                  setCurrentPage(prev => prev + 1);
+                  dispatch(fetchPendingProducts({
+                    page: pagination.currentPage + 1,
+                    size: pagination.pageSize,
+                    sortBy: sorting.sortBy,
+                    direction: sorting.direction
+                  }));
                 }}
-                disabled={currentPage === totalPages}
+                disabled={pagination.isLast}
                 aria-label="Next page"
               >
                 <ChevronRight className="w-6 h-6" />
               </Button>
             </div>
 
-            {/* Dot Indicators */}
-            <div className="flex justify-center gap-2">
-              {Array.from({ length: totalPages }).map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    currentPage === index + 1 
-                      ? 'bg-primary w-6' 
-                      : 'bg-border hover:bg-primary/50'
-                  }`}
-                  onClick={() => {
-                    setDirection(index + 1 > currentPage ? 'right' : 'left');
-                    setCurrentPage(index + 1);
-                  }}
-                  aria-label={`Go to page ${index + 1}`}
-                />
-              ))}
-            </div>
-
             {/* Results Counter */}
             <div className="text-sm text-textSecondary">
-              Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredProducers.length)} of {filteredProducers.length} results
+              Showing {pagination.currentPage * pagination.pageSize + 1}-
+              {Math.min((pagination.currentPage + 1) * pagination.pageSize, pagination.totalElements)} of {pagination.totalElements} results
             </div>
           </div>
         )}

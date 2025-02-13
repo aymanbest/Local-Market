@@ -4,9 +4,9 @@ import api from '../../lib/axios';
 
 export const fetchPendingProducts = createAsyncThunk(
   'pendingProducts/fetchAll',
-  async (_, { getState, rejectWithValue }) => {
+  async ({ page = 0, size = 10, sortBy = 'createdAt', direction = 'desc' } = {}, { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/products/pending');
+      const response = await api.get(`/api/products/pending?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch pending products');
@@ -46,13 +46,35 @@ export const declineProduct = createAsyncThunk(
 const initialState = {
   items: [],
   status: 'idle',
-  error: null
+  error: null,
+  pagination: {
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+    pageSize: 10,
+    isFirst: true,
+    isLast: false
+  },
+  sorting: {
+    sortBy: 'createdAt',
+    direction: 'desc'
+  }
 };
 
 const pendingProductsSlice = createSlice({
   name: 'pendingProducts',
   initialState,
-  reducers: {},
+  reducers: {
+    updateSorting: (state, action) => {
+      state.sorting = action.payload;
+    },
+    updatePagination: (state, action) => {
+      state.pagination = {
+        ...state.pagination,
+        ...action.payload
+      };
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchPendingProducts.pending, (state) => {
@@ -61,7 +83,15 @@ const pendingProductsSlice = createSlice({
       })
       .addCase(fetchPendingProducts.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.items = action.payload;
+        state.items = action.payload.content;
+        state.pagination = {
+          currentPage: action.payload.number,
+          totalPages: action.payload.totalPages,
+          totalElements: action.payload.totalElements,
+          pageSize: action.payload.size,
+          isFirst: action.payload.first,
+          isLast: action.payload.last
+        };
         state.error = null;
       })
       .addCase(fetchPendingProducts.rejected, (state, action) => {

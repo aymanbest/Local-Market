@@ -9,7 +9,7 @@ import {
   CheckCircle, XCircle, Building2, Globe, MapPin, 
   Calendar, Search, Filter, ChevronDown, Phone,
   User, MessageSquare, Link as LinkIcon, Clock,
-  ChevronRight, Store, Info
+  ChevronRight, Store, Info, SlidersHorizontal, X
 } from 'lucide-react';
 
 const ApplicationCard = ({ app, onApprove, onDecline }) => {
@@ -177,16 +177,27 @@ const ApplicationCard = ({ app, onApprove, onDecline }) => {
 
 const ApplicationManagement = () => {
   const dispatch = useDispatch();
-  const { applications, status, error } = useSelector(state => state.producerApplications);
+  const { applications, status, error, pagination, sorting } = useSelector(state => state.producerApplications);
   const declineReasonRef = useRef('');
   const [selectedApp, setSelectedApp] = useState(null);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [tempFilters, setTempFilters] = useState({
+    sorting: {
+      sortBy: 'createdAt',
+      direction: 'desc'
+    }
+  });
 
   useEffect(() => {
-    dispatch(fetchPendingApplications());
-  }, [dispatch]);
+    dispatch(fetchPendingApplications({
+      page: 0,
+      size: 10,
+      sortBy: tempFilters.sorting.sortBy,
+      direction: tempFilters.sorting.direction
+    }));
+  }, [dispatch, tempFilters.sorting]);
 
   const handleApprove = async (application) => {
     if (application.customCategory) {
@@ -223,6 +234,194 @@ const ApplicationManagement = () => {
 
   const MemoizedApplicationCard = useMemo(() => React.memo(ApplicationCard), []);
 
+  const FilterModal = () => {
+    const [localFilters, setLocalFilters] = useState(tempFilters);
+
+    const sortingOptions = [
+      { value: 'createdAt', label: 'Creation Date' },
+      { value: 'updatedAt', label: 'Last Updated' },
+      { value: 'businessName', label: 'Business Name' },
+      { value: 'yearsOfExperience', label: 'Years of Experience' }
+    ];
+
+    useEffect(() => {
+      setLocalFilters(tempFilters);
+    }, [showFiltersModal]);
+
+    const handleApplyFilters = () => {
+      setTempFilters(localFilters);
+      setShowFiltersModal(false);
+    };
+
+    const handleResetFilters = () => {
+      const resetFilters = {
+        sorting: {
+          sortBy: 'createdAt',
+          direction: 'desc'
+        }
+      };
+      setLocalFilters(resetFilters);
+    };
+
+    if (!showFiltersModal) return null;
+
+    return (
+      <div className="fixed inset-0 z-[100] overflow-y-auto">
+        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <div className="fixed inset-0 bg-black/60 transition-opacity" onClick={() => setShowFiltersModal(false)} />
+          
+          <div className="relative transform overflow-hidden rounded-2xl bg-cardBg border border-border text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl z-[101]">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-cardBg">
+              <h3 className="text-xl font-semibold text-text flex items-center gap-2">
+                <Filter className="w-5 h-5" />
+                Sort Applications
+              </h3>
+              <button 
+                onClick={() => setShowFiltersModal(false)} 
+                className="text-textSecondary hover:text-text transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="px-6 py-4 bg-cardBg">
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium text-textSecondary">Sort By</h4>
+                <div className="grid grid-cols-1 gap-4">
+                  <select
+                    value={localFilters.sorting.sortBy}
+                    onChange={(e) => setLocalFilters(prev => ({
+                      ...prev,
+                      sorting: { ...prev.sorting, sortBy: e.target.value }
+                    }))}
+                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-text"
+                  >
+                    {sortingOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setLocalFilters(prev => ({
+                        ...prev,
+                        sorting: { ...prev.sorting, direction: 'asc' }
+                      }))}
+                      className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
+                        localFilters.sorting.direction === 'asc'
+                          ? 'bg-primary text-white border-primary'
+                          : 'border-border text-text hover:bg-white/5'
+                      }`}
+                    >
+                      Ascending
+                    </button>
+                    <button
+                      onClick={() => setLocalFilters(prev => ({
+                        ...prev,
+                        sorting: { ...prev.sorting, direction: 'desc' }
+                      }))}
+                      className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
+                        localFilters.sorting.direction === 'desc'
+                          ? 'bg-primary text-white border-primary'
+                          : 'border-border text-text hover:bg-white/5'
+                      }`}
+                    >
+                      Descending
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-border flex items-center justify-end gap-3 bg-cardBg">
+              <button
+                onClick={handleResetFilters}
+                className="px-4 py-2 rounded-lg border border-border text-text hover:bg-white/5 transition-colors"
+              >
+                Reset
+              </button>
+              <button
+                onClick={handleApplyFilters}
+                className="px-4 py-2 rounded-lg bg-primary hover:bg-primaryHover text-white transition-colors"
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const PaginationControls = () => {
+    if (!pagination || pagination.totalElements <= pagination.pageSize) {
+      return null;
+    }
+    
+    return (
+      <div className="flex items-center justify-between py-4">
+        <p className="text-sm text-textSecondary">
+          Showing <span className="font-medium">{(pagination.currentPage) * (pagination.pageSize) + 1}</span> to{' '}
+          <span className="font-medium">
+            {Math.min((pagination.currentPage + 1) * (pagination.pageSize), pagination.totalElements)}
+          </span> of{' '}
+          <span className="font-medium">{pagination.totalElements}</span> applications
+        </p>
+        <div className="flex items-center space-x-2">
+          <button 
+            className="px-4 py-2 border border-border rounded-xl text-text hover:bg-cardBg transition-colors"
+            disabled={pagination.isFirst}
+            onClick={() => {
+              dispatch(fetchPendingApplications({ 
+                page: pagination.currentPage - 1,
+                size: pagination.pageSize,
+                sortBy: tempFilters.sorting.sortBy,
+                direction: tempFilters.sorting.direction
+              }));
+            }}
+          >
+            Previous
+          </button>
+          {Array.from({ length: pagination.totalPages }).map((_, index) => (
+            <button
+              key={index}
+              className={`px-4 py-2 rounded-xl transition-colors ${
+                index === pagination.currentPage 
+                  ? 'bg-primary text-white' 
+                  : 'border border-border text-text hover:bg-cardBg'
+              }`}
+              onClick={() => {
+                dispatch(fetchPendingApplications({ 
+                  page: index,
+                  size: pagination.pageSize,
+                  sortBy: tempFilters.sorting.sortBy,
+                  direction: tempFilters.sorting.direction
+                }));
+              }}
+            >
+              {index + 1}
+            </button>
+          ))}
+          <button 
+            className="px-4 py-2 border border-border rounded-xl text-text hover:bg-cardBg transition-colors"
+            disabled={pagination.isLast}
+            onClick={() => {
+              dispatch(fetchPendingApplications({ 
+                page: pagination.currentPage + 1,
+                size: pagination.pageSize,
+                sortBy: tempFilters.sorting.sortBy,
+                direction: tempFilters.sorting.direction
+              }));
+            }}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   if (status === 'loading') {
     return (
       <>
@@ -252,6 +451,13 @@ const ApplicationManagement = () => {
                 className="pl-10 pr-4 py-2 rounded-xl bg-inputBg border border-border text-text placeholder:text-textSecondary focus:outline-none focus:ring-2 focus:ring-primary/20 w-64"
               />
             </div>
+            <button 
+              onClick={() => setShowFiltersModal(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-text hover:border-primary hover:text-primary transition-all duration-200"
+            >
+              <SlidersHorizontal className="w-5 h-5" />
+              <span>Sort</span>
+            </button>
           </div>
         </div>
       </div>
@@ -278,6 +484,9 @@ const ApplicationManagement = () => {
           ))}
         </div>
       )}
+
+      <PaginationControls />
+      <FilterModal />
 
       {/* Decline Modal */}
       {showDeclineModal && (
