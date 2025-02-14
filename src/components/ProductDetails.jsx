@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { checkReviewEligibility, submitReview } from '../store/slices/reviewSlice';
-import { initializeState, setState } from '../store/slices/authSlice';
 import { useTheme } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 // import { toast } from 'react-hot-toast';
@@ -29,7 +28,6 @@ const ProductDetails = () => {
   const { isAuthenticated } = useSelector(state => state.auth);
   const { items: cartItems } = useSelector(state => state.cart);
   const [isLoading, setIsLoading] = useState(true);
-  const authState = useSelector(state => state.auth);
   const { isDark } = useTheme();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showZoomedImage, setShowZoomedImage] = useState(false);
@@ -105,6 +103,10 @@ const ProductDetails = () => {
           await dispatch(fetchProductById(id)).unwrap();
         } catch (error) {
           console.error('Error fetching product:', error);
+          // Don't show error for auth-related errors
+          if (!error.message?.includes('401')) {
+            // Handle other errors if needed
+          }
         } finally {
           setIsLoading(false);
         }
@@ -116,28 +118,12 @@ const ProductDetails = () => {
     fetchData();
   }, [dispatch, id, location.state]);
 
+  // Only check review eligibility if user is authenticated
   useEffect(() => {
     if (isAuthenticated && product?.productId) {
       dispatch(checkReviewEligibility(product.productId));
     }
   }, [dispatch, isAuthenticated, product]);
-
-  useEffect(() => {
-    const initAuth = async () => {
-      // Only try to initialize if status is idle and we haven't tried before
-      if (!isAuthenticated && authState.status === 'idle' && !authState.initialized) {
-        const resultAction = await dispatch(initializeState());
-        if (initializeState.fulfilled.match(resultAction)) {
-          dispatch(setState({ ...resultAction.payload, initialized: true }));
-        } else {
-          // If the initialization fails, still mark as initialized to prevent retries
-          dispatch(setState({ isAuthenticated: false, initialized: true }));
-        }
-      }
-    };
-    
-    initAuth();
-  }, [isAuthenticated, authState.status, authState.initialized, dispatch]);
 
   useEffect(() => {
     if (descriptionRef.current) {

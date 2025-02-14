@@ -1,36 +1,161 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, DollarSign, Building2, Shield, Wallet, Users, BadgeCheck } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, DollarSign, Building2, Shield, Wallet, Users, BadgeCheck, Clock, XCircle, CheckCircle2 } from 'lucide-react';
 import Button from './ui/Button';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchApplicationStatus } from '../store/slices/producerApplicationsSlice';
+import { formatDistanceToNow, addDays, parseISO, isAfter, format } from 'date-fns';
 
-const BecomeSeller = () => {
-  const { user } = useSelector(state => state.auth);
+const ApplicationStatus = ({ status, submittedAt, processedAt, declineReason }) => {
+  const canReapply = processedAt && isAfter(new Date(), addDays(parseISO(processedAt), 15));
+  const reapplyDate = processedAt && addDays(parseISO(processedAt), 15);
+  const navigate = useNavigate();
+  
+  return (
+    <div className="min-h-[80vh] flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -right-10 -top-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute -left-10 -bottom-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+      </div>
 
-  // If user is logged in, check their status
-  if (user) {
-    // Don't show for producers, admins, or customers with pending/approved status
-    if (user.role !== 'customer' || user.applicationStatus === 'PENDING' || user.applicationStatus === 'APPROVED') {
-      return null;
-    }
+      {/* Main content */}
+      <div className="relative z-10 max-w-2xl w-full">
+        <div className="bg-cardBg backdrop-blur-sm border border-border rounded-2xl p-8 shadow-lg">
+          <div className="relative">
+            {/* Icon container with animated background */}
+            <div className="relative mx-auto w-24 h-24 mb-6">
+              <div className="absolute inset-0 bg-primary/20 rounded-full animate-spin-slow" />
+              <div className="absolute inset-2 bg-cardBg rounded-full flex items-center justify-center">
+                {status === 'PENDING' && <Clock className="w-12 h-12 text-yellow-500 animate-pulse" />}
+                {status === 'DECLINED' && <XCircle className="w-12 h-12 text-red-500 animate-slide-down" />}
+                {status === 'APPROVED' && <CheckCircle2 className="w-12 h-12 text-green-500 animate-slide-down" />}
+              </div>
+            </div>
 
-    if (user.applicationStatus === 'DECLINED') {
-      return (
-        <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 mb-8">
-              <h2 className="text-xl font-semibold text-red-500 mb-2">Application Declined</h2>
-              <p className="text-textSecondary mb-4">
-                Your previous application was declined. You can reapply after 15 days from the decline date.
-              </p>
-              <Link to="/register">
-                <Button className="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-xl">
-                  Reapply Now
-                </Button>
-              </Link>
+            <div className="text-center space-y-4">
+              {status === 'PENDING' && (
+                <>
+                  <h2 className="text-3xl font-recoleta text-yellow-500">Application Under Review</h2>
+                  <p className="text-textSecondary">
+                    Submitted {formatDistanceToNow(parseISO(submittedAt))} ago
+                  </p>
+                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-6 mt-4">
+                    <p className="text-textSecondary">
+                      Your application is being reviewed by our team. We'll notify you once a decision has been made.
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {status === 'DECLINED' && (
+                <>
+                  <h2 className="text-3xl font-recoleta text-red-500">Application Declined</h2>
+                  <p className="text-textSecondary">
+                    Processed {formatDistanceToNow(parseISO(processedAt))} ago
+                  </p>
+                  {declineReason && (
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 mt-4">
+                      <h3 className="text-red-500 font-medium mb-2">Reason for Decline:</h3>
+                      <p className="text-textSecondary">{declineReason}</p>
+                    </div>
+                  )}
+                  <div className="mt-6 space-y-4">
+                    <Button 
+                      onClick={() => canReapply && navigate('/account/apply-seller')}
+                      disabled={!canReapply}
+                      className={`w-full ${
+                        canReapply
+                          ? 'bg-primary hover:bg-primaryHover text-white'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
+                      } px-8 py-3 rounded-xl inline-flex items-center justify-center gap-2`}
+                    >
+                      <ArrowRight className="w-5 h-5" />
+                      Reapply Now
+                    </Button>
+                    {!canReapply && reapplyDate && (
+                      <div className="bg-cardBgAdd border border-border rounded-xl p-6">
+                        <p className="text-textSecondary mb-2">
+                          You can reapply after the waiting period:
+                        </p>
+                        <p className="text-primary font-medium">
+                          {format(reapplyDate, 'MMMM dd, yyyy')} at {format(reapplyDate, 'hh:mm a')}
+                        </p>
+                        <p className="text-textSecondary mt-2 text-sm">
+                          ({formatDistanceToNow(reapplyDate)} remaining)
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {status === 'APPROVED' && (
+                <>
+                  <h2 className="text-3xl font-recoleta text-green-500">Application Approved</h2>
+                  <p className="text-textSecondary">
+                    Approved {formatDistanceToNow(parseISO(processedAt))} ago
+                  </p>
+                  <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-6 mt-4">
+                    <p className="text-textSecondary">
+                      Congratulations! Your seller account has been activated. You can now access your seller dashboard.
+                    </p>
+                  </div>
+                  <div className="mt-6">
+                    <Link to="/producer/dashboard">
+                      <Button className="bg-primary hover:bg-primaryHover text-white px-8 py-3 rounded-xl inline-flex items-center gap-2">
+                        <Building2 className="w-5 h-5" />
+                        Go to Seller Dashboard
+                      </Button>
+                    </Link>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const BecomeSeller = () => {
+  const dispatch = useDispatch();
+  const { user } = useSelector(state => state.auth);
+  const { applicationStatus, loading } = useSelector(state => state.producerApplications);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchApplicationStatus());
+    }
+  }, [dispatch, user]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  // If user is logged in, check their status
+  if (user) {
+    // Don't show for producers or admins
+    if (user.role === 'producer' || user.role === 'admin') {
+      return null;
+    }
+
+    // Show application status for customers with pending/approved/declined status
+    if (applicationStatus) {
+      return (
+        <ApplicationStatus
+          status={applicationStatus.status}
+          submittedAt={applicationStatus.submittedAt}
+          processedAt={applicationStatus.processedAt}
+          declineReason={applicationStatus.declineReason}
+        />
       );
     }
   }
@@ -69,12 +194,21 @@ const BecomeSeller = () => {
               </p>
 
               <div className="flex items-center gap-4">
-                <Link to="/register">
-                  <Button className="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-xl text-lg flex items-center gap-3">
-                    Get Started
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
-                </Link>
+                {user ? (
+                  <Link to="/account/apply-seller">
+                    <Button className="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-xl text-lg flex items-center gap-3">
+                      Apply Now
+                      <ArrowRight className="w-5 h-5" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to="/login">
+                    <Button className="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-xl text-lg flex items-center gap-3">
+                      Login to Apply
+                      <ArrowRight className="w-5 h-5" />
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
 

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../lib/axios';
-import { submitApplication } from './producerApplicationSlice';
+import { submitApplication } from './producerApplicationsSlice';
 import { initializeWebSocket, disconnectWebSocket } from './notificationSlice';
 
 const initialState = {

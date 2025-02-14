@@ -10,17 +10,14 @@ export const initializeWebSocket = createAsyncThunk(
     
     // If there's an existing open connection, reuse it
     if (wsConnection?.readyState === WebSocket.OPEN) {
-      console.log('Reusing existing WebSocket connection');
       return true;
     }
 
     // If connection is connecting, just return
     if (wsConnection?.readyState === WebSocket.CONNECTING) {
-      console.log('WebSocket is already connecting');
       return false;
     }
 
-    console.log('Creating new WebSocket connection');
     wsConnection = new WebSocket(`ws://localhost:8080/ws`);
 
     wsConnection.onopen = () => {
@@ -39,7 +36,6 @@ export const initializeWebSocket = createAsyncThunk(
           return;
         }
         
-        console.log('Received notification:', data);
         dispatch(addNotification(data));
       } catch (error) {
         console.error('Error parsing notification:', error);
@@ -47,7 +43,7 @@ export const initializeWebSocket = createAsyncThunk(
     };
 
     wsConnection.onclose = (event) => {
-      console.log('WebSocket connection closed', event.code, event.reason);
+      console.log('WebSocket connection closed');
       dispatch(setConnected(false));
       
       // Attempt to reconnect if the connection was closed unexpectedly
@@ -64,7 +60,6 @@ export const initializeWebSocket = createAsyncThunk(
     };
 
     wsConnection.onerror = (error) => {
-      console.error('WebSocket error:', error);
       dispatch(setError('WebSocket connection error'));
     };
 
@@ -84,7 +79,6 @@ export const disconnectWebSocket = createAsyncThunk(
       wsConnection.onerror = null;
       wsConnection.close();
 
-      console.log('WebSocket connection closed');
 
       // Close the connection if it's open or connecting
       if (wsConnection.readyState === WebSocket.OPEN || 

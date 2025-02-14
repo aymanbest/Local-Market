@@ -20,18 +20,51 @@ api.interceptors.request.use(config => {
     ?.split('=')[1];
   
   if (xsrfToken) {
-    console.log('XSRF-TOKEN:', xsrfToken);
     config.headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrfToken);
   }
   return config;
 });
+
+const publicRoutes = [
+  '/', 
+  '/store', 
+  '/about', 
+  '/support', 
+  '/faq', 
+  '/become-seller',
+  '/store/products'
+];
+
+const publicEndpoints = [
+  '/api/products',
+  '/api/categories',
+  '/api/auth/me'
+];
 
 // Add a response interceptor
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      S
+      const currentPath = window.location.pathname;
+      const requestUrl = error.config.url;
+      
+      // Check if the request URL is a public endpoint
+      const isPublicEndpoint = publicEndpoints.some(endpoint => requestUrl.includes(endpoint));
+      // Check if current path is a public route
+      const isPublicRoute = publicRoutes.some(route => currentPath.startsWith(route));
+      
+      if (isPublicEndpoint || isPublicRoute) {
+        // Just clear auth state but don't redirect
+        store.dispatch(clearAuth());
+        return Promise.reject(error);
+      }
+      
+      // Only redirect to login for protected routes
+      if (!currentPath.includes('/login')) {
+        store.dispatch(clearAuth());
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

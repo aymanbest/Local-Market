@@ -3,17 +3,16 @@ import authReducer from './slices/authSlice';
 import cartReducer from './slices/cartSlice';
 import categoryReducer from './slices/categorySlice';
 import productReducer from './slices/productSlice';
-import producerApplicationReducer from './slices/producerApplicationSlice';
 import addressReducer from './slices/addressSlice';
 import reviewReducer from './slices/reviewSlice';
 import analyticsReducer from './slices/analyticsSlice';
 import userReducer from './slices/userSlice';
 import pendingProductsReducer from './slices/pendingProductsSlice';
-import producerApplicationsReducer from './slices/producerApplicationsSlice';
 import securityReducer from './slices/securitySlice';
 import orderReducer from './slices/orderSlice';
 import notificationReducer from './slices/notificationSlice';
 import producerProductsReducer from './slices/producerProductsSlice';
+import producerApplicationsReducer from './slices/producerApplicationsSlice';
 import couponReducer from './slices/couponSlice';
 import { initializeState, setState } from './slices/authSlice';
 
@@ -23,7 +22,6 @@ const store = configureStore({
     cart: cartReducer,
     categories: categoryReducer,
     products: productReducer,
-    producerApplication: producerApplicationReducer,
     address: addressReducer,
     reviews: reviewReducer,
     analytics: analyticsReducer,

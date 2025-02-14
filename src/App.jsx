@@ -31,6 +31,7 @@ import WebSocketInitializer from './components/WebSocketInitializer';
 import Support from './components/Support';
 import About from './components/About';
 import WelcomeCoupon from './components/WelcomeCoupon';
+import Unauthorized from './components/Unauthorized';
 
 
 // Create a separate component for content that needs Redux
@@ -59,15 +60,35 @@ const AppContent = () => {
         <Header />
         <div className="pt-28 md:pt-32">
           <Routes>
+            <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="/" element={<MainPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/cart" element={<Cart />} />
-            <Route path="/payment" element={<PaymentForm />} />
+            <Route 
+              path="/payment" 
+              element={
+                  <PaymentForm />
+              } 
+            />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/success" element={<PaymentSuccess />} />
-            <Route path="/customer/*" element={<CustomerLayout />} />
-            <Route path="/producer/*" element={<ProducerLayout />} />
+            <Route 
+              path="/customer/*" 
+              element={
+                <ProtectedRoute>
+                  <CustomerLayout />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/producer/*" 
+              element={
+                <ProtectedRoute producerOnly>
+                  <ProducerLayout />
+                </ProtectedRoute>
+              } 
+            />
             <Route
               path="/account"
               element={
@@ -76,8 +97,20 @@ const AppContent = () => {
                 </ProtectedRoute>
               }
             />
-            <Route path="/account/orders" element={<OrderHistory />} />
-            <Route path="/orders/bundle/:bundleId" element={<OrderBundle />} />
+            <Route 
+              path="/account/orders" 
+              element={
+                <ProtectedRoute>
+                  <OrderHistory />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/orders/bundle/:bundleId" 
+              element={
+                  <OrderBundle />
+              } 
+            />
             <Route
               path="/account/apply-seller"
               element={
@@ -94,12 +127,22 @@ const AppContent = () => {
             <Route path="/store/products/:id" element={<ProductDetails />} />
             <Route path="/support" element={<Support />} />
             <Route path="/about" element={<About />} />
-            <Route path="/account/reviews" element={
-              <ProtectedRoute>
-                <MyReviews />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/*" element={<AdminLayout />} />
+            <Route 
+              path="/account/reviews" 
+              element={
+                <ProtectedRoute>
+                  <MyReviews />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/*" 
+              element={
+                <ProtectedRoute adminOnly>
+                  <AdminLayout />
+                </ProtectedRoute>
+              } 
+            />
             <Route path="/admin/login" element={<Login adminOnly />} />
             <Route 
               path="/account/security" 

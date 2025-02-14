@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Store, MapPin, Globe, MessageSquare, Calendar, ChevronDown, Plus, X } from 'lucide-react';
-import { submitApplication } from '../store/slices/producerApplicationSlice';
+import { Building2, Store, MapPin, Globe, MessageSquare, Calendar, ChevronDown, Plus, X, Clock, XCircle } from 'lucide-react';
+import { submitApplication, fetchApplicationStatus } from '../store/slices/producerApplicationsSlice';
 import Button from './ui/Button';
 import { fetchCategories } from '../store/slices/categorySlice';
 import { fetchRegions } from '../store/slices/addressSlice';
 import { useDebounce } from '../hooks/useDebounce';
+import { formatDistanceToNow, addDays, parseISO, isAfter } from 'date-fns';
 
 const SellerApplication = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { user } = useSelector(state => state.auth);
   const { categories } = useSelector(state => state.categories);
-  const { loading, error, success } = useSelector(state => state.producerApplication);
   const { regions, loading: regionsLoading } = useSelector(state => state.address);
+  const { 
+    loading, 
+    error, 
+    submitSuccess,
+    applicationStatus 
+  } = useSelector(state => state.producerApplications);
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -33,9 +40,55 @@ const SellerApplication = () => {
   const [showCustomCityRegion, setShowCustomCityRegion] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchCategories());
-    dispatch(fetchRegions());
-  }, [dispatch]);
+    const checkAccess = async () => {
+      if (!user || user.role !== 'customer') {
+        navigate('/account');
+        return;
+      }
+
+      await dispatch(fetchApplicationStatus());
+    };
+
+    checkAccess();
+  }, [dispatch, navigate, user]);
+
+  useEffect(() => {
+    if (applicationStatus) {
+      const { status, processedAt } = applicationStatus;
+      
+      if (status === 'PENDING' || status === 'APPROVED') {
+        navigate('/account');
+        return;
+      }
+      
+      if (status === 'DECLINED' && processedAt) {
+        const canReapply = isAfter(new Date(), addDays(parseISO(processedAt), 15));
+        if (!canReapply) {
+          navigate('/account');
+          return;
+        }
+      }
+
+      // Fetch necessary data if user can proceed
+      dispatch(fetchCategories());
+      dispatch(fetchRegions());
+    }
+  }, [applicationStatus, dispatch, navigate]);
+
+  useEffect(() => {
+    if (submitSuccess) {
+      navigate('/account');
+    }
+  }, [submitSuccess, navigate]);
+
+  // Show loading state
+  if (loading && !applicationStatus) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,10 +98,7 @@ const SellerApplication = () => {
       customCategory: showCustomCategory ? formData.customCategory : null,
       customCityRegion: showCustomCityRegion ? formData.customCityRegion : null
     };
-    await dispatch(submitApplication(submitData));
-    if (success) {
-      navigate('/account');
-    }
+    dispatch(submitApplication(submitData));
   };
 
   const handleCategoryChange = (categoryId) => {

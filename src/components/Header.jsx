@@ -447,10 +447,11 @@ const Header = () => {
             <div className="p-6 space-y-4">
               {!isAuthenticated ? (
                 <div className="space-y-3">
-                  <Link
+                  <Link 
                     to="/login"
-                    onClick={() => setShowMobileMenu(false)}
-                    className={`
+                    state={{ from: location }}
+                  >
+                    <button className={`
                       flex items-center justify-center gap-2 w-full py-3 px-6 
                       rounded-xl font-medium transition-all duration-300
                       ${isDark 
@@ -461,6 +462,7 @@ const Header = () => {
                   >
                     <LogIn className="w-5 h-5" />
                     Login
+                  </button>
                   </Link>
                   <Link
                     to="/register"
@@ -686,7 +688,10 @@ const Header = () => {
 
                 {!isAuthenticated ? (
                   <div className="flex items-center gap-3">
-                    <Link to="/login">
+                    <Link 
+                      to="/login"
+                      state={{ from: location }}
+                    >
                       <button className={`
                         relative px-4 py-2 rounded-full overflow-hidden group
                         ${isDark ? 'text-white/80' : 'text-gray-700'}

@@ -40,15 +40,15 @@ const PaymentForm = () => {
         };
         
         const response = await api.get('/api/orders', config);
-        const orderResponse = Array.isArray(response.data) ? response.data : [response.data];
-        
+        // Extract order from paginated response
+        const orderResponse = response.data.content;
+
         if (orderResponse[0]?.status === 'PAYMENT_COMPLETED') {
           navigate('/');
           return;
         }
 
         setPaymentMethod(orderResponse[0]?.paymentMethod);
-        
         setOrderDetails(orderResponse);
       } catch (error) {
         setError('Failed to fetch order details');
@@ -113,9 +113,7 @@ const PaymentForm = () => {
 
   const calculateTotal = () => {
     if (!orderDetails) return 0;
-    return Array.isArray(orderDetails) 
-      ? orderDetails.reduce((sum, order) => sum + (order.totalPrice || 0), 0)
-      : orderDetails.totalPrice || 0;
+    return orderDetails.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
   };
 
   if (isLoading) {

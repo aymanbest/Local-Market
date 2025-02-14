@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link, redirect } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { loginUser } from '../store/slices/authSlice';
 import { Eye, EyeClosed } from 'lucide-react';
 
@@ -10,6 +10,7 @@ const Login = ({ adminOnly = false }) => {
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { status, error } = useSelector((state) => state.auth);
 
   const handleSubmit = async (e) => {
@@ -25,26 +26,27 @@ const Login = ({ adminOnly = false }) => {
           return;
         }
         
-        // Navigate based on role
-        switch (role) {
-          case 'admin':
-            navigate('/admin/users');
-            break;
-          case 'producer':
-            navigate('/producer/dashboard');
-            break;
-          case 'customer':
-            navigate('/');
-            break;
-          default:
-            navigate('/');
-        }
+        // Navigate to the previous page or role-based default
+        const from = location.state?.from?.pathname || getDefaultRoute(role);
+        navigate(from, { replace: true });
       } else if (loginUser.rejected.match(resultAction)) {
         // Handle login error
         console.error('Login failed:', resultAction.payload);
       }
     } catch (error) {
       console.error('Login error:', error);
+    }
+  };
+
+  const getDefaultRoute = (role) => {
+    switch (role) {
+      case 'admin':
+        return '/admin/users';
+      case 'producer':
+        return '/producer/dashboard';
+      case 'customer':
+      default:
+        return '/';
     }
   };
 
