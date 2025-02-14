@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { mockProducerOrders } from '../../mockData';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
-import { Search, Filter, ArrowUpDown, Package, Clock, CheckCircle2, XCircle, AlertCircle, X, ChevronDown, LayoutGrid, LayoutList, Truck, SlidersHorizontal } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../common/ui/Table';
+import { Search, Filter,Package, Clock, CheckCircle2, XCircle, AlertCircle, X, LayoutGrid, LayoutList, Truck, SlidersHorizontal } from 'lucide-react';
+import Button from '../common/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducerOrders, filterOrders, updateOrderStatus } from '../../store/slices/orderSlice';
+import { fetchProducerOrders, filterOrders, updateOrderStatus } from '../../store/slices/customer/orderSlice';
 
 const OrderManagement = () => {
   const dispatch = useDispatch();

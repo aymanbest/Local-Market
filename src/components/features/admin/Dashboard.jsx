@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Card } from '../common/ui/Card';
-import { Users, DollarSign, ShoppingCart, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Package, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { Card } from '../../common/ui/Card';
+import { Users, DollarSign, ShoppingCart, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import Chart from 'react-apexcharts';
-import { useTheme } from '../../context/ThemeContext';
-import { fetchProducerOverview, fetchOrderStats } from '../../store/slices/common/analyticsSlice';
-import { formatPercentage, formatCurrency } from '../../utils/formatters';
+import { useTheme } from '../../../context/ThemeContext';
+import { fetchBusinessMetrics, fetchTransactionData, fetchUserAnalytics } from '../../../store/slices/common/analyticsSlice';
+import { formatPercentage, formatCurrency } from '../../../utils/formatters';
 
-
-
-// TO BE PRODUCER
-const Analytics = () => {
+const Dashboard = () => {
   const dispatch = useDispatch();
   const { isDark } = useTheme();
   const [dateRange, setDateRange] = useState('month');
@@ -18,84 +15,94 @@ const Analytics = () => {
   const itemsPerPage = 5; // Number of transactions per page
   const [jumpToPage, setJumpToPage] = useState('');
   
-  const { overview, orderStats, loading, error } = useSelector(state => state.analytics);
+  const { businessMetrics, transactions, userAnalytics, loading, error } = useSelector(state => state.analytics);
 
   // Calculate pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTransactions = overview?.transactions?.slice(indexOfFirstItem, indexOfLastItem) || [];
-  const totalPages = Math.ceil((overview?.transactions?.length || 0) / itemsPerPage);
+  const currentTransactions = transactions?.transactions?.slice(indexOfFirstItem, indexOfLastItem) || [];
+  const totalPages = Math.ceil((transactions?.transactions?.length || 0) / itemsPerPage);
 
   useEffect(() => {
-    dispatch(fetchProducerOverview());
-    dispatch(fetchOrderStats());
-  }, [dispatch]);
+    const now = new Date();
+    let startDate, endDate;
 
-  const stats = overview ? [
+    switch (dateRange) {
+      case 'day':
+        startDate = now.toISOString().split('T')[0];
+        endDate = startDate;
+        break;
+      case 'week':
+        endDate = now.toISOString().split('T')[0];
+        startDate = new Date(now.setDate(now.getDate() - 7)).toISOString().split('T')[0];
+        break;
+      case 'month':
+        endDate = now.toISOString().split('T')[0];
+        startDate = new Date(now.setMonth(now.getMonth() - 1)).toISOString().split('T')[0];
+        break;
+      case 'year':
+        endDate = now.toISOString().split('T')[0];
+        startDate = new Date(now.setFullYear(now.getFullYear() - 1)).toISOString().split('T')[0];
+        break;
+      default:
+        break;
+    }
+
+    dispatch(fetchBusinessMetrics({ startDate, endDate }));
+    dispatch(fetchTransactionData({ startDate, endDate }));
+    dispatch(fetchUserAnalytics({ startDate, endDate }));
+  }, [dateRange, dispatch]);
+
+  // Update stats array to use formatted numbers
+  const stats = businessMetrics ? [
     {
       title: "Total Revenue",
-      value: formatCurrency(overview.totalRevenue || 0),
-      change: formatPercentage(overview.revenuePercentageChange),
-      trend: overview.revenuePercentageChange >= 0 ? "up" : "down",
+      value: formatCurrency(businessMetrics.totalRevenue || 0),
+      change: formatPercentage(businessMetrics.revenueGrowthRate),
+      trend: businessMetrics.revenueGrowthRate >= 0 ? "up" : "down",
       icon: DollarSign
     },
     {
-      title: "Total Orders",
-      value: overview.totalOrders?.toLocaleString() || "0",
-      change: formatPercentage(overview.ordersPercentageChange),
-      trend: overview.ordersPercentageChange >= 0 ? "up" : "down",
-      icon: Package
+      title: "Active Users",
+      value: businessMetrics.activeUsers?.toLocaleString() || "0",
+      change: formatPercentage(businessMetrics.activeUsersGrowthRate),
+      trend: businessMetrics.activeUsersGrowthRate >= 0 ? "up" : "down",
+      icon: Users
     },
     {
-      title: "Products Sold",
-      value: overview.totalProductsSold?.toLocaleString() || "0",
-      change: formatPercentage(overview.productsSoldPercentageChange),
-      trend: overview.productsSoldPercentageChange >= 0 ? "up" : "down",
+      title: "Total Sales",
+      value: businessMetrics.totalSales?.toLocaleString() || "0",
+      change: formatPercentage(businessMetrics.salesGrowthRate),
+      trend: businessMetrics.salesGrowthRate >= 0 ? "up" : "down",
       icon: ShoppingCart
     },
     {
       title: "Growth Rate",
-      value: formatPercentage(overview.growthRate),
-      change: formatPercentage(overview.growthRate),
-      trend: overview.growthRate >= 0 ? "up" : "down",
+      value: formatPercentage(businessMetrics.overallGrowthRate),
+      change: formatPercentage(businessMetrics.overallGrowthRate),
+      trend: businessMetrics.overallGrowthRate >= 0 ? "up" : "down",
       icon: TrendingUp
     }
   ] : [];
 
-  const orderStatusStats = [
+  // Update transaction stats to use formatted numbers
+  const transactionStats = transactions ? [
     {
-      title: "Total Orders",
-      value: orderStats?.total || 0,
-      icon: Package,
-      color: "blue",
-      bgColor: "bg-blue-500/10",
-      iconBg: "bg-blue-100/10"
+      title: "Total Transaction Volume",
+      value: formatCurrency(transactions.totalTransactionVolume),
+      change: "+12.5%"
     },
     {
-      title: "Processing Orders",
-      value: orderStats?.processing || 0,
-      icon: AlertCircle,
-      color: "yellow",
-      bgColor: "bg-yellow-500/10",
-      iconBg: "bg-yellow-100/10"
+      title: "Completed Transactions",
+      value: transactions.completedTransactions.toLocaleString(),
+      change: "+8.2%"
     },
     {
-      title: "Pending Orders",
-      value: orderStats?.pending || 0,
-      icon: Clock,
-      color: "orange",
-      bgColor: "bg-orange-500/10",
-      iconBg: "bg-orange-100/10"
-    },
-    {
-      title: "Delivered Orders",
-      value: orderStats?.delivered || 0,
-      icon: CheckCircle2,
-      color: "green",
-      bgColor: "bg-green-500/10",
-      iconBg: "bg-green-100/10"
+      title: "Pending Transactions",
+      value: transactions.pendingTransactions.toLocaleString(),
+      change: "-3.1%"
     }
-  ];
+  ] : [];
 
   // Helper function to generate monthly data points
   const generateMonthlyData = (revenueData) => {
@@ -125,25 +132,26 @@ const Analytics = () => {
     return { months, revenues };
   };
 
-  // Update chart configurations with proper dark mode colors
-  const chartOptions = {
+  // Update chart configurations
+  const { months, revenues } = generateMonthlyData(businessMetrics?.revenueByMonth);
+  
+  const revenueChartOptions = {
     chart: {
       type: 'area',
-      background: isDark ? '#1a1a1a' : '#ffffff',
-      foreColor: isDark ? '#e5e7eb' : '#374151',
+      background: 'transparent',
       toolbar: {
         show: false
       },
-      parentHeightOffset: 0
+      sparkline: {
+        enabled: false
+      }
     },
     theme: {
-      mode: isDark ? 'dark' : 'light',
-      palette: 'palette1'
+      mode: isDark ? 'dark' : 'light'
     },
     stroke: {
       curve: 'smooth',
-      width: 3,
-      colors: ['#5D8736']
+      width: 3
     },
     fill: {
       type: 'gradient',
@@ -151,67 +159,41 @@ const Analytics = () => {
         shadeIntensity: 1,
         opacityFrom: 0.7,
         opacityTo: 0.2,
-        stops: [0, 90, 100],
-        shade: 'dark',
-        type: 'vertical'
+        stops: [0, 90, 100]
       }
     },
-    dataLabels: {
-      enabled: false
-    },
     xaxis: {
-      categories: overview?.monthlyOrders?.map(item => item.month) || [],
+      categories: months,
       labels: {
         style: {
-          colors: isDark ? '#e5e7eb' : '#374151'
+          colors: isDark ? '#94a3b8' : '#64748b'
         }
-      },
-      axisBorder: {
-        color: isDark ? '#374151' : '#e5e7eb'
-      },
-      axisTicks: {
-        color: isDark ? '#374151' : '#e5e7eb'
       }
     },
     yaxis: {
       labels: {
+        formatter: (value) => formatCurrency(value),
         style: {
-          colors: isDark ? '#e5e7eb' : '#374151'
-        },
-        formatter: (value) => formatCurrency(value)
+          colors: isDark ? '#94a3b8' : '#64748b'
+        }
       }
     },
     grid: {
-      show: true,
-      borderColor: isDark ? '#374151' : '#e5e7eb',
+      borderColor: isDark ? '#1f2937' : '#e5e7eb',
       strokeDashArray: 4,
-      position: 'back',
-      xaxis: {
-        lines: {
-          show: true
-        }
-      },
       yaxis: {
         lines: {
           show: true
         }
-      },
-      padding: {
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0
       }
     },
-    tooltip: {
-      theme: isDark ? 'dark' : 'light',
-      style: {
-        fontSize: '12px',
-        fontFamily: undefined
-      }
-    },
-    colors: ['#5D8736']
+    colors: ['var(--color-primary)']
   };
+
+  const revenueChartSeries = [{
+    name: 'Revenue',
+    data: revenues
+  }];
 
   // Add this handler for the jump to page functionality
   const handleJumpToPage = (e) => {
@@ -492,78 +474,114 @@ const Analytics = () => {
         {/* Header Section */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-text tracking-tight">Producer Analytics</h2>
-            <p className="text-textSecondary mt-1">Track your business performance and growth</p>
+            <h2 className="text-3xl font-bold text-text tracking-tight">Dashboard Overview</h2>
+            <p className="text-textSecondary mt-1">Analytics and summary of your business</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <select 
+              className="bg-inputBg text-text rounded-lg px-4 py-2 border border-border focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200"
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+            >
+              <option value="day">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+            </select>
           </div>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {orderStatusStats.map((stat, index) => (
-            <div 
-              key={index}
-              className="bg-cardBg rounded-lg border border-border hover:bg-opacity-90 transition-all duration-300"
+          {stats.map((stat, index) => (
+            <Card 
+              key={index} 
+              className={`bg-cardBg border-border hover:bg-opacity-90 transition-all duration-300 ${
+                isDark ? 'dark:bg-[#1E1E1E]' : ''
+              }`}
             >
               <div className="p-6">
                 <div className="flex items-center justify-between">
-                  <div className={`${stat.iconBg} p-3 rounded-lg`}>
-                    <stat.icon className={`w-6 h-6 text-${stat.color}-500`} />
+                  <div className="bg-inputBg p-3 rounded-lg">
+                    <stat.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    {stat.trend === 'up' ? (
+                      <ArrowUpRight className="w-4 h-4 text-primary" />
+                    ) : (
+                      <ArrowDownRight className="w-4 h-4 text-red-500" />
+                    )}
+                    <span className={`text-sm font-medium ${
+                      stat.trend === 'up' ? 'text-primary' : 'text-red-500'
+                    }`}>
+                      {stat.change}
+                    </span>
                   </div>
                 </div>
                 <div className="mt-4">
-                  <p className="text-3xl font-bold text-text tracking-tight">
-                    {stat.value.toLocaleString()}
-                  </p>
-                  <h3 className="text-sm font-medium text-textSecondary mt-1">
-                    {stat.title}
-                  </h3>
+                  <p className="text-3xl font-bold text-text tracking-tight">{stat.value}</p>
+                  <h3 className="text-sm font-medium text-textSecondary mt-1">{stat.title}</h3>
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className={`bg-cardBg border-border ${isDark ? 'dark:bg-[#1E1E1E]' : ''}`}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card 
+            className={`bg-cardBg border-border lg:col-span-2 ${
+              isDark ? 'dark:bg-[#1E1E1E]' : ''
+            }`}
+          >
             <div className="p-6">
-              <h3 className="text-xl font-bold text-text mb-6">Revenue Trend</h3>
-              <div className={`${isDark ? 'dark:bg-[#1E1E1E]' : ''}`}>
-                <Chart
-                  options={chartOptions}
-                  series={[{
-                    name: 'Revenue',
-                    data: overview?.revenueTrend?.map(item => item.value) || []
-                  }]}
-                  type="area"
-                  height={350}
-                />
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-text">Revenue Trend</h3>
               </div>
+              <Chart
+                options={revenueChartOptions}
+                series={revenueChartSeries}
+                type="area"
+                height={350}
+              />
             </div>
           </Card>
 
-          <Card className={`bg-cardBg border-border ${isDark ? 'dark:bg-[#1E1E1E]' : ''}`}>
+          <Card 
+            className={`bg-cardBg border-border ${
+              isDark ? 'dark:bg-[#1E1E1E]' : ''
+            }`}
+          >
             <div className="p-6">
-              <h3 className="text-xl font-bold text-text mb-6">Monthly Orders</h3>
-              <div className={`${isDark ? 'dark:bg-[#1E1E1E]' : ''}`}>
-                <Chart
-                  options={chartOptions}
-                  series={[{
-                    name: 'Orders',
-                    data: overview?.monthlyOrders?.map(item => item.value) || []
-                  }]}
-                  type="area"
-                  height={350}
-                />
+              <h3 className="text-xl font-bold text-text mb-6">Transaction Summary</h3>
+              <div className="space-y-6">
+                {transactionStats.map((stat, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-textSecondary">{stat.title}</p>
+                      <p className="text-lg font-semibold text-text mt-1">{stat.value}</p>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                      stat.change.startsWith('+') 
+                        ? 'bg-primary/10 text-primary' 
+                        : 'bg-red-500/10 text-red-500'
+                    }`}>
+                      {stat.change}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </Card>
         </div>
 
-        
+        {/* Transactions Table */}
+        <RecentTransactions 
+          transactions={transactions?.transactions || []} 
+        />
       </div>
     </div>
   );
 };
 
-export default Analytics; 
+export default Dashboard; 

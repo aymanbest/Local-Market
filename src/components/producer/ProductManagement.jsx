@@ -6,15 +6,15 @@ import {
   TrendingUp, TrendingDown, Box, DollarSign, BarChart2, AlertTriangle, Check, Text,
   SlidersHorizontal
 } from 'lucide-react';
-import Button from '../ui/Button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/Table';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
+import Button from '../common/ui/Button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../common/ui/Table';
+import { Card, CardHeader, CardTitle, CardContent } from '../common/ui/Card';
 import { useTheme } from '../../context/ThemeContext';
 import { 
   fetchMyProducts, createProduct, updateProduct, resetCreateStatus, 
   resetUpdateStatus, deleteProduct, updateSorting, updatePagination 
-} from '../../store/slices/producerProductsSlice';
-import { fetchCategories } from '../../store/slices/categorySlice';
+} from '../../store/slices/producer/producerProductsSlice';
+import { fetchCategories } from '../../store/slices/product/categorySlice';
 // import { //toast } from 'react-hot-//toast';
 
 const StatusBadge = ({ status = 'PENDING', declineReason }) => {

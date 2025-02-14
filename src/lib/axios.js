@@ -1,6 +1,6 @@
 import axios from 'axios';
 import store from '../store/store';
-import { clearAuth } from '../store/slices/authSlice';
+import { clearAuth } from '../store/slices/auth/authSlice';
 
 const createApi = (withCredentials = true) => axios.create({
   baseURL: 'http://localhost:8080',

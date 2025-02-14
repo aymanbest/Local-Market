@@ -1,20 +1,20 @@
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from './slices/authSlice';
-import cartReducer from './slices/cartSlice';
-import categoryReducer from './slices/categorySlice';
-import productReducer from './slices/productSlice';
-import addressReducer from './slices/addressSlice';
-import reviewReducer from './slices/reviewSlice';
-import analyticsReducer from './slices/analyticsSlice';
-import userReducer from './slices/userSlice';
-import pendingProductsReducer from './slices/pendingProductsSlice';
-import securityReducer from './slices/securitySlice';
-import orderReducer from './slices/orderSlice';
-import notificationReducer from './slices/notificationSlice';
-import producerProductsReducer from './slices/producerProductsSlice';
-import producerApplicationsReducer from './slices/producerApplicationsSlice';
-import couponReducer from './slices/couponSlice';
-import { initializeState, setState } from './slices/authSlice';
+import authReducer from './slices/auth/authSlice';
+import cartReducer from './slices/product/cartSlice';
+import categoryReducer from './slices/product/categorySlice';
+import productReducer from './slices/product/productSlice';
+import addressReducer from './slices/customer/addressSlice';
+import reviewReducer from './slices/customer/reviewSlice';
+import analyticsReducer from './slices/common/analyticsSlice';
+import userReducer from './slices/admin/userSlice';
+import pendingProductsReducer from './slices/product/pendingProductsSlice';
+import securityReducer from './slices/common/securitySlice';
+import orderReducer from './slices/customer/orderSlice';
+import notificationReducer from './slices/common/notificationSlice';
+import producerProductsReducer from './slices/producer/producerProductsSlice';
+import producerApplicationsReducer from './slices/producer/producerApplicationsSlice';
+import couponReducer from './slices/customer/couponSlice';
+import { initializeState, setState } from './slices/auth/authSlice';
 
 const store = configureStore({
   reducer: {
