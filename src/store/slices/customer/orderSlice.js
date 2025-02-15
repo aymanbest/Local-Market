@@ -20,8 +20,10 @@ const isValidStatusTransition = (currentStatus, newStatus) => {
 // Fetch producer orders
 export const fetchProducerOrders = createAsyncThunk(
   'orders/fetchProducerOrders',
-  async ({ page = 0, size = 10, sortBy = 'orderDate', direction = 'desc' } = {}) => {
-    const response = await api.get(`/api/orders/producer-orders?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
+  async ({ page = 0, size = 10, sortBy = 'orderDate', direction = 'desc', customerEmail = '' } = {}) => {
+    const response = await api.get(
+      `/api/orders/producer-orders?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}${customerEmail ? `&customerEmail=${customerEmail}` : ''}`
+    );
     return response.data;
   }
 );
@@ -29,9 +31,11 @@ export const fetchProducerOrders = createAsyncThunk(
 // Fetch orders by status
 export const fetchOrdersByStatus = createAsyncThunk(
   'orders/fetchByStatus',
-  async (status, { rejectWithValue, getState }) => {
+  async ({ status, page = 0, size = 10, sortBy = 'orderDate', direction = 'desc', customerEmail = '' }, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/orders/producer-orders/status/${status}`);
+      const response = await api.get(
+        `/api/orders/producer-orders/status/${status}?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}${customerEmail ? `&customerEmail=${customerEmail}` : ''}`
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
@@ -120,6 +124,13 @@ const orderSlice = createSlice({
         ...state.pagination,
         ...action.payload
       };
+    },
+    updateSingleOrder: (state, action) => {
+      const updatedOrder = action.payload;
+      const index = state.orders.findIndex(order => order.orderId === updatedOrder.orderId);
+      if (index !== -1) {
+        state.orders[index] = updatedOrder;
+      }
     }
   },
   extraReducers: (builder) => {
@@ -167,9 +178,45 @@ const orderSlice = createSlice({
         state.filteredOrders = state.filteredOrders.map(order => 
           order.orderId === updatedOrder.orderId ? updatedOrder : order
         );
+      })
+      // Add cases for fetchOrdersByStatus
+      .addCase(fetchOrdersByStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrdersByStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orders = action.payload.content;
+        state.pagination = {
+          currentPage: action.payload.number,
+          totalPages: action.payload.totalPages,
+          totalElements: action.payload.totalElements,
+          pageSize: action.payload.size,
+          isFirst: action.payload.first,
+          isLast: action.payload.last
+        };
+        state.filteredOrders = action.payload.content;
+        
+        // Update stats for filtered status
+        state.stats = {
+          total: action.payload.totalElements,
+          pending: action.payload.content.filter(o => 
+            o.status === 'PENDING_PAYMENT' || 
+            o.status === 'PAYMENT_COMPLETED'
+          ).length,
+          processing: action.payload.content.filter(o => 
+            o.status === 'PROCESSING' || 
+            o.status === 'SHIPPED'
+          ).length,
+          delivered: action.payload.content.filter(o => o.status === 'DELIVERED').length
+        };
+      })
+      .addCase(fetchOrdersByStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
       });
   }
 });
 
-export const { filterOrders, updateSorting, updatePagination } = orderSlice.actions;
+export const { filterOrders, updateSorting, updatePagination, updateSingleOrder } = orderSlice.actions;
 export default orderSlice.reducer; 

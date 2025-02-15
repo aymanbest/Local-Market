@@ -22,7 +22,6 @@ export const GuestRoute = ({ children }) => {
   }
 
   if (user) {
-    // If user is already logged in, redirect to appropriate dashboard or home
     if (user.role === 'admin') {
       return <Navigate to="/admin/users" replace />;
     } else if (user.role === 'producer') {
@@ -46,14 +45,17 @@ const ProtectedRoute = ({ children, adminOnly = false, producerOnly = false }) =
     }
   }, [dispatch, status]);
 
-  if (status === 'loading' || status === 'idle') {
+  // Show nothing while checking authentication
+  if (status === 'loading') {
     return null;
   }
 
+  // If not authenticated, redirect to login
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Check role-based access
   if (adminOnly && user.role !== 'admin') {
     return <Navigate to="/unauthorized" />;
   }

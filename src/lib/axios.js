@@ -40,8 +40,7 @@ const publicRoutes = [
 
 const publicEndpoints = [
   '/api/products',
-  '/api/categories',
-  '/api/auth/me'
+  '/api/categories'
 ];
 
 // Add a response interceptor
@@ -57,8 +56,19 @@ api.interceptors.response.use(
       // Check if current path is a public route
       const isPublicRoute = publicRoutes.some(route => currentPath.startsWith(route));
       
+      // Always redirect on /api/auth/me 401 response, unless on public routes
+      if (requestUrl.includes('/api/auth/me')) {
+        if (!isPublicRoute) {
+          store.dispatch(clearAuth());
+          if (!currentPath.includes('/login')) {
+            window.location.href = '/login';
+          }
+        }
+        return Promise.reject(error);
+      }
+      
+      // Handle other 401 errors
       if (!isPublicRoute && !isPublicEndpoint) {
-        // Only clear auth and redirect for protected routes
         store.dispatch(clearAuth());
         if (!currentPath.includes('/login')) {
           window.location.href = '/login';

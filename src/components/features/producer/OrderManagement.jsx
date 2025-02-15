@@ -4,12 +4,13 @@ import { Search, Filter,Package, Clock, CheckCircle2, XCircle, AlertCircle, X, L
 import Button from '../../common/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducerOrders, filterOrders, updateOrderStatus } from '../../../store/slices/customer/orderSlice';
+import { fetchProducerOrders, filterOrders, updateOrderStatus, fetchOrdersByStatus } from '../../../store/slices/customer/orderSlice';
 
 const OrderManagement = () => {
   const dispatch = useDispatch();
   const { orders, loading, error, pagination, sorting } = useSelector((state) => state.orders);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
+  const [updatingOrderId, setUpdatingOrderId] = useState(null);
   const [tempFilters, setTempFilters] = useState({
     sorting: {
       sortBy: 'orderDate',
@@ -29,6 +30,8 @@ const OrderManagement = () => {
     minAmount: '',
     maxAmount: ''
   });
+
+  const [activeStatus, setActiveStatus] = useState('all');
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -58,13 +61,10 @@ const OrderManagement = () => {
       page: 0,
       size: 10,
       sortBy: tempFilters.sorting.sortBy,
-      direction: tempFilters.sorting.direction
+      direction: tempFilters.sorting.direction,
+      customerEmail: searchTerm
     }));
   }, [dispatch, tempFilters.sorting]);
-
-  useEffect(() => {
-    dispatch(filterOrders({ searchTerm, filters }));
-  }, [dispatch, searchTerm, filters, orders]);
 
   const totalPages = Math.ceil(orders.length / itemsPerPage);
   const paginatedOrders = orders.slice(
@@ -81,16 +81,31 @@ const OrderManagement = () => {
 
   const handleStatusUpdate = async (orderId, currentStatus, newStatus) => {
     try {
+      setUpdatingOrderId(orderId);
       await dispatch(updateOrderStatus({ 
         orderId, 
         currentStatus,
         newStatus 
       })).unwrap();
-      // Refresh the orders list
-      dispatch(fetchProducerOrders());
+      
+      // Update just the single order in the redux store
+      const updatedOrder = {
+        ...orders.find(o => o.orderId === orderId),
+        status: newStatus
+      };
+      
+      dispatch({
+        type: 'orders/updateSingleOrder',
+        payload: updatedOrder
+      });
+      
+      // Clear the updating state after a short delay
+      setTimeout(() => {
+        setUpdatingOrderId(null);
+      }, 500);
     } catch (error) {
       console.error('Failed to update order status:', error);
-      // Add toast notification here if you have one
+      setUpdatingOrderId(null);
     }
   };
 
@@ -288,26 +303,103 @@ const OrderManagement = () => {
     delivered: orders.filter(o => o.status === 'DELIVERED').length
   };
 
+  const handleStatusFilter = (status) => {
+    setActiveStatus(status);
+    if (status === 'all') {
+      dispatch(fetchProducerOrders({
+        page: 0,
+        size: pagination.pageSize,
+        sortBy: tempFilters.sorting.sortBy,
+        direction: tempFilters.sorting.direction,
+        customerEmail: searchTerm
+      }));
+    } else {
+      dispatch(fetchOrdersByStatus({
+        status,
+        page: 0,
+        size: pagination.pageSize,
+        sortBy: tempFilters.sorting.sortBy,
+        direction: tempFilters.sorting.direction,
+        customerEmail: searchTerm
+      }));
+    }
+  };
+
+  // Add this component for status filters
+  const StatusFilters = () => {
+    const statusOptions = [
+      { value: 'all', label: 'All Orders', icon: Package, color: 'primary' },
+      { value: 'PAYMENT_COMPLETED', label: 'Payment Completed', icon: CheckCircle2, color: 'green' },
+      { value: 'PROCESSING', label: 'Processing', icon: Package, color: 'blue' },
+      { value: 'SHIPPED', label: 'Shipped', icon: Truck, color: 'purple' },
+      { value: 'DELIVERED', label: 'Delivered', icon: CheckCircle2, color: 'green' },
+      { value: 'CANCELLED', label: 'Cancelled', icon: XCircle, color: 'red' },
+      { value: 'RETURNED', label: 'Returned', icon: AlertCircle, color: 'orange' }
+    ];
+
+    return (
+      <div className="flex flex-wrap gap-2 mb-4">
+        {statusOptions.map((status) => {
+          const Icon = status.icon;
+          const isActive = activeStatus === status.value;
+          return (
+            <Button
+              key={status.value}
+              variant={isActive ? "default" : "outline"}
+              onClick={() => handleStatusFilter(status.value)}
+              className={`flex items-center gap-2 border ${
+                isActive 
+                  ? 'bg-primary text-white border-primary'
+                  : 'border-border hover:border-primary hover:text-primary'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{status.label}</span>
+              {isActive && (
+                <span className="ml-2 px-2 py-0.5 text-xs bg-white/20 rounded-full">
+                  {status.value === 'all' 
+                    ? pagination.totalElements 
+                    : orders.filter(o => o.status === status.value).length}
+                </span>
+              )}
+            </Button>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Update the PaginationControls component to use the correct fetch function
   const PaginationControls = () => {
     if (!pagination || pagination.totalElements <= pagination.pageSize) {
       return null;
     }
 
+    const handlePageChange = (newPage) => {
+      const fetchFunction = activeStatus === 'all' ? fetchProducerOrders : fetchOrdersByStatus;
+      const params = {
+        page: newPage,
+        size: pagination.pageSize,
+        sortBy: tempFilters.sorting.sortBy,
+        direction: tempFilters.sorting.direction,
+        customerEmail: searchTerm
+      };
+
+      if (activeStatus !== 'all') {
+        params.status = activeStatus;
+      }
+
+      dispatch(fetchFunction(params));
+    };
+
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-4">
         <div className="text-sm text-textSecondary">
-          Showing 1 to 10 of {pagination.totalElements} orders
+          Showing {pagination.currentPage * pagination.pageSize + 1} to {Math.min((pagination.currentPage + 1) * pagination.pageSize, pagination.totalElements)} of {pagination.totalElements} orders
         </div>
         <div className="flex items-center gap-1 bg-cardBg rounded-lg p-1">
           <button
-            onClick={() => {
-              dispatch(fetchProducerOrders({ 
-                page: pagination.currentPage - 1,
-                size: pagination.pageSize,
-                sortBy: tempFilters.sorting.sortBy,
-                direction: tempFilters.sorting.direction
-              }));
-            }}
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
             disabled={pagination.isFirst}
             className="px-3 py-1 text-sm text-text hover:bg-background rounded transition-colors disabled:opacity-50"
           >
@@ -317,14 +409,7 @@ const OrderManagement = () => {
           {Array.from({ length: pagination.totalPages }).map((_, index) => (
             <button
               key={index}
-              onClick={() => {
-                dispatch(fetchProducerOrders({
-                  page: index,
-                  size: pagination.pageSize,
-                  sortBy: tempFilters.sorting.sortBy,
-                  direction: tempFilters.sorting.direction
-                }));
-              }}
+              onClick={() => handlePageChange(index)}
               className={`min-w-[32px] px-2 py-1 text-sm rounded ${
                 index === pagination.currentPage
                   ? 'bg-primary text-white'
@@ -336,14 +421,7 @@ const OrderManagement = () => {
           ))}
 
           <button
-            onClick={() => {
-              dispatch(fetchProducerOrders({ 
-                page: pagination.currentPage + 1,
-                size: pagination.pageSize,
-                sortBy: tempFilters.sorting.sortBy,
-                direction: tempFilters.sorting.direction
-              }));
-            }}
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
             disabled={pagination.isLast}
             className="px-3 py-1 text-sm text-text hover:bg-background rounded transition-colors disabled:opacity-50"
           >
@@ -353,6 +431,43 @@ const OrderManagement = () => {
       </div>
     );
   };
+
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    const fetchFunction = activeStatus === 'all' ? fetchProducerOrders : fetchOrdersByStatus;
+    const params = {
+      page: 0,
+      size: pagination.pageSize,
+      sortBy: tempFilters.sorting.sortBy,
+      direction: tempFilters.sorting.direction,
+      customerEmail: value
+    };
+
+    if (activeStatus !== 'all') {
+      params.status = activeStatus;
+    }
+
+    // Add debounce to avoid too many API calls
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+
+    searchTimeout.current = setTimeout(() => {
+      dispatch(fetchFunction(params));
+    }, 300);
+  };
+
+  // Add this at the top with other useRefs or state
+  const searchTimeout = React.useRef(null);
+
+  // Update the useEffect that was handling search before
+  useEffect(() => {
+    return () => {
+      if (searchTimeout.current) {
+        clearTimeout(searchTimeout.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="space-y-8 p-4 md:p-8 bg-background min-h-screen transition-colors duration-300">
@@ -368,25 +483,27 @@ const OrderManagement = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Total Orders', value: orderStats.total, icon: Package, color: 'blue' },
-              { label: 'Pending', value: orderStats.pending, icon: Clock, color: 'yellow' },
-              { label: 'Processing', value: orderStats.processing, icon: AlertCircle, color: 'purple' },
-              { label: 'Delivered', value: orderStats.delivered, icon: CheckCircle2, color: 'green' },
+              { label: 'Total Orders', value: orderStats.total, icon: Package, gradientFrom: 'from-blue-500/30', gradientTo: 'to-blue-600/30', iconColor: 'text-blue-500' },
+              { label: 'Pending', value: orderStats.pending, icon: Clock, gradientFrom: 'from-yellow-500/30', gradientTo: 'to-yellow-600/30', iconColor: 'text-yellow-500' },
+              { label: 'Processing', value: orderStats.processing, icon: AlertCircle, gradientFrom: 'from-purple-500/30', gradientTo: 'to-purple-600/30', iconColor: 'text-purple-500' }, 
+              { label: 'Delivered', value: orderStats.delivered, icon: CheckCircle2, gradientFrom: 'from-green-500/30', gradientTo: 'to-green-600/30', iconColor: 'text-green-500' },
             ].map((stat, index) => (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 key={index}
-                className="bg-cardBg/90 border border-border rounded-xl p-4 hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+                className="bg-cardBg/95 border border-border rounded-xl p-4 hover:shadow-lg hover:border-primary/20 transition-all duration-300 relative overflow-hidden"
               >
-                <div className="flex items-center justify-between">
+                <div className="absolute inset-0 bg-gradient-to-br opacity-100 dark:opacity-40 transition-opacity duration-200" />
+                <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradientFrom} ${stat.gradientTo} opacity-25 dark:opacity-40 transition-opacity duration-200`} />
+                <div className="relative flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-textSecondary">{stat.label}</p>
                     <p className="text-2xl font-bold text-text mt-1">{stat.value}</p>
                   </div>
-                  <div className={`p-3 rounded-xl bg-${stat.color}-500/10`}>
-                    <stat.icon className={`w-6 h-6 text-${stat.color}-500`} />
+                  <div className="p-3 rounded-xl bg-white/20 dark:bg-black/20 backdrop-blur-sm">
+                    <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
                   </div>
                 </div>
               </motion.div>
@@ -395,43 +512,46 @@ const OrderManagement = () => {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textSecondary" />
-          <input
-            type="text"
-            placeholder="Search orders..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 rounded-xl border border-border bg-inputBg text-text placeholder:text-textSecondary focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200"
-          />
-        </div>
+      <div className="space-y-4">
+        <StatusFilters />
         
-        <div className="flex gap-3 w-full md:w-auto">
-          <Button 
-            variant="outline" 
-            className="flex-1 md:flex-none items-center gap-2 border-border hover:border-primary hover:text-primary transition-all duration-200"
-            onClick={handleOpenFilters}
-          >
-            <SlidersHorizontal className="w-5 h-5" />
-            <span>Sort</span>
-          </Button>
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textSecondary" />
+            <input
+              type="text"
+              placeholder="Search by customer email..."
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 rounded-xl border border-border bg-inputBg text-text placeholder:text-textSecondary focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200"
+            />
+          </div>
           
-          <div className="flex gap-2 border border-border rounded-xl p-1">
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'ghost'}
-              onClick={() => setViewMode('grid')}
-              className={`p-2 ${viewMode === 'grid' ? 'bg-primary text-white' : 'text-textSecondary hover:text-primary'}`}
+          <div className="flex gap-3 w-full md:w-auto">
+            <Button 
+              variant="outline" 
+              className="flex-1 md:flex-none items-center gap-2 border-border hover:border-primary hover:text-primary transition-all duration-200"
+              onClick={handleOpenFilters}
             >
-              <LayoutGrid className="w-5 h-5" />
+              <SlidersHorizontal className="w-5 h-5" />
             </Button>
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              onClick={() => setViewMode('list')}
-              className={`p-2 ${viewMode === 'list' ? 'bg-primary text-white' : 'text-textSecondary hover:text-primary'}`}
-            >
-              <LayoutList className="w-5 h-5" />
-            </Button>
+            
+            <div className="flex gap-2 border border-border rounded-xl p-1">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                onClick={() => setViewMode('grid')}
+                className={`p-2 ${viewMode === 'grid' ? 'bg-primary text-white' : 'text-textSecondary hover:text-primary'}`}
+              >
+                <LayoutGrid className="w-5 h-5" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                onClick={() => setViewMode('list')}
+                className={`p-2 ${viewMode === 'list' ? 'bg-primary text-white' : 'text-textSecondary hover:text-primary'}`}
+              >
+                <LayoutList className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -443,6 +563,7 @@ const OrderManagement = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            key={`grid-${currentPage}`}
           >
             {loading ? (
               <div className="text-center py-4">Loading orders...</div>
@@ -452,10 +573,20 @@ const OrderManagement = () => {
               paginatedOrders.map((order, index) => (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: 0,
+                    scale: updatingOrderId === order.orderId ? [1, 1.02, 1] : 1
+                  }}
+                  transition={{ 
+                    delay: index * 0.05,
+                    duration: 0.3,
+                    ease: "easeOut"
+                  }}
                   key={order.orderId}
-                  className="bg-cardBg border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+                  className={`bg-cardBg border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300 ${
+                    updatingOrderId === order.orderId ? 'ring-2 ring-primary ring-opacity-50' : ''
+                  }`}
                 >
                   <div className="p-6 space-y-4">
                     <div className="flex justify-between items-start">
@@ -503,6 +634,7 @@ const OrderManagement = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="bg-cardBg border border-border rounded-xl overflow-hidden"
+            key={`list-${currentPage}`}
           >
             <Table>
               <TableHeader>
@@ -525,10 +657,19 @@ const OrderManagement = () => {
                     <TableCell colSpan={6} className="text-center">No orders found</TableCell>
                   </TableRow>
                 ) : (
-                  paginatedOrders.map((order) => (
-                    <TableRow 
+                  paginatedOrders.map((order, index) => (
+                    <motion.tr
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ 
+                        delay: index * 0.05,
+                        duration: 0.3,
+                        ease: "easeOut"
+                      }}
                       key={order.orderId}
-                      className="group hover:bg-primary/5 transition-colors duration-200"
+                      className={`group hover:bg-primary/5 transition-colors duration-200 ${
+                        updatingOrderId === order.orderId ? 'bg-primary/10' : ''
+                      }`}
                     >
                       <TableCell className="font-medium text-text">#{order.orderId}</TableCell>
                       <TableCell className="text-text">
@@ -556,7 +697,7 @@ const OrderManagement = () => {
                       <TableCell className="text-textSecondary">
                         {new Date(order.orderDate).toLocaleDateString()}
                       </TableCell>
-                    </TableRow>
+                    </motion.tr>
                   ))
                 )}
               </TableBody>

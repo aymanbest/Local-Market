@@ -580,116 +580,115 @@ const Header = () => {
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-yellow-400/0 via-yellow-400/10 to-yellow-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </button>
 
-                {!isProducer && (
-                  <div className="flex items-center gap-3">
-                    {!isAdmin && (
-                      <Link to="/cart" className="relative group">
-                        <div className={`
-                          p-2.5 rounded-xl transition-all duration-300
+                {/* Notifications for both producers and non-producers */}
+                <div className="flex items-center gap-3">
+                  {!isProducer && !isAdmin && (
+                    <Link to="/cart" className="relative group">
+                      <div className={`
+                        p-2.5 rounded-xl transition-all duration-300
+                        ${isDark 
+                          ? 'bg-white/10 hover:bg-white/15' 
+                          : 'bg-black/5 hover:bg-black/10'
+                        }
+                        group-hover:scale-110
+                      `}>
+                        <ShoppingCart className="w-5 h-5 text-text group-hover:text-primary transition-colors duration-300" />
+                        {items.length > 0 && (
+                          <span className="
+                            absolute -top-1 -right-1 w-5 h-5
+                            bg-primary text-white text-xs font-medium
+                            rounded-full flex items-center justify-center
+                            transform transition-transform duration-300
+                            group-hover:scale-110 group-hover:rotate-12
+                          ">
+                            {items.length}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  )}
+
+                  {/* Notifications with Enhanced Animation */}
+                  {isAuthenticated && (isProducer || !isProducer) && (
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowNotifications(!showNotifications)}
+                        className={`
+                          p-2.5 rounded-xl transition-all duration-300 
+                          hover:scale-110 relative group
                           ${isDark 
                             ? 'bg-white/10 hover:bg-white/15' 
                             : 'bg-black/5 hover:bg-black/10'
                           }
-                          group-hover:scale-110
-                        `}>
-                          <ShoppingCart className="w-5 h-5 text-text group-hover:text-primary transition-colors duration-300" />
-                          {items.length > 0 && (
-                            <span className="
-                              absolute -top-1 -right-1 w-5 h-5
-                              bg-primary text-white text-xs font-medium
-                              rounded-full flex items-center justify-center
-                              transform transition-transform duration-300
-                              group-hover:scale-110 group-hover:rotate-12
-                            ">
-                              {items.length}
-                            </span>
-                          )}
-                        </div>
-                      </Link>
-                    )}
-
-                    {/* Notifications with Enhanced Animation */}
-                    {isAuthenticated && (
-                      <div className="relative">
-                        <button
-                          onClick={() => setShowNotifications(!showNotifications)}
-                          className={`
-                            p-2.5 rounded-xl transition-all duration-300 
-                            hover:scale-110 relative group
-                            ${isDark 
-                              ? 'bg-white/10 hover:bg-white/15' 
-                              : 'bg-black/5 hover:bg-black/10'
-                            }
-                            ${showNotifications ? 'bg-primary/10' : ''}
-                          `}
-                        >
-                          <Bell className={`
-                            w-5 h-5 transition-colors duration-300
-                            ${showNotifications ? 'text-primary' : 'text-text'}
-                            group-hover:text-primary
-                          `} />
-                          {unreadCount > 0 && (
-                            <span className="
-                              absolute -top-1 -right-1 w-5 h-5 
-                              bg-primary text-white text-xs font-medium 
-                              rounded-full flex items-center justify-center
-                              transform transition-transform duration-300
-                              group-hover:scale-110 group-hover:rotate-12
-                              animate-pulse
-                            ">
-                              {unreadCount}
-                            </span>
-                          )}
-                        </button>
-
-                        {/* Notifications Dropdown with Enhanced Design */}
-                        {showNotifications && (
-                          <div className={`
-                            absolute right-0 mt-3 w-96 rounded-xl
-                            backdrop-blur-lg shadow-xl transform
-                            transition-all duration-500 ease-out
-                            animate-in fade-in slide-in-from-top-5
-                            ${isDark 
-                              ? 'bg-black/90 border border-white/10 shadow-black/20' 
-                              : 'bg-white/90 border border-black/10 shadow-black/5'
-                            }
-                            overflow-hidden z-50
-                          `}>
-                            <div className="p-4 border-b border-border flex items-center justify-between">
-                              <h3 className="font-medium text-text">Notifications</h3>
-                              {unreadCount > 0 && (
-                                <button
-                                  onClick={() => dispatch(markAllAsRead())}
-                                  className="
-                                    text-sm text-primary hover:text-primaryHover
-                                    transition-colors duration-300
-                                  "
-                                >
-                                  Mark all as read
-                                </button>
-                              )}
-                            </div>
-                            <div className="max-h-[400px] overflow-y-auto">
-                              {notifications.length > 0 ? (
-                                notifications.map((notification) => (
-                                  <NotificationItem
-                                    key={notification.id}
-                                    notification={notification}
-                                    onRead={(id) => dispatch(markAsRead(id))}
-                                  />
-                                ))
-                              ) : (
-                                <div className="p-4 text-center text-textSecondary">
-                                  No notifications
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                          ${showNotifications ? 'bg-primary/10' : ''}
+                        `}
+                      >
+                        <Bell className={`
+                          w-5 h-5 transition-colors duration-300
+                          ${showNotifications ? 'text-primary' : 'text-text'}
+                          group-hover:text-primary
+                        `} />
+                        {unreadCount > 0 && (
+                          <span className="
+                            absolute -top-1 -right-1 w-5 h-5 
+                            bg-primary text-white text-xs font-medium 
+                            rounded-full flex items-center justify-center
+                            transform transition-transform duration-300
+                            group-hover:scale-110 group-hover:rotate-12
+                            animate-pulse
+                          ">
+                            {unreadCount}
+                          </span>
                         )}
-                      </div>
-                    )}
-                  </div>
-                )}
+                      </button>
+
+                      {/* Notifications Dropdown with Enhanced Design */}
+                      {showNotifications && (
+                        <div className={`
+                          absolute right-0 mt-3 w-96 rounded-xl
+                          backdrop-blur-lg shadow-xl transform
+                          transition-all duration-500 ease-out
+                          animate-in fade-in slide-in-from-top-5
+                          ${isDark 
+                            ? 'bg-black/90 border border-white/10 shadow-black/20' 
+                            : 'bg-white/90 border border-black/10 shadow-black/5'
+                          }
+                          overflow-hidden z-50
+                        `}>
+                          <div className="p-4 border-b border-border flex items-center justify-between">
+                            <h3 className="font-medium text-text">Notifications</h3>
+                            {unreadCount > 0 && (
+                              <button
+                                onClick={() => dispatch(markAllAsRead())}
+                                className="
+                                  text-sm text-primary hover:text-primaryHover
+                                  transition-colors duration-300
+                                "
+                              >
+                                Mark all as read
+                              </button>
+                            )}
+                          </div>
+                          <div className="max-h-[400px] overflow-y-auto">
+                            {notifications.length > 0 ? (
+                              notifications.map((notification) => (
+                                <NotificationItem
+                                  key={notification.id}
+                                  notification={notification}
+                                  onRead={(id) => dispatch(markAsRead(id))}
+                                />
+                              ))
+                            ) : (
+                              <div className="p-4 text-center text-textSecondary">
+                                No notifications
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Auth Buttons with Enhanced Design */}
                 {!isAuthenticated ? (
@@ -809,32 +808,109 @@ const Header = () => {
 
               {/* Actions */}
               <div className="flex items-center gap-3">
-                {!isProducer && (
-                  <div className="flex items-center gap-2">
-                    {!isAdmin && (
-                      <Link to="/cart" className="relative group">
-                        <div className={`
-                          p-2.5 rounded-xl transition-all duration-300
-                          ${isDark 
-                            ? 'bg-white/10 hover:bg-white/15' 
-                            : 'bg-black/5 hover:bg-black/10'
-                          }
-                          group-hover:scale-110
-                        `}>
-                          <ShoppingCart className="w-5 h-5 text-text group-hover:text-primary transition-colors duration-300" />
-                          {items.length > 0 && (
-                            <span className="
-                              absolute -top-1 -right-1 w-5 h-5
-                              bg-primary text-white text-xs font-medium
-                              rounded-full flex items-center justify-center
-                              transform transition-transform duration-300
-                              group-hover:scale-110 group-hover:rotate-12
-                            ">
-                              {items.length}
-                            </span>
+                {!isProducer && !isAdmin && (
+                  <Link to="/cart" className="relative group">
+                    <div className={`
+                      p-2.5 rounded-xl transition-all duration-300
+                      ${isDark 
+                        ? 'bg-white/10 hover:bg-white/15' 
+                        : 'bg-black/5 hover:bg-black/10'
+                      }
+                      group-hover:scale-110
+                    `}>
+                      <ShoppingCart className="w-5 h-5 text-text group-hover:text-primary transition-colors duration-300" />
+                      {items.length > 0 && (
+                        <span className="
+                          absolute -top-1 -right-1 w-5 h-5
+                          bg-primary text-white text-xs font-medium
+                          rounded-full flex items-center justify-center
+                          transform transition-transform duration-300
+                          group-hover:scale-110 group-hover:rotate-12
+                        ">
+                          {items.length}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                )}
+
+                {/* Notifications for Mobile */}
+                {isAuthenticated && (isProducer || !isProducer) && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowNotifications(!showNotifications)}
+                      className={`
+                        p-2.5 rounded-xl transition-all duration-300 
+                        hover:scale-110 relative group
+                        ${isDark 
+                          ? 'bg-white/10 hover:bg-white/15' 
+                          : 'bg-black/5 hover:bg-black/10'
+                        }
+                        ${showNotifications ? 'bg-primary/10' : ''}
+                      `}
+                    >
+                      <Bell className={`
+                        w-5 h-5 transition-colors duration-300
+                        ${showNotifications ? 'text-primary' : 'text-text'}
+                        group-hover:text-primary
+                      `} />
+                      {unreadCount > 0 && (
+                        <span className="
+                          absolute -top-1 -right-1 w-5 h-5 
+                          bg-primary text-white text-xs font-medium 
+                          rounded-full flex items-center justify-center
+                          transform transition-transform duration-300
+                          group-hover:scale-110 group-hover:rotate-12
+                          animate-pulse
+                        ">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Notifications Dropdown for Mobile */}
+                    {showNotifications && (
+                      <div className={`
+                        absolute right-0 mt-3 w-[calc(100vw-2rem)] max-w-[24rem] rounded-xl
+                        backdrop-blur-lg shadow-xl transform
+                        transition-all duration-500 ease-out
+                        animate-in fade-in slide-in-from-top-5
+                        ${isDark 
+                          ? 'bg-black/90 border border-white/10 shadow-black/20' 
+                          : 'bg-white/90 border border-black/10 shadow-black/5'
+                        }
+                        overflow-hidden z-50
+                      `}>
+                        <div className="p-4 border-b border-border flex items-center justify-between">
+                          <h3 className="font-medium text-text">Notifications</h3>
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={() => dispatch(markAllAsRead())}
+                              className="
+                                text-sm text-primary hover:text-primaryHover
+                                transition-colors duration-300
+                              "
+                            >
+                              Mark all as read
+                            </button>
                           )}
                         </div>
-                      </Link>
+                        <div className="max-h-[400px] overflow-y-auto">
+                          {notifications.length > 0 ? (
+                            notifications.map((notification) => (
+                              <NotificationItem
+                                key={notification.id}
+                                notification={notification}
+                                onRead={(id) => dispatch(markAsRead(id))}
+                              />
+                            ))
+                          ) : (
+                            <div className="p-4 text-center text-textSecondary">
+                              No notifications
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}
