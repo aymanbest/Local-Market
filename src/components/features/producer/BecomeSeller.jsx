@@ -148,7 +148,7 @@ const BecomeSeller = () => {
     }
 
     // Show application status for customers with pending/approved/declined status
-    if (applicationStatus) {
+    if (applicationStatus && applicationStatus.status !== 'NO_APPLICATION') {
       return (
         <ApplicationStatus
           status={applicationStatus.status}
@@ -160,7 +160,7 @@ const BecomeSeller = () => {
     }
   }
 
-  // Show the main content for guests and eligible customers
+  // Show the main content for guests and users with NO_APPLICATION status
   return (
     <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
       {/* Hero Section with Diagonal Design */}
@@ -296,12 +296,21 @@ const BecomeSeller = () => {
             <h2 className="text-4xl font-bold mb-8">
               Ready to Start Your <span className="text-primary">Selling Journey?</span>
             </h2>
-            <Link to="/register">
-              <Button className="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-xl text-lg inline-flex items-center gap-3">
-                Start Selling Today
-                <ArrowRight className="w-5 h-5" />
-              </Button>
-            </Link>
+            {user ? (
+              <Link to="/account/apply-seller">
+                <Button className="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-xl text-lg inline-flex items-center gap-3">
+                  Start Selling Today
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/register">
+                <Button className="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-xl text-lg inline-flex items-center gap-3">
+                  Start Selling Today
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>

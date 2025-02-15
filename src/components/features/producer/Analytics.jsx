@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Card } from '../common/ui/Card';
+import { Card } from '../../common/ui/Card';
 import { Users, DollarSign, ShoppingCart, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Package, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import Chart from 'react-apexcharts';
-import { useTheme } from '../../context/ThemeContext';
-import { fetchProducerOverview, fetchOrderStats } from '../../store/slices/common/analyticsSlice';
-import { formatPercentage, formatCurrency } from '../../utils/formatters';
+import { useTheme } from '../../../context/ThemeContext';
+import { fetchProducerOverview, fetchOrderStats } from '../../../store/slices/common/analyticsSlice';
+import { formatPercentage, formatCurrency } from '../../../utils/formatters';
 
 
 

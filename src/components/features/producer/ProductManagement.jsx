@@ -6,15 +6,15 @@ import {
   TrendingUp, TrendingDown, Box, DollarSign, BarChart2, AlertTriangle, Check, Text,
   SlidersHorizontal
 } from 'lucide-react';
-import Button from '../common/ui/Button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../common/ui/Table';
-import { Card, CardHeader, CardTitle, CardContent } from '../common/ui/Card';
-import { useTheme } from '../../context/ThemeContext';
+import Button from '../../common/ui/Button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../common/ui/Table';
+import { Card, CardHeader, CardTitle, CardContent } from '../../common/ui/Card';
+import { useTheme } from '../../../context/ThemeContext';
 import { 
   fetchMyProducts, createProduct, updateProduct, resetCreateStatus, 
   resetUpdateStatus, deleteProduct, updateSorting, updatePagination 
-} from '../../store/slices/producer/producerProductsSlice';
-import { fetchCategories } from '../../store/slices/product/categorySlice';
+} from '../../../store/slices/producer/producerProductsSlice';
+import { fetchCategories } from '../../../store/slices/product/categorySlice';
 // import { //toast } from 'react-hot-//toast';
 
 const StatusBadge = ({ status = 'PENDING', declineReason }) => {
@@ -1145,29 +1145,29 @@ const ProductManagement = () => {
             label: 'Total Products', 
             value: totalProducts, 
             icon: Package,
-            gradient: 'from-blue-500/10 via-blue-500/5 to-transparent'
+            gradient: 'from-blue-500/30 via-blue-500/20 to-transparent'
           },
           { 
             label: 'Inventory Value', 
             value: `$${totalValue.toFixed(2)}`, 
             icon: DollarSign,
-            gradient: 'from-green-500/10 via-green-500/5 to-transparent'
+            gradient: 'from-green-500/30 via-green-500/20 to-transparent'
           },
           { 
             label: 'Low Stock', 
             value: lowStockProducts, 
             icon: Box,
-            gradient: 'from-amber-500/10 via-amber-500/5 to-transparent'
+            gradient: 'from-amber-500/30 via-amber-500/20 to-transparent'
           },
           { 
             label: 'Pending Review', 
             value: pendingProducts, 
             icon: AlertTriangle,
-            gradient: 'from-yellow-500/10 via-yellow-500/5 to-transparent'
+            gradient: 'from-yellow-500/30 via-yellow-500/20 to-transparent'
           }
         ].map((stat, index) => (
           <div key={index} className="relative group">
-            <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-60 group-hover:opacity-100 transition-opacity duration-300 rounded-xl`} />
+            <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-90 dark:opacity-60 group-hover:opacity-100 transition-opacity duration-300 rounded-xl`} />
             <div className="relative p-3 sm:p-6 rounded-xl border border-border bg-cardBg/95">
               <div className="flex items-center justify-between">
                 <div>
@@ -1204,97 +1204,99 @@ const ProductManagement = () => {
         </div>
       ) : (
         <>
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Categories</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.map((product) => (
-                  <TableRow key={product.productId} className="hover:bg-cardHoverBg transition-colors">
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden border border-border">
-                          <img
-                            src={getFullImageUrl(product.imageUrl)}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-text">{product.name}</h4>
-                          <p className="text-text font-semibold text-text">${product.price.toFixed(2)}</p>
-                          <p className="text-xs text-textSecondary">Stock: {product.quantity}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {product.categories.map((category) => (
-                          <span
-                            key={category.categoryId}
-                            className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs"
-                          >
-                            {category.name}
-                          </span>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="w-4 h-4 text-textSecondary" />
-                        <span className="font-medium text-text">{product.price.toFixed(2)}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-sm ${
-                          product.quantity === 0 
-                            ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300' 
-                            : product.quantity < 10 
-                              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300'
-                              : 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300'
-                        }`}>
-                          {product.quantity}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={product.status} declineReason={product.declineReason} />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleView(product.productId)}
-                          className="p-2 hover:bg-primary/10 rounded-lg transition-colors"
-                        >
-                          <Eye className="w-4 h-4 text-textSecondary hover:text-primary" />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(product.productId)}
-                          className="p-2 hover:bg-primary/10 rounded-lg transition-colors"
-                        >
-                          <Pencil className="w-4 h-4 text-textSecondary hover:text-primary" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product.productId)}
-                          className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4 text-textSecondary hover:text-red-500" />
-                        </button>
-                      </div>
-                    </TableCell>
+          <Card className="bg-white dark:bg-[#1a1f1c] p-0 overflow-hidden">
+            <div className="w-full h-full bg-white dark:bg-[#1a1f1c]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Categories</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Stock</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredProducts.map((product) => (
+                    <TableRow key={product.productId} className="hover:bg-cardHoverBg transition-colors">
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-lg overflow-hidden border border-border">
+                            <img
+                              src={getFullImageUrl(product.imageUrl)}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-text">{product.name}</h4>
+                            <p className="text-text font-semibold text-text">${product.price.toFixed(2)}</p>
+                            <p className="text-xs text-textSecondary">Stock: {product.quantity}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {product.categories.map((category) => (
+                            <span
+                              key={category.categoryId}
+                              className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs"
+                            >
+                              {category.name}
+                            </span>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <DollarSign className="w-4 h-4 text-textSecondary" />
+                          <span className="font-medium text-text">{product.price.toFixed(2)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded-full text-sm ${
+                            product.quantity === 0 
+                              ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300' 
+                              : product.quantity < 10 
+                                ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300'
+                                : 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300'
+                          }`}>
+                            {product.quantity}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={product.status} declineReason={product.declineReason} />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleView(product.productId)}
+                            className="p-2 hover:bg-primary/10 rounded-lg transition-colors"
+                          >
+                            <Eye className="w-4 h-4 text-textSecondary hover:text-primary" />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(product.productId)}
+                            className="p-2 hover:bg-primary/10 rounded-lg transition-colors"
+                          >
+                            <Pencil className="w-4 h-4 text-textSecondary hover:text-primary" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product.productId)}
+                            className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4 text-textSecondary hover:text-red-500" />
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </Card>
           <PaginationControls />
         </>

@@ -22,7 +22,8 @@ export default {
         'loading-bar': 'loading 1s ease-in-out infinite',
         'spin': 'spin 1s linear infinite',
         'spin-reverse': 'spin-reverse 1s linear infinite',
-        'slide-down': 'slide-down 0.3s ease-out'
+        'slide-down': 'slide-down 0.3s ease-out',
+        shake: 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
       },
       keyframes: {
         fadeIn: {
@@ -68,7 +69,12 @@ export default {
             opacity: '1',
             transform: 'translateY(0)'
           }
-        }
+        },
+        shake: {
+          '0%, 100%': { transform: 'rotate(0deg)' },
+          '25%': { transform: 'rotate(-5deg)' },
+          '75%': { transform: 'rotate(5deg)' },
+        },
       },
       scale: {
         '102': '1.02',

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom'
-import ProductManagement from '../../producer/ProductManagement';
-import OrderManagement from '../../producer/OrderManagement';
-import Analytics from '../../producer/Analytics';
+import ProductManagement from '../../features/producer/ProductManagement';
+import OrderManagement from '../../features/producer/OrderManagement';
+import Analytics from '../../features/producer/Analytics';
 import AccountPage from '../../features/public/AccountPage';
 import SecurityPage from '../../features/auth/SecurityPage';
 import ProtectedRoute from '../../security/ProtectedRoute';

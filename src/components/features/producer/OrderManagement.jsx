@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../common/ui/Table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../common/ui/Table';
 import { Search, Filter,Package, Clock, CheckCircle2, XCircle, AlertCircle, X, LayoutGrid, LayoutList, Truck, SlidersHorizontal } from 'lucide-react';
-import Button from '../common/ui/Button';
+import Button from '../../common/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducerOrders, filterOrders, updateOrderStatus } from '../../store/slices/customer/orderSlice';
+import { fetchProducerOrders, filterOrders, updateOrderStatus } from '../../../store/slices/customer/orderSlice';
 
 const OrderManagement = () => {
   const dispatch = useDispatch();

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { loginUser } from '../../../store/slices/auth/authSlice';
+import { loginUser, clearAuth } from '../../../store/slices/auth/authSlice';
 import { Eye, EyeClosed } from 'lucide-react';
 
 const Login = ({ adminOnly = false }) => {
@@ -12,6 +12,10 @@ const Login = ({ adminOnly = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { status, error } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(clearAuth());
+  }, [dispatch]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

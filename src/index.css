@@ -27,7 +27,7 @@
     --color-primary-hover: #5D8736;
     --color-background: #0a0a0a;
     --color-header-bg: #1E1E1E;
-    --color-card-bg: #1e1e1e8c;
+    --color-card-bg: #1616168c;
     --color-card-bg-add: #1e1e1e8c;
     --color-text: #FFFFFF;
     --color-text-secondary: #d4d4d4;
@@ -54,4 +54,14 @@ input[type="number"].hide-spinner::-webkit-outer-spin-button {
 
 input[type="number"].hide-spinner {
   -moz-appearance: textfield;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

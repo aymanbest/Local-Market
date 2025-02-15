@@ -392,7 +392,7 @@ const CouponManagement = () => {
   };
 
   return (
-    <div className={`p-6 ${isDark ? 'bg-[#0a0a0a]' : 'bg-white'}`}>
+    <div className={`p-6`}>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-text">Coupon Management</h1>
         <div className="flex items-center gap-4">
@@ -400,8 +400,8 @@ const CouponManagement = () => {
             onClick={handleOpenFilters}
             className="rounded-full border border-border hover:bg-cardBg transition flex gap-2 items-center px-4 py-2"
           >
-            <SlidersHorizontal className="w-5 h-5" />
-            <span>Sort</span>
+            <SlidersHorizontal className="text-text w-5 h-5" />
+            <span className="text-text">Sort</span>
           </button>
           <button
             onClick={() => {

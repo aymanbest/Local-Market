@@ -307,51 +307,65 @@ const ReviewManagement = () => {
         </div>
       ) : (
         <>
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead>Comment</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pendingReviews.map((review) => (
-                  <TableRow key={review.reviewId}>
-                    <TableCell className="font-medium text-text">{review.productName}</TableCell>
-                    <TableCell className="text-text">{review.customerUsername}</TableCell>
-                    <TableCell className="text-text">
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span>{review.rating}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-text">{review.comment}</TableCell>
-                    <TableCell className="text-text">{new Date(review.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          onClick={() => handleApprove(review.reviewId)}
-                          className="bg-green-500 hover:bg-green-600"
-                        >
-                          <Check className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleDecline(review.reviewId, 'Inappropriate content')}
-                          variant="destructive"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+          <Card className="bg-white dark:bg-[#1a1f1c] p-0 overflow-hidden">
+            <div className="w-full h-full bg-white dark:bg-[#1a1f1c]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Rating</TableHead>
+                    <TableHead>Comment</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {pendingReviews.map((review) => (
+                    <TableRow key={review.reviewId}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-text">{review.productName}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-text">{review.customerUsername}</span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <span className="text-text">{review.rating}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-md">
+                          <p className="text-text truncate">{review.comment}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-text">{new Date(review.createdAt).toLocaleDateString()}</span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleApprove(review.reviewId)}
+                            className="p-2 hover:bg-green-500/10 rounded-lg transition-colors"
+                          >
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                          </button>
+                          <button
+                            onClick={() => handleDecline(review.reviewId, 'Inappropriate content')}
+                            className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
+                          >
+                            <XCircle className="w-4 h-4 text-red-500" />
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </Card>
           <PaginationControls />
         </>

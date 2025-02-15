@@ -26,13 +26,16 @@ api.interceptors.request.use(config => {
 });
 
 const publicRoutes = [
-  '/', 
-  '/store', 
-  '/about', 
-  '/support', 
-  '/faq', 
+  '/',
+  '/store',
+  '/about',
+  '/support',
+  '/faq',
   '/become-seller',
-  '/store/products'
+  '/store/products',
+  '/login',
+  '/register',
+  '/admin/login'
 ];
 
 const publicEndpoints = [
@@ -54,16 +57,12 @@ api.interceptors.response.use(
       // Check if current path is a public route
       const isPublicRoute = publicRoutes.some(route => currentPath.startsWith(route));
       
-      if (isPublicEndpoint || isPublicRoute) {
-        // Just clear auth state but don't redirect
+      if (!isPublicRoute && !isPublicEndpoint) {
+        // Only clear auth and redirect for protected routes
         store.dispatch(clearAuth());
-        return Promise.reject(error);
-      }
-      
-      // Only redirect to login for protected routes
-      if (!currentPath.includes('/login')) {
-        store.dispatch(clearAuth());
-        window.location.href = '/login';
+        if (!currentPath.includes('/login')) {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);
