@@ -35,7 +35,8 @@ const publicRoutes = [
   '/store/products',
   '/login',
   '/register',
-  '/admin/login'
+  '/admin/login',
+  '/forgot-password'
 ];
 
 const publicEndpoints = [
