@@ -11,6 +11,7 @@ import { useTheme } from '../../../context/ThemeContext';
 import AccountPage from '../../features/public/AccountPage';
 import SecurityPage from '../../features/auth/SecurityPage';
 import ProtectedRoute from '../../security/ProtectedRoute';
+import CategoriesManagement from '../../features/admin/CategoriesManagement';
 
 const AdminLayout = () => {
   const { isDark } = useTheme();
@@ -35,6 +36,7 @@ const AdminLayout = () => {
                     </ProtectedRoute>
                   } 
                 />
+          <Route path="/categories" element={<CategoriesManagement />} />
         </Routes>
       </div>
       </>

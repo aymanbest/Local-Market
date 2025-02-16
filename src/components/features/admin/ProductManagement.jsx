@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Check, X, Eye, Search, Package, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Check, X, Eye, Search, Package, User, ChevronLeft, ChevronRight, Trash2, ClipboardList, LayoutGrid } from 'lucide-react';
 import { fetchPendingProducts, approveProduct, declineProduct } from '../../../store/slices/product/pendingProductsSlice';
 import Button from '../../common/ui/Button';
 import { Card } from '../../common/ui/Card';
 // import { // toast } from 'react-hot-// toast';
+import { fetchProducts } from '../../../store/slices/product/productSlice';
 
 const DeclineButton = React.memo(({ onClick, children, variant }) => (
   <Button variant={variant} onClick={onClick}>
@@ -55,7 +56,14 @@ DeclineButton.displayName = 'DeclineButton';
 const ProductManagement = () => {
   const dispatch = useDispatch();
   const pendingProducts = useSelector((state) => state.pendingProducts);
-  const producers = pendingProducts?.items || [];
+  const allProducts = useSelector((state) => state.products);
+  const [viewMode, setViewMode] = useState('pending');
+  const producers = viewMode === 'pending' 
+    ? pendingProducts?.items || []
+    : [{ 
+        products: allProducts?.items?.products || [],
+        producerId: 'all'
+      }];
   const { pagination, sorting } = pendingProducts;
   
   const status = pendingProducts?.status || 'idle';
@@ -66,13 +74,19 @@ const ProductManagement = () => {
   const [direction, setDirection] = useState('right');
 
   useEffect(() => {
-    dispatch(fetchPendingProducts({
+    const paginationParams = {
       page: pagination?.currentPage || 0,
-      size: pagination?.pageSize || 10,
+      size: 2,
       sortBy: sorting?.sortBy || 'createdAt',
       direction: sorting?.direction || 'desc'
-    }));
-  }, [dispatch, pagination?.currentPage, sorting]);
+    };
+
+    if (viewMode === 'pending') {
+      dispatch(fetchPendingProducts(paginationParams));
+    } else {
+      dispatch(fetchProducts(paginationParams));
+    }
+  }, [dispatch, pagination?.currentPage, sorting, viewMode]);
 
   const handleApprove = async (productId) => {
     try {
@@ -187,6 +201,24 @@ const ProductManagement = () => {
     </div>
   );
 
+  const handleAdminDelete = async (productId) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        await dispatch(adminDeleteProduct(productId)).unwrap();
+        // toast.success('Product deleted successfully');
+        // Refresh the products list
+        dispatch(fetchProducts({
+          page: pagination?.currentPage || 0,
+          size: pagination?.pageSize || 2,
+          sortBy: sorting?.sortBy || 'createdAt',
+          direction: sorting?.direction || 'desc'
+        }));
+      } catch (error) {
+        // toast.error('Failed to delete product');
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 transition-colors duration-300">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -211,7 +243,7 @@ const ProductManagement = () => {
         </div>
 
         {/* Redesigned Search Section - Store style */}
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-between items-center mb-6">
           <label className="rounded-full flex items-center pl-4 pr-2 py-2 bg-cardBg border border-border w-72">
             <input
               type="text"
@@ -224,6 +256,25 @@ const ProductManagement = () => {
               <Search className="w-5 h-5 text-white" />
             </span>
           </label>
+          
+          <div className="flex gap-2">
+            <Button
+              variant={viewMode === 'pending' ? 'default' : 'outline'}
+              onClick={() => setViewMode('pending')}
+              className={`${viewMode === 'pending' ? 'bg-primary text-white' : 'text-textSecondary hover:text-primary'} flex items-center`}
+            >
+              <ClipboardList className="w-5 h-5 mr-2" />
+              Pending Products
+            </Button>
+            <Button
+              variant={viewMode === 'all' ? 'default' : 'outline'}
+              onClick={() => setViewMode('all')}
+              className={`${viewMode === 'all' ? 'bg-primary text-white' : 'text-textSecondary hover:text-primary'} flex items-center`}
+            >
+              <LayoutGrid className="w-5 h-5 mr-2" />
+              All Products
+            </Button>
+          </div>
         </div>
 
         {/* Products Grid */}
@@ -232,9 +283,7 @@ const ProductManagement = () => {
             <div className="text-center py-12">Loading...</div>
           ) : status === 'failed' ? (
             <div className="text-center py-12 text-red-500">{pendingProducts.error}</div>
-          ) : producers.length === 0 ? (
-            <div className="text-center py-12">No pending products found</div>
-          ) : (
+          ) : viewMode === 'pending' ? (
             producers.map(producer => (
               <div key={producer.producerId} className="bg-cardBg border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
                 <div className="p-6 border-b border-border">
@@ -303,6 +352,45 @@ const ProductManagement = () => {
                 </div>
               </div>
             ))
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {producers[0].products.map(product => (
+                <div key={product.productId} 
+                     className="bg-cardBg border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
+                  <div className="p-4">
+                    <img
+                      src={product.imageUrl || 'https://placehold.co/600x400'}
+                      alt={product.name}
+                      className="w-full h-48 object-cover rounded-lg mb-4"
+                    />
+                    <div className="space-y-2">
+                      <h3 className="font-medium text-text">{product.name}</h3>
+                      <p className="text-primary font-semibold">${product.price.toFixed(2)}</p>
+                      <p className="text-sm text-textSecondary">By {product.producerName}</p>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          onClick={() => {
+                            setSelectedProduct(product);
+                            setShowViewModal(true);
+                          }}
+                          variant="ghost"
+                          className="hover:bg-primary/10 hover:text-primary transition-colors duration-200"
+                        >
+                          <Eye className="w-5 h-5" />
+                        </Button>
+                        <Button
+                          onClick={() => handleAdminDelete(product.productId)}
+                          variant="ghost"
+                          className="hover:bg-red-500/10 hover:text-red-500 transition-colors duration-200"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 

@@ -43,6 +43,18 @@ export const declineProduct = createAsyncThunk(
   }
 );
 
+export const adminDeleteProduct = createAsyncThunk(
+  'pendingProducts/adminDelete',
+  async (productId, { rejectWithValue }) => {
+    try {
+      await api.delete(`/api/products/admin/${productId}`);
+      return productId;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete product');
+    }
+  }
+);
+
 const initialState = {
   items: [],
   status: 'idle',
@@ -107,6 +119,13 @@ const pendingProductsSlice = createSlice({
       })
       .addCase(declineProduct.fulfilled, (state, action) => {
         const productId = action.payload.productId;
+        state.items = state.items.map(producer => ({
+          ...producer,
+          products: producer.products.filter(p => p.productId !== productId)
+        })).filter(producer => producer.products.length > 0);
+      })
+      .addCase(adminDeleteProduct.fulfilled, (state, action) => {
+        const productId = action.payload;
         state.items = state.items.map(producer => ({
           ...producer,
           products: producer.products.filter(p => p.productId !== productId)

@@ -465,7 +465,6 @@ const UserManagement = () => {
             className="border-border hover:bg-cardBg"
           >
             <SlidersHorizontal className="w-4 h-4 mr-2" />
-            Sort
           </Button>
         </div>
 
