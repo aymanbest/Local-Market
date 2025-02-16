@@ -32,7 +32,7 @@ import About from './components/features/public/About';
 import WelcomeCoupon from './components/features/promotions/WelcomeCoupon';
 import Unauthorized from './components/features/public/Unauthorized';
 import ForgotPassword from './components/features/auth/ForgotPassword';
-
+import NotFound from './components/features/public/NotFound';
 
 // Create a separate component for content that needs Redux
 const AppContent = () => {
@@ -40,7 +40,7 @@ const AppContent = () => {
   const isLoading = useLoading();
 
   useEffect(() => {
-    // Initial app load simulation
+    // Initial app load
     window.onload = () => {
       setTimeout(() => {
         setInitialLoading(false);
@@ -60,6 +60,7 @@ const AppContent = () => {
         <Header />
         <div className="pt-28 md:pt-32">
           <Routes>
+            <Route path='*' element={<NotFound />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="/" element={<MainPage />} />
             <Route path="/login" element={
