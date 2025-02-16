@@ -13,7 +13,7 @@ import AccountPage from './components/features/public/AccountPage';
 import { ThemeProvider } from './context/ThemeContext';
 import Store from './components/features/product/Store';
 import Preloader from './components/features/public/Preloader';
-import BecomeSeller from './components/features/producer/BecomeSeller';
+import BecomeSeller from './components/features/public/BecomeSeller';
 import FAQ from './components/features/public/FAQ';
 import ProductDetails from './components/features/product/ProductDetails';
 import PaymentForm from './components/features/order/PaymentForm';

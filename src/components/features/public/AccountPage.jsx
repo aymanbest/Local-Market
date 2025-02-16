@@ -202,9 +202,7 @@ const AccountPage = ({ adminOnly = false, producerOnly = false }) => {
                       <div className="h-4 bg-border rounded w-1/2"></div>
                     </div>
                   </div>
-                ) : applicationStatus ? (
-                  renderApplicationStatus()
-                ) : (
+                ) : !applicationStatus || applicationStatus.status === 'NO_APPLICATION' ? (
                   <Link 
                     to="/account/apply-seller" 
                     className={`border border-border hover:bg-cardBg ${baseCardClasses}`}
@@ -214,6 +212,8 @@ const AccountPage = ({ adminOnly = false, producerOnly = false }) => {
                       <span className="text-textSecondary">Sell your products on our platform</span>
                     </div>
                   </Link>
+                ) : (
+                  renderApplicationStatus()
                 )}
               </>
             )}

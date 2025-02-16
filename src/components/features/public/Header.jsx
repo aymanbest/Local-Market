@@ -97,7 +97,6 @@ const Header = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showAdminMenu, setShowAdminMenu] = useState(false);
   const [activeGroup, setActiveGroup] = useState(null);
-  const navRef = useRef(null);
   const adminMenuRef = useRef(null);
 
   // Reset active states when location changes
@@ -110,15 +109,33 @@ const Header = () => {
 
   const isActivePath = useCallback((path, items) => {
     if (items) {
-      // If items are provided, check if any of the child paths match exactly
-      return items.some(item => location.pathname.startsWith(item.path));
+      // For admin menu items with children
+      return items.some(item => location.pathname === item.path || 
+        (item.path !== '/' && location.pathname.startsWith(item.path)));
     }
-    // For single paths, check if it matches exactly or if it's a parent path
-    return path && (
-      location.pathname === path || 
-      (path !== '/admin' && location.pathname.startsWith(path))
-    );
-  }, [location.pathname]);
+    
+    // For regular and producer navigation
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    
+    // Special handling for producer root path
+    if (path === '/producer' && isProducer) {
+      return location.pathname === '/producer' || location.pathname === '/producer/products';
+    }
+    
+    // Check if current path matches exactly or is a child path
+    // But exclude matching when we're in a different section (admin/producer/regular)
+    if (isAdmin) {
+      return path.startsWith('/admin') && location.pathname.startsWith(path);
+    } else if (isProducer) {
+      return path.startsWith('/producer') && location.pathname.startsWith(path);
+    } else {
+      return !location.pathname.startsWith('/admin') && 
+             !location.pathname.startsWith('/producer') && 
+             location.pathname.startsWith(path);
+    }
+  }, [location.pathname, isAdmin, isProducer]);
 
   // Group admin navigation items
   const adminGroups = useMemo(() => ({
@@ -145,6 +162,7 @@ const Header = () => {
     { path: '/about', label: 'About', icon: BookOpenText },
     { path: '/support', label: 'Support', icon: MailOpen },
     { path: '/faq', label: 'FAQ', icon: MessageCircleQuestion },
+    { path: '/become-seller', label: 'Become a Seller', icon: Building2 },
   ], []);
 
   // Producer navigation items

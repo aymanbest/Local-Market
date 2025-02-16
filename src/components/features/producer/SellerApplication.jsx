@@ -145,7 +145,7 @@ const SellerApplication = () => {
                     required
                     value={formData.businessName}
                     onChange={(e) => setFormData(prev => ({ ...prev, businessName: e.target.value }))}
-                    className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full text-text px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -158,7 +158,7 @@ const SellerApplication = () => {
                     value={formData.businessDescription}
                     onChange={(e) => setFormData(prev => ({ ...prev, businessDescription: e.target.value }))}
                     rows={4}
-                    className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full text-text px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -171,7 +171,7 @@ const SellerApplication = () => {
                     required
                     value={formData.businessPhoneNumber}
                     onChange={(e) => setFormData(prev => ({ ...prev, businessPhoneNumber: e.target.value }))}
-                    className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full text-text px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Enter your business phone number"
                   />
                 </div>
@@ -185,7 +185,7 @@ const SellerApplication = () => {
                     required
                     value={formData.businessAddress}
                     onChange={(e) => setFormData(prev => ({ ...prev, businessAddress: e.target.value }))}
-                    className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full text-text px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Enter your business address"
                   />
                 </div>
@@ -200,7 +200,7 @@ const SellerApplication = () => {
                         required
                         value={formData.cityRegion}
                         onChange={handleCityRegionChange}
-                        className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                        className="w-full text-text px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                       >
                         <option value="">Select a region</option>
                         {regionsLoading ? (
@@ -223,7 +223,7 @@ const SellerApplication = () => {
                           placeholder="Enter your city/region"
                           value={formData.customCityRegion || ''}
                           onChange={(e) => setFormData(prev => ({ ...prev, customCityRegion: e.target.value }))}
-                          className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                          className="w-full text-text px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         />
                       )}
                     </div>
@@ -274,7 +274,7 @@ const SellerApplication = () => {
                     placeholder="Enter custom category"
                     value={formData.customCategory || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, customCategory: e.target.value }))}
-                    className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full text-text px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 )}
               </div>
@@ -298,7 +298,7 @@ const SellerApplication = () => {
                     min="0"
                     value={formData.yearsOfExperience}
                     onChange={(e) => setFormData(prev => ({ ...prev, yearsOfExperience: e.target.value }))}
-                    className="w-full hide-spinner px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full text-text hide-spinner px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -310,7 +310,7 @@ const SellerApplication = () => {
                     type="url"
                     value={formData.websiteOrSocialLink}
                     onChange={(e) => setFormData(prev => ({ ...prev, websiteOrSocialLink: e.target.value }))}
-                    className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full text-text px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="https://"
                   />
                 </div>
@@ -323,7 +323,7 @@ const SellerApplication = () => {
                     value={formData.messageToAdmin}
                     onChange={(e) => setFormData(prev => ({ ...prev, messageToAdmin: e.target.value }))}
                     rows={4}
-                    className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full text-text px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Any additional information you'd like to share..."
                   />
                 </div>
