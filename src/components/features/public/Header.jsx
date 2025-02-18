@@ -184,8 +184,11 @@ const Header = () => {
     { path: '/about', label: 'About', icon: BookOpenText },
     { path: '/support', label: 'Support', icon: MailOpen },
     { path: '/faq', label: 'FAQ', icon: MessageCircleQuestion },
-    { path: '/become-seller', label: 'Become a Seller', icon: Building2 },
-  ], []);
+    // Only show "Become a Seller" for customers
+    ...((!user || user.role === 'CUSTOMER' || user.role === 'ADMIN' || user.role === 'PRODUCER') ? [
+      { path: '/become-seller', label: 'Become a Seller', icon: Building2 }
+    ] : [])
+  ], [isAdmin, isProducer]);
 
   // Producer navigation items
   const producerNavigationItems = useMemo(() => [
@@ -360,9 +363,9 @@ const Header = () => {
     <header className={`
       hidden md:block fixed top-0 left-0 right-0 z-40
       transition-all duration-500 ease-out
-      ${isScrolled ? 'py-2' : 'py-4'}
+      ${isScrolled ? 'py-2' : 'py-3 md:py-4'}
     `}>
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-[98%] md:max-w-[95%] xl:max-w-7xl mx-auto px-2 md:px-3 lg:px-4">
         <div className={`
           relative rounded-2xl border backdrop-blur-lg
           transition-all duration-500 ease-out
@@ -374,16 +377,16 @@ const Header = () => {
               ? 'border-white/10 bg-black/50' 
               : 'border-black/10 bg-white/50'
           }
-          p-3
+          p-2 md:p-2.5 lg:p-3
         `}>
           <div className="flex items-center justify-between">
             {/* Logo Section */}
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="relative w-8 h-8">
+            <Link to="/" className="flex items-center gap-1 md:gap-1.5 lg:gap-2 group">
+              <div className="relative w-6 md:w-7 lg:w-8 h-6 md:h-7 lg:h-8">
                 <div className="absolute inset-0 rotate-45 bg-gradient-to-r from-primary/50 to-transparent rounded-xl blur-xl"></div>
-                <Leaf className="w-8 h-8 text-primary relative z-10" />
+                <Leaf className="w-6 md:w-7 lg:w-8 h-6 md:h-7 lg:h-8 text-primary relative z-10" />
               </div>
-              <span className="font-recoleta text-xl text-text relative">
+              <span className="font-recoleta text-base md:text-lg lg:text-xl text-text relative">
                 LocalMarket
                 <span className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-primary/0 via-primary to-primary/0 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
               </span>
@@ -392,8 +395,8 @@ const Header = () => {
             {/* Navigation Section */}
             {isAdmin ? (
               // Admin Navigation
-              <div ref={adminMenuRef} className="flex-1 mx-8">
-                <div className="flex items-center justify-start gap-2 ml-4">
+              <div ref={adminMenuRef} className="flex-1 mx-4 md:mx-6 lg:mx-8">
+                <div className="flex items-center justify-start gap-1.5 md:gap-2">
                   {Object.entries(adminGroups).map(([group, items]) => (
                     <AdminNavGroup
                       key={group}
@@ -407,14 +410,14 @@ const Header = () => {
               </div>
             ) : (
               // Regular/Producer Navigation
-              <nav className="flex-1 mx-8">
-                <div className="flex items-center justify-center gap-2">
+              <nav className="flex-1 mx-2 sm:mx-3 md:mx-4 lg:mx-6 xl:mx-8">
+                <div className="flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2">
                   {(isProducer ? producerNavigationItems : regularNavigationItems).map((item) => (
                     <Link
                       key={item.path}
                       to={item.path}
                       className={`
-                        relative px-4 py-2.5 rounded-xl overflow-hidden group
+                        relative px-1 sm:px-1.5 md:px-2 lg:px-3 xl:px-4 py-1.5 md:py-2 lg:py-2.5 rounded-xl overflow-hidden group
                         transition-all duration-300 whitespace-nowrap
                         ${isActivePath(item.path)
                           ? isDark
@@ -430,13 +433,13 @@ const Header = () => {
                         group-hover:opacity-100 transition-opacity duration-500
                         ${isActivePath(item.path) ? 'opacity-100' : ''}
                       `} />
-                      <span className="relative z-10 flex items-center gap-2">
+                      <span className="relative z-10 flex items-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2">
                         <item.icon className={`
-                          w-4 h-4 transition-all duration-300
+                          w-3.5 sm:w-4 h-3.5 sm:h-4 transition-all duration-300
                           ${isActivePath(item.path) ? 'text-primary scale-110' : ''}
                           group-hover:scale-110 group-hover:text-primary
                         `} />
-                        <span className="font-medium">{item.label}</span>
+                        <span className="font-medium text-[11px] sm:text-xs md:text-sm lg:text-base">{item.label}</span>
                       </span>
                       {isActivePath(item.path) && (
                         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/0 via-primary to-primary/0"></div>
@@ -448,12 +451,12 @@ const Header = () => {
             )}
 
             {/* Right Section */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 md:gap-2 lg:gap-3 xl:gap-4">
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
                 className={`
-                  p-2.5 rounded-xl transition-all duration-300 
+                  p-1.5 md:p-2 lg:p-2.5 rounded-xl transition-all duration-300 
                   hover:scale-110 relative group
                   ${isDark 
                     ? 'bg-white/10 text-yellow-400 hover:bg-white/15' 
@@ -463,50 +466,23 @@ const Header = () => {
               >
                 <div className="relative">
                   <Sun className={`
-                    w-5 h-5 absolute transition-all duration-500
+                    w-4 md:w-4 lg:w-5 h-4 md:h-4 lg:h-5 absolute transition-all duration-500
                     ${isDark ? 'rotate-0 opacity-100 scale-100' : 'rotate-90 opacity-0 scale-50'}
                   `} />
                   <Moon className={`
-                    w-5 h-5 transition-all duration-500
+                    w-4 md:w-4 lg:w-5 h-4 md:h-4 lg:h-5 transition-all duration-500
                     ${isDark ? 'rotate-90 opacity-0 scale-50' : 'rotate-0 opacity-100 scale-100'}
                   `} />
                 </div>
               </button>
 
-              {/* Cart (for non-producer/admin) */}
-              {!isProducer && !isAdmin && (
-                <Link to="/cart" className="relative group">
-                  <div className={`
-                    p-2.5 rounded-xl transition-all duration-300
-                    ${isDark 
-                      ? 'bg-white/10 hover:bg-white/15' 
-                      : 'bg-black/5 hover:bg-black/10'
-                    }
-                    group-hover:scale-110
-                  `}>
-                    <ShoppingCart className="w-5 h-5 text-text group-hover:text-primary transition-colors duration-300" />
-                    {items.length > 0 && (
-                      <span className="
-                        absolute -top-1 -right-1 w-5 h-5
-                        bg-primary text-white text-xs font-medium
-                        rounded-full flex items-center justify-center
-                        transform transition-transform duration-300
-                        group-hover:scale-110 group-hover:rotate-12
-                      ">
-                        {items.length}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              )}
-
-              {/* Notifications */}
+              {/* Notifications (for authenticated users) */}
               {isAuthenticated && (
                 <div className="relative">
                   <button
                     onClick={() => setShowNotifications(!showNotifications)}
                     className={`
-                      p-2.5 rounded-xl transition-all duration-300 
+                      p-1.5 md:p-2 lg:p-2.5 rounded-xl transition-all duration-300 
                       hover:scale-110 relative group
                       ${isDark 
                         ? 'bg-white/10 hover:bg-white/15' 
@@ -516,14 +492,14 @@ const Header = () => {
                     `}
                   >
                     <Bell className={`
-                      w-5 h-5 transition-colors duration-300
+                      w-4 md:w-4 lg:w-5 h-4 md:h-4 lg:h-5 transition-colors duration-300
                       ${showNotifications ? 'text-primary' : 'text-text'}
                       group-hover:text-primary
                     `} />
                     {unreadCount > 0 && (
                       <span className="
-                        absolute -top-1 -right-1 w-5 h-5 
-                        bg-primary text-white text-xs font-medium 
+                        absolute -top-1 -right-1 w-4 md:w-4 lg:w-5 h-4 md:h-4 lg:h-5
+                        bg-primary text-white text-xs font-medium
                         rounded-full flex items-center justify-center
                         transform transition-transform duration-300
                         group-hover:scale-110 group-hover:rotate-12
@@ -581,12 +557,39 @@ const Header = () => {
                 </div>
               )}
 
+              {/* Cart (for non-producer/admin) */}
+              {!isProducer && !isAdmin && (
+                <Link to="/cart" className="relative group">
+                  <div className={`
+                    p-1.5 md:p-2 lg:p-2.5 rounded-xl transition-all duration-300
+                    ${isDark 
+                      ? 'bg-white/10 hover:bg-white/15' 
+                      : 'bg-black/5 hover:bg-black/10'
+                    }
+                    group-hover:scale-110
+                  `}>
+                    <ShoppingCart className="w-4 md:w-4 lg:w-5 h-4 md:h-4 lg:h-5 text-text group-hover:text-primary transition-colors duration-300" />
+                    {items.length > 0 && (
+                      <span className="
+                        absolute -top-1 -right-1 w-4 md:w-4 lg:w-5 h-4 md:h-4 lg:h-5
+                        bg-primary text-white text-xs font-medium
+                        rounded-full flex items-center justify-center
+                        transform transition-transform duration-300
+                        group-hover:scale-110 group-hover:rotate-12
+                      ">
+                        {items.length}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              )}
+
               {/* User Menu */}
               {isAuthenticated ? (
                 <Link 
-                  to={isAdmin ? "/admin/profile" : "/account"} 
+                  to={isAdmin ? "/admin/profile" : isProducer ? "/producer/profile" : "/account"} 
                   className={`
-                    group flex items-center gap-3 p-2.5 rounded-xl 
+                    group flex items-center gap-1.5 md:gap-2 lg:gap-3 p-1.5 md:p-2 lg:p-2.5 rounded-xl 
                     transition-all duration-300 hover:scale-105
                     ${isDark 
                       ? 'bg-white/10 hover:bg-white/15' 
@@ -594,16 +597,16 @@ const Header = () => {
                     }
                   `}
                 >
-                  <CircleUser className="w-5 h-5 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
-                  <span className="text-sm font-medium text-text">{user.lastName || 'Admin'}</span>
+                  <CircleUser className="w-4 md:w-4 lg:w-5 h-4 md:h-4 lg:h-5 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
+                  <span className="text-xs md:text-sm lg:text-base font-medium text-text">{user.lastName || 'Admin'}</span>
                 </Link>
               ) : (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 md:gap-2 lg:gap-3">
                   <Link 
                     to="/login"
                     state={{ from: location }}
                     className={`
-                      px-4 py-2 rounded-xl font-medium
+                      px-2 md:px-3 lg:px-4 py-1.5 md:py-2 rounded-xl font-medium text-xs md:text-sm lg:text-base
                       transition-all duration-300 hover:scale-105
                       ${isDark 
                         ? 'bg-white/10 text-white hover:bg-white/15' 
@@ -616,7 +619,7 @@ const Header = () => {
                   <Link
                     to="/register"
                     className="
-                      px-4 py-2 rounded-xl font-medium
+                      px-2 md:px-3 lg:px-4 py-1.5 md:py-2 rounded-xl font-medium text-xs md:text-sm lg:text-base
                       bg-gradient-to-r from-primary to-primaryHover
                       text-white transition-all duration-300
                       hover:scale-105 hover:shadow-lg hover:shadow-primary/25
@@ -626,6 +629,102 @@ const Header = () => {
                   </Link>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+
+  // Mobile Header
+  const MobileHeader = () => (
+    <header className="md:hidden fixed top-0 left-0 right-0 z-40">
+      <div className="px-4 py-2">
+        <div className={`
+          relative rounded-xl border backdrop-blur-lg
+          transition-all duration-500 ease-out
+          ${isScrolled 
+            ? isDark 
+              ? 'border-white/5 bg-black/75 shadow-lg shadow-black/10' 
+              : 'border-black/5 bg-white/75 shadow-lg shadow-black/5'
+            : isDark
+              ? 'border-white/10 bg-black/50' 
+              : 'border-black/10 bg-white/50'
+          }
+          p-2
+        `}>
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="relative w-7 h-7">
+                <div className="absolute inset-0 rotate-45 bg-gradient-to-r from-primary/50 to-transparent rounded-xl blur-xl"></div>
+                <Leaf className="w-7 h-7 text-primary relative z-10" />
+              </div>
+              <span className="font-recoleta text-lg text-text relative">
+                LocalMarket
+                <span className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-primary/0 via-primary to-primary/0 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+              </span>
+            </Link>
+
+            {/* Right Actions */}
+            <div className="flex items-center gap-2">
+              {/* Profile Link (for authenticated users) */}
+              {isAuthenticated && (
+                <Link 
+                  to={isAdmin ? "/admin/profile" : isProducer ? "/producer/profile" : "/account"}
+                  className={`
+                    p-2 rounded-xl transition-all duration-300
+                    ${isDark 
+                      ? 'bg-white/10 hover:bg-white/15' 
+                      : 'bg-black/5 hover:bg-black/10'
+                    }
+                    group-hover:scale-110
+                  `}
+                >
+                  <CircleUser className="w-5 h-5 text-primary" />
+                </Link>
+              )}
+
+              {/* Cart (for non-producer/admin) */}
+              {!isProducer && !isAdmin && (
+                <Link to="/cart" className="relative group">
+                  <div className={`
+                    p-2 rounded-xl transition-all duration-300
+                    ${isDark 
+                      ? 'bg-white/10 hover:bg-white/15' 
+                      : 'bg-black/5 hover:bg-black/10'
+                    }
+                    group-hover:scale-110
+                  `}>
+                    <ShoppingCart className="w-5 h-5 text-text group-hover:text-primary transition-colors duration-300" />
+                    {items.length > 0 && (
+                      <span className="
+                        absolute -top-1 -right-1 w-5 h-5
+                        bg-primary text-white text-xs font-medium
+                        rounded-full flex items-center justify-center
+                        transform transition-transform duration-300
+                        group-hover:scale-110 group-hover:rotate-12
+                      ">
+                        {items.length}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              )}
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setShowMobileMenu(true)}
+                className={`
+                  p-2 rounded-xl transition-all duration-300
+                  ${isDark 
+                    ? 'bg-white/10 hover:bg-white/15' 
+                    : 'bg-black/5 hover:bg-black/10'
+                  }
+                `}
+              >
+                <Menu className="w-5 h-5 text-text" />
+              </button>
             </div>
           </div>
         </div>
@@ -671,15 +770,6 @@ const Header = () => {
             {/* Header Section */}
             <div className="p-6 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                  }}
-                  className="relative"
-                >
-                  <div className="leaf-gradient absolute inset-0 rotate-45 bg-gradient-to-r from-primary/50 to-transparent rounded-xl blur-xl"></div>
-                  <Leaf className="w-8 h-8 text-primary relative z-10" />
-                </button>
                 <Link 
                   to="/"
                   onClick={() => setShowMobileMenu(false)}
@@ -716,9 +806,127 @@ const Header = () => {
               <div className="px-6 py-4 space-y-6">
                 {/* Primary Navigation */}
                 <div className="space-y-2">
-                  {regularNavigationItems.map((item, index) => (
+                  {/* Profile Section for authenticated users */}
+                  {isAuthenticated && (
+                    <div className="mb-6">
+                      <h3 className="text-sm font-medium text-textSecondary px-2 mb-3">
+                        Profile
+                      </h3>
                       <Link
-                        key={index}
+                        to={isAdmin ? "/admin/profile" : isProducer ? "/producer/profile" : "/account"}
+                        onClick={() => setShowMobileMenu(false)}
+                        className={`
+                          group flex items-center justify-between p-3 rounded-xl
+                          transition-all duration-300 mb-2
+                          ${isDark 
+                            ? 'bg-white/10 text-white hover:bg-white/15' 
+                            : 'bg-black/5 text-gray-900 hover:bg-black/10'
+                          }
+                        `}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="relative">
+                            <CircleUser className="w-10 h-10 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <span className="block text-sm text-textSecondary">Welcome back</span>
+                            <span className="block text-base font-medium text-text">
+                              {user.lastName || 'Admin'}
+                            </span>
+                          </div>
+                        </div>
+                        <ChevronRight className={`
+                          w-5 h-5 text-gray-400
+                          transition-transform duration-300
+                          group-hover:translate-x-1
+                        `} />
+                      </Link>
+                      <button
+                        onClick={() => {
+                          dispatch(logoutUser());
+                          setShowMobileMenu(false);
+                        }}
+                        className={`
+                          w-full group flex items-center justify-between p-3 rounded-xl
+                          transition-all duration-300
+                          ${isDark 
+                            ? 'bg-white/5 text-red-400 hover:bg-white/10' 
+                            : 'bg-black/5 text-red-500 hover:bg-black/10'
+                          }
+                        `}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`
+                            p-2 rounded-xl
+                            ${isDark ? 'bg-white/10' : 'bg-black/5'}
+                          `}>
+                            <LogOut className="w-5 h-5" />
+                          </div>
+                          <span className="font-medium">Logout</span>
+                        </div>
+                        <ChevronRight className={`
+                          w-5 h-5 text-gray-400
+                          transition-transform duration-300
+                          group-hover:translate-x-1
+                        `} />
+                      </button>
+                    </div>
+                  )}
+
+                  {isAdmin ? (
+                    // Admin Navigation Groups
+                    Object.entries(adminGroups).map(([group, items]) => (
+                      <div key={group} className="space-y-2">
+                        <h3 className="text-sm font-medium text-textSecondary px-2">
+                          {items.name}
+                        </h3>
+                        {items.items.map((item) => (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            onClick={() => setShowMobileMenu(false)}
+                            className={`
+                              group flex items-center justify-between p-3 rounded-xl
+                              transition-all duration-300
+                              ${isActivePath(item.path)
+                                ? isDark 
+                                  ? 'bg-white/10 text-white' 
+                                  : 'bg-black/5 text-gray-900'
+                                : isDark
+                                  ? 'text-gray-300 hover:bg-white/5' 
+                                  : 'text-gray-600 hover:bg-black/5'
+                              }
+                            `}
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className={`
+                                p-2 rounded-xl
+                                ${isActivePath(item.path)
+                                  ? 'bg-primary text-white'
+                                  : isDark
+                                    ? 'bg-white/10' 
+                                    : 'bg-black/5'
+                                }
+                                transition-colors duration-300
+                              `}>
+                                <item.icon className="w-5 h-5" />
+                              </div>
+                              <span className="font-medium">{item.label}</span>
+                            </div>
+                            <ChevronRight className={`
+                              w-5 h-5 text-gray-400
+                              transition-transform duration-300
+                              group-hover:translate-x-1
+                            `} />
+                          </Link>
+                        ))}
+                      </div>
+                    ))
+                  ) : isProducer ? (
+                    // Producer Navigation
+                    producerNavigationItems.map((item) => (
+                      <Link
+                        key={item.path}
                         to={item.path}
                         onClick={() => setShowMobileMenu(false)}
                         className={`
@@ -755,11 +963,54 @@ const Header = () => {
                           group-hover:translate-x-1
                         `} />
                       </Link>
-                  ))}
+                    ))
+                  ) : (
+                    // Regular Navigation
+                    regularNavigationItems.map((item) => (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setShowMobileMenu(false)}
+                        className={`
+                          group flex items-center justify-between p-3 rounded-xl
+                          transition-all duration-300
+                          ${isActivePath(item.path)
+                            ? isDark 
+                              ? 'bg-white/10 text-white' 
+                              : 'bg-black/5 text-gray-900'
+                            : isDark
+                              ? 'text-gray-300 hover:bg-white/5' 
+                              : 'text-gray-600 hover:bg-black/5'
+                          }
+                        `}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`
+                            p-2 rounded-xl
+                            ${isActivePath(item.path)
+                              ? 'bg-primary text-white'
+                              : isDark
+                                ? 'bg-white/10' 
+                                : 'bg-black/5'
+                            }
+                            transition-colors duration-300
+                          `}>
+                            <item.icon className="w-5 h-5" />
+                          </div>
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        <ChevronRight className={`
+                          w-5 h-5 text-gray-400
+                          transition-transform duration-300
+                          group-hover:translate-x-1
+                        `} />
+                      </Link>
+                    ))
+                  )}
                 </div>
 
-                {/* Support Section - Only show for regular users */}
-                {!isAdmin && !isProducer && (
+                {/* Support Section - Only show for regular users and producers */}
+                {!isAdmin && (
                   <div className="space-y-2">
                     <h3 className="text-sm font-medium text-textSecondary px-2 mb-3">
                       Support
@@ -768,9 +1019,9 @@ const Header = () => {
                       { icon: BookOpenText, label: 'Help Center', path: '/help' },
                       { icon: MailOpen, label: 'Contact Us', path: '/contact' },
                       { icon: MessageCircleQuestion, label: 'FAQ', path: '/faq' }
-                    ].map((item, index) => (
+                    ].map((item) => (
                       <Link
-                        key={index}
+                        key={item.path}
                         to={item.path}
                         onClick={() => setShowMobileMenu(false)}
                         className={`
@@ -840,58 +1091,33 @@ const Header = () => {
                     Register
                   </Link>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className={`
-                    p-3 rounded-xl
-                    ${isDark ? 'bg-white/5' : 'bg-black/5'}
-                  `}>
-                    <div className="flex items-center gap-3">
-                      <CircleUser className="w-10 h-10 text-primary" />
-                      <div className="flex-1">
-                        <span className="block text-sm text-textSecondary">Welcome back</span>
-                        <span className="block text-base font-medium text-text">
-                          {user.lastName || 'Admin'}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => {
-                          dispatch(logoutUser());
-                          setShowMobileMenu(false);
-                        }}
-                        className="p-2 rounded-xl text-red-500 hover:bg-red-500/10"
-                      >
-                        <LogOut className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
+              ) : null}
 
-                  <button
-                    onClick={toggleTheme}
-                    className={`
-                      flex items-center justify-between w-full p-3 rounded-xl
-                      ${isDark 
-                        ? 'bg-white/10 text-yellow-400 hover:bg-white/15' 
-                        : 'bg-black/5 text-gray-600 hover:bg-black/10'
-                      }
-                    `}
-                  >
-                    <span className="font-medium">
-                      {isDark ? 'Light Mode' : 'Dark Mode'}
-                    </span>
-                    <div className="relative">
-                      <Sun className={`
-                        w-5 h-5 absolute transition-all duration-500
-                        ${isDark ? 'rotate-0 opacity-100 scale-100' : 'rotate-90 opacity-0 scale-50'}
-                      `} />
-                      <Moon className={`
-                        w-5 h-5 transition-all duration-500
-                        ${isDark ? 'rotate-90 opacity-0 scale-50' : 'rotate-0 opacity-100 scale-100'}
-                      `} />
-                    </div>
-                  </button>
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className={`
+                  flex items-center justify-between w-full p-3 rounded-xl
+                  ${isDark 
+                    ? 'bg-white/10 text-yellow-400 hover:bg-white/15' 
+                    : 'bg-black/5 text-gray-600 hover:bg-black/10'
+                  }
+                `}
+              >
+                <span className="font-medium">
+                  {isDark ? 'Light Mode' : 'Dark Mode'}
+                </span>
+                <div className="relative">
+                  <Sun className={`
+                    w-5 h-5 absolute transition-all duration-500
+                    ${isDark ? 'rotate-0 opacity-100 scale-100' : 'rotate-90 opacity-0 scale-50'}
+                  `} />
+                  <Moon className={`
+                    w-5 h-5 transition-all duration-500
+                    ${isDark ? 'rotate-90 opacity-0 scale-50' : 'rotate-0 opacity-100 scale-100'}
+                  `} />
                 </div>
-              )}
+              </button>
             </div>
           </div>
         </div>
@@ -902,6 +1128,7 @@ const Header = () => {
   return (
     <>
       <DesktopHeader />
+      <MobileHeader />
       <MobileMenu />
     </>
   );

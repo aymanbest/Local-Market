@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef , Fragment } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   MessageCircle, Clock, AlertTriangle, CheckCircle2, 
@@ -21,7 +21,7 @@ const Support = () => {
   const { tickets, unassignedTickets, currentTicket, messages, loading, pagination, sorting } = useSelector(state => state.supportTickets);
   const { users } = useSelector(state => state.users);
   const [viewMode, setViewMode] = useState('assigned');
-  const [status, setStatus] = useState('OPEN');
+  const [status, setStatus] = useState('ASSIGNED');
   const [newMessage, setNewMessage] = useState('');
   const [isInternalNote, setIsInternalNote] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
@@ -193,7 +193,6 @@ const Support = () => {
               onChange={(e) => setStatus(e.target.value)}
               className="px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-text"
             >
-              <option value="OPEN">Open</option>
               <option value="ASSIGNED">Assigned</option>
               <option value="CLOSED">Closed</option>
             </select>
@@ -520,7 +519,7 @@ const Support = () => {
               );
 
               return (
-                <React.Fragment key={message.messageId}>
+                <Fragment key={message.messageId}>
                   {showDateSeparator && (
                     <div className="flex items-center justify-center my-4">
                       <div className={`px-3 py-1 rounded-md text-xs font-medium ${
@@ -595,7 +594,7 @@ const Support = () => {
                       </div>
                     )}
                   </div>
-                </React.Fragment>
+                </Fragment>
               );
             })
           ) : (

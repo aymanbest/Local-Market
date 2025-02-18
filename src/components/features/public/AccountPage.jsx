@@ -38,7 +38,7 @@ const AccountPage = ({ adminOnly = false, producerOnly = false }) => {
     const canReapply = applicationStatus.processedAt && 
       isAfter(new Date(), addDays(parseISO(applicationStatus.processedAt), 15));
 
-    const baseCardClasses = "p-6 rounded-xl transition h-full flex flex-col justify-between";
+    const baseCardClasses = "p-6 rounded-xl transition h-full flex flex-col justify-between shadow-sm hover:shadow-md bg-white/80 backdrop-blur-sm";
 
     switch (applicationStatus.status) {
       case 'PENDING':
@@ -102,10 +102,10 @@ const AccountPage = ({ adminOnly = false, producerOnly = false }) => {
     }
   };
 
-  const baseCardClasses = "p-6 rounded-xl transition h-full flex flex-col justify-between";
+  const baseCardClasses = "p-6 rounded-xl transition h-full flex flex-col justify-between shadow-sm hover:shadow-md bg-white/80 backdrop-blur-sm";
 
   return (
-    <div className="min-h-screen bg-background text-text">
+    <div className="min-h-screen text-text">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="container p-4">
           <div className="flex flex-wrap justify-center items-center md:justify-between mb-4 gap-4">
@@ -137,7 +137,7 @@ const AccountPage = ({ adminOnly = false, producerOnly = false }) => {
                     ? "/producer/profile/security"
                     : "/account/security"
               } 
-              className={`border border-border hover:bg-cardBg ${baseCardClasses}`}
+              className={`border border-border bg-white/80 hover:bg-white/90 dark:bg-cardBg dark:hover:bg-white/5 ${baseCardClasses}`}
             >
               <div>
                 <h2 className="text-2xl font-recoleta uppercase font-bold">Security</h2>
@@ -149,7 +149,7 @@ const AccountPage = ({ adminOnly = false, producerOnly = false }) => {
               <>
                 <Link 
                   to="/account/orders" 
-                  className={`border border-border hover:bg-cardBg ${baseCardClasses}`}
+                  className={`border border-border bg-white/80 hover:bg-white/90 dark:bg-cardBg dark:hover:bg-white/5 ${baseCardClasses}`}
                 >
                   <div>
                     <h2 className="text-2xl font-recoleta uppercase font-bold">Order History</h2>
@@ -159,7 +159,7 @@ const AccountPage = ({ adminOnly = false, producerOnly = false }) => {
 
                 <Link 
                   to="/account/reviews" 
-                  className={`border border-border hover:bg-cardBg ${baseCardClasses}`}
+                  className={`border border-border bg-white/80 hover:bg-white/90 dark:bg-cardBg dark:hover:bg-white/5 ${baseCardClasses}`}
                 >
                   <div>
                     <h2 className="text-2xl font-recoleta uppercase font-bold">My Reviews</h2>
@@ -172,7 +172,7 @@ const AccountPage = ({ adminOnly = false, producerOnly = false }) => {
             {user?.role === 'admin' && !isInAdminSection && (
               <Link 
                 to="/admin/users" 
-                className={`border border-primary/30 bg-primary/5 hover:bg-primary/10 ${baseCardClasses}`}
+                className={`border border-border bg-white/80 hover:bg-white/90 dark:bg-cardBg dark:hover:bg-white/5 ${baseCardClasses}`}
               >
                 <div>
                   <h2 className="text-2xl font-recoleta uppercase font-bold text-primary">Admin Dashboard</h2>
@@ -205,7 +205,7 @@ const AccountPage = ({ adminOnly = false, producerOnly = false }) => {
                 ) : !applicationStatus || applicationStatus.status === 'NO_APPLICATION' ? (
                   <Link 
                     to="/account/apply-seller" 
-                    className={`border border-border hover:bg-cardBg ${baseCardClasses}`}
+                    className={`border border-border bg-white/80 hover:bg-white/90 dark:bg-cardBg dark:hover:bg-white/5 ${baseCardClasses}`}
                   >
                     <div>
                       <h2 className="text-2xl font-recoleta uppercase font-bold">Become a Seller</h2>

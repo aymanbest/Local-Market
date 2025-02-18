@@ -94,12 +94,12 @@ const Dashboard = () => {
     },
     {
       title: "Completed Transactions",
-      value: transactions.completedTransactions.toLocaleString(),
+      value: transactions.transactionsByStatus.PAYMENT_COMPLETED.toLocaleString(),
       change: "+8.2%"
     },
     {
       title: "Pending Transactions",
-      value: transactions.pendingTransactions.toLocaleString(),
+      value: transactions.transactionsByStatus.PENDING_PAYMENT.toLocaleString(),
       change: "-3.1%"
     }
   ] : [];

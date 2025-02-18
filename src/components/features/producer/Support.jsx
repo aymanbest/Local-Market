@@ -302,12 +302,20 @@ const Support = () => {
         {showNewTicketModal && (
           <div className="fixed inset-0 flex items-center justify-center z-[9999]">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowNewTicketModal(false)} />
-            <div className="relative bg-cardBg rounded-xl w-full max-w-md mx-4 shadow-xl border border-border">
-              <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-text">Create New Ticket</h3>
+            <div className={`relative bg-cardBg rounded-xl w-full max-w-md mx-4 shadow-xl border ${
+              isDark ? 'border-border bg-cardBg' : 'border-gray-200 bg-white'
+            }`}>
+              <div className={`px-6 py-4 border-b ${
+                isDark ? 'border-border' : 'border-gray-200'
+              } flex items-center justify-between`}>
+                <h3 className={`text-xl font-semibold ${
+                  isDark ? 'text-text' : 'text-gray-900'
+                }`}>Create New Ticket</h3>
                 <button 
                   onClick={() => setShowNewTicketModal(false)}
-                  className="text-textSecondary hover:text-text transition-colors"
+                  className={`text-textSecondary hover:text-text transition-colors ${
+                    isDark ? 'hover:text-text' : 'hover:text-gray-900'
+                  }`}
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -315,7 +323,9 @@ const Support = () => {
               
               <form onSubmit={handleCreateTicket} className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-textSecondary mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? 'text-textSecondary' : 'text-gray-600'
+                  }`}>
                     Subject
                   </label>
                   <input
@@ -323,40 +333,53 @@ const Support = () => {
                     value={newTicket.subject}
                     onChange={e => setNewTicket(prev => ({ ...prev, subject: e.target.value }))}
                     className={`
-                      w-full px-4 py-2 rounded-lg border bg-transparent
+                      w-full px-4 py-2 rounded-lg border transition-colors duration-200
                       focus:ring-2 focus:ring-primary focus:border-transparent
-                      ${isDark ? 'border-white/10' : 'border-black/10'}
+                      ${isDark 
+                        ? 'bg-background text-text border-white/10' 
+                        : 'bg-white text-gray-900 border-gray-200'
+                      }
                     `}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-textSecondary mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? 'text-textSecondary' : 'text-gray-600'
+                  }`}>
                     Message
                   </label>
                   <textarea
                     value={newTicket.message}
                     onChange={e => setNewTicket(prev => ({ ...prev, message: e.target.value }))}
                     className={`
-                      w-full px-4 py-2 rounded-lg border bg-transparent
+                      w-full px-4 py-2 rounded-lg border transition-colors duration-200
                       focus:ring-2 focus:ring-primary focus:border-transparent
-                      ${isDark ? 'border-white/10' : 'border-black/10'}
+                      ${isDark 
+                        ? 'bg-background text-text border-white/10' 
+                        : 'bg-white text-gray-900 border-gray-200'
+                      }
                     `}
                     rows={6}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-textSecondary mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? 'text-textSecondary' : 'text-gray-600'
+                  }`}>
                     Priority
                   </label>
                   <select
                     value={newTicket.priority}
                     onChange={e => setNewTicket(prev => ({ ...prev, priority: e.target.value }))}
                     className={`
-                      w-full px-4 py-2 rounded-lg border bg-transparent
+                      w-full px-4 py-2 rounded-lg border transition-colors duration-200
                       focus:ring-2 focus:ring-primary focus:border-transparent
-                      ${isDark ? 'border-white/10' : 'border-black/10'}
+                      ${isDark 
+                        ? 'bg-background text-text border-white/10 [&>option]:bg-[#1a1a1a] [&>option]:text-text' 
+                        : 'bg-white text-gray-900 border-gray-200 [&>option]:bg-white [&>option]:text-gray-900'
+                      }
                     `}
                   >
                     <option value="LOW">Low</option>

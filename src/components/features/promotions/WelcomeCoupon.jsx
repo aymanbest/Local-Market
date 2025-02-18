@@ -145,10 +145,14 @@ const WelcomeCoupon = () => {
   const [copied, setCopied] = useState(false);
   const { isDark } = useTheme();
   const { isAuthenticated } = useSelector(state => state.auth);
+  const location = window.location.pathname;
+
+  // Add check for admin and producer paths
+  const isAdminOrProducer = location.startsWith('/admin') || location.startsWith('/producer');
 
   useEffect(() => {
     const checkWelcomeCoupon = async () => {
-      if (!isAuthenticated || isChecked) return;
+      if (!isAuthenticated || isChecked || isAdminOrProducer) return;
       
       try {
         const response = await api.get('/api/coupons/check-welcome');
@@ -164,7 +168,7 @@ const WelcomeCoupon = () => {
     };
 
     checkWelcomeCoupon();
-  }, [isChecked, isAuthenticated]);
+  }, [isChecked, isAuthenticated, isAdminOrProducer]);
 
   const handleCopy = async () => {
     try {
@@ -176,8 +180,8 @@ const WelcomeCoupon = () => {
     }
   };
 
-  // If user is not authenticated or no coupon is available, don't render anything
-  if (!isAuthenticated || !coupon || (isChecked && !coupon)) return null;
+  // Update the condition to include isAdminOrProducer check
+  if (!isAuthenticated || !coupon || (isChecked && !coupon) || isAdminOrProducer) return null;
 
   const modalContent = (
     <>

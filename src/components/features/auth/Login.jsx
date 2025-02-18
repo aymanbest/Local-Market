@@ -50,7 +50,7 @@ const Login = ({ adminOnly = false }) => {
   const getDefaultRoute = (role) => {
     switch (role) {
       case 'admin':
-        return '/admin/users';
+        return '/admin';
       case 'producer':
         return '/producer/products';
       case 'customer':
