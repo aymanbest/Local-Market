@@ -110,8 +110,21 @@ const Header = () => {
   const isActivePath = useCallback((path, items) => {
     if (items) {
       // For admin menu items with children
-      return items.some(item => location.pathname === item.path || 
-        (item.path !== '/' && location.pathname.startsWith(item.path)));
+      return items.some(item => {
+        // Special handling for Hub (exact path matching)
+        if (path === '/admin' && item.exact) {
+          return location.pathname === '/admin';
+        }
+        
+        // For other admin sections, check the section path
+        if (location.pathname.startsWith('/admin/')) {
+          const currentSection = location.pathname.split('/')[2];
+          const itemSection = item.path.split('/')[2];
+          return currentSection === itemSection;
+        }
+        
+        return location.pathname === item.path;
+      });
     }
     
     // For regular and producer navigation
@@ -125,8 +138,10 @@ const Header = () => {
     }
     
     // Check if current path matches exactly or is a child path
-    // But exclude matching when we're in a different section (admin/producer/regular)
     if (isAdmin) {
+      if (path === '/admin') {
+        return location.pathname === '/admin';
+      }
       return path.startsWith('/admin') && location.pathname.startsWith(path);
     } else if (isProducer) {
       return path.startsWith('/producer') && location.pathname.startsWith(path);
@@ -139,20 +154,26 @@ const Header = () => {
 
   // Group admin navigation items
   const adminGroups = useMemo(() => ({
-    main: [
-      { path: '/admin', label: 'Hub', icon: LayoutDashboard, exact: true },
-      { path: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
-    ],
-    content: [
-      { path: '/admin/products', label: 'Products', icon: Package },
-      { path: '/admin/categories', label: 'Categories', icon: Grid },
-      { path: '/admin/reviews', label: 'Reviews', icon: StarIcon },
-      { path: '/admin/coupons', label: 'Coupons', icon: BadgePercent },
-    ],
-    users: [
-      { path: '/admin/users', label: 'Users', icon: Users },
-      { path: '/admin/applications', label: 'Applications', icon: Building2 },
-    ]
+    hub: {
+      name: 'Dashboard',
+      items: [{ path: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true }]
+    },
+    content: {
+      name: 'Content',
+      items: [
+        { path: '/admin/products', label: 'Products', icon: Package },
+        { path: '/admin/categories', label: 'Categories', icon: Grid },
+        { path: '/admin/reviews', label: 'Reviews', icon: StarIcon },
+        { path: '/admin/coupons', label: 'Coupons', icon: BadgePercent },
+      ]
+    },
+    users: {
+      name: 'Users',
+      items: [
+        { path: '/admin/users', label: 'Users', icon: Users },
+        { path: '/admin/applications', label: 'Applications', icon: Building2 },
+      ]
+    }
   }), []);
 
   // Regular navigation items
@@ -202,7 +223,6 @@ const Header = () => {
   // Render admin navigation group
   const AdminNavGroup = ({ group, items, isOpen, onToggle }) => {
     const isGroupActive = useMemo(() => {
-      // Check if any of the items in this group match the current path
       return items.some(item => {
         if (item.exact) {
           return location.pathname === item.path;
@@ -211,6 +231,42 @@ const Header = () => {
       });
     }, [items, location.pathname]);
 
+    // If there's only one item, render it as a button
+    if (items.length === 1) {
+      const item = items[0];
+      return (
+        <Link
+          to={item.path}
+          className={`
+            flex items-center gap-3 px-4 py-2 rounded-lg
+            transition-all duration-200
+            ${isActivePath(item.path)
+              ? isDark
+                ? 'bg-white/10 text-white'
+                : 'bg-black/5 text-gray-900'
+              : isDark
+                ? 'text-gray-300 hover:bg-white/5'
+                : 'text-gray-600 hover:bg-black/5'
+            }
+          `}
+        >
+          <div className={`
+            p-2 rounded-xl transition-colors duration-200
+            ${isActivePath(item.path)
+              ? 'bg-primary text-white'
+              : isDark
+                ? 'bg-white/10'
+                : 'bg-black/5'
+            }
+          `}>
+            <item.icon className="w-4 h-4" />
+          </div>
+          <span className="text-sm font-medium">{item.label}</span>
+        </Link>
+      );
+    }
+
+    // Otherwise, render as a dropdown
     return (
       <div className="relative">
         <button
@@ -225,7 +281,6 @@ const Header = () => {
                 : 'bg-black/5'
               : ''
             }
-            ${isGroupActive ? 'text-primary' : ''}
           `}
         >
           <span className={`
@@ -252,20 +307,21 @@ const Header = () => {
             rounded-xl border backdrop-blur-lg shadow-xl
             transition-all duration-300 ease-out
             animate-in fade-in slide-in-from-top-2
+            overflow-hidden
             ${isDark 
               ? 'bg-black/90 border-white/10 shadow-black/20' 
               : 'bg-white/90 border-black/10 shadow-black/5'
             }
             z-50
           `}>
-            <div className="py-2">
+            <div className="py-2 px-1.5 rounded-xl overflow-hidden space-y-1">
               {items.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
                   className={`
                     flex items-center gap-3 px-4 py-2
-                    transition-all duration-300 group
+                    transition-all duration-200 rounded-lg
                     ${isActivePath(item.path)
                       ? isDark
                         ? 'bg-white/10 text-white'
@@ -277,14 +333,13 @@ const Header = () => {
                   `}
                 >
                   <div className={`
-                    p-2 rounded-xl transition-colors duration-300
+                    p-2 rounded-xl transition-colors duration-200
                     ${isActivePath(item.path)
                       ? 'bg-primary text-white'
                       : isDark
                         ? 'bg-white/10'
                         : 'bg-black/5'
                     }
-                    group-hover:bg-primary group-hover:text-white
                   `}>
                     <item.icon className="w-4 h-4" />
                   </div>
@@ -340,8 +395,8 @@ const Header = () => {
                   {Object.entries(adminGroups).map(([group, items]) => (
                     <AdminNavGroup
                       key={group}
-                      group={group.charAt(0).toUpperCase() + group.slice(1)}
-                      items={items}
+                      group={items.name}
+                      items={items.items}
                       isOpen={activeGroup === group}
                       onToggle={() => setActiveGroup(activeGroup === group ? null : group)}
                     />
