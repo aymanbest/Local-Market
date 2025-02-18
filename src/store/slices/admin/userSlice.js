@@ -3,9 +3,9 @@ import api from '../../../lib/axios';
 
 export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
-  async ({ page = 0, size = 10, sortBy = 'createdAt', direction = 'desc' } = {}, { rejectWithValue }) => {
+  async ({ page = 0, size = 10, sortBy = 'createdAt', direction = 'desc', role = false } = {}, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/users?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
+      const response = await api.get(`/api/users?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}${role ? `&role=${role}` : ''}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch users');

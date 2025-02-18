@@ -172,6 +172,7 @@ const Header = () => {
       items: [
         { path: '/admin/users', label: 'Users', icon: Users },
         { path: '/admin/applications', label: 'Applications', icon: Building2 },
+        { path: '/admin/support', label: 'Support', icon: MailOpen },
       ]
     }
   }), []);
@@ -191,6 +192,7 @@ const Header = () => {
     { path: '/producer', label: 'Products', icon: Package },
     { path: '/producer/orders', label: 'Orders', icon: ClipboardList },
     { path: '/producer/analytics', label: 'Analytics', icon: BarChart2 },
+    { path: '/producer/support', label: 'Support', icon: MailOpen },
   ], []);
 
   // Handle scroll effect with throttling

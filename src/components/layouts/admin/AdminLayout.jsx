@@ -7,6 +7,7 @@ import ProductManagement from '../../features/admin/ProductManagement';
 import ApplicationManagement from '../../features/admin/ApplicationManagement';
 import ReviewManagement from '../../features/admin/ReviewManagement';
 import CouponManagement from '../../features/admin/CouponManagement';
+import Support from '../../features/admin/Support';
 import { useTheme } from '../../../context/ThemeContext';
 import AccountPage from '../../features/public/AccountPage';
 import SecurityPage from '../../features/auth/SecurityPage';
@@ -27,6 +28,7 @@ const AdminLayout = () => {
           <Route path="/applications" element={<ApplicationManagement />} />
           <Route path="/reviews" element={<ReviewManagement />} />
           <Route path="/coupons" element={<CouponManagement />} />
+          <Route path="/support" element={<Support />} />
           <Route path="/profile" element={<AccountPage adminOnly={true} />} />
           <Route 
                   path="/profile/security" 

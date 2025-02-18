@@ -6,6 +6,7 @@ import Analytics from '../../features/producer/Analytics';
 import AccountPage from '../../features/public/AccountPage';
 import SecurityPage from '../../features/auth/SecurityPage';
 import ProtectedRoute from '../../security/ProtectedRoute';
+import Support from '../../features/producer/Support';
 
 const ProducerLayout = () => {
 
@@ -16,6 +17,7 @@ const ProducerLayout = () => {
         <Route path="/products" element={<ProductManagement />} />
         <Route path="/orders" element={<OrderManagement />} />
         <Route path="/analytics" element={<Analytics />} />
+        <Route path="/support" element={<Support />} />
         <Route path="/profile" element={<AccountPage producerOnly={true} />} />
         <Route 
           path="/profile/security" 

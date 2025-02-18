@@ -15,6 +15,7 @@ import producerProductsReducer from './slices/producer/producerProductsSlice';
 import producerApplicationsReducer from './slices/producer/producerApplicationsSlice';
 import couponReducer from './slices/customer/couponSlice';
 import { initializeState, setState } from './slices/auth/authSlice';
+import supportTicketReducer from './slices/common/supportTicketSlice';
 
 const store = configureStore({
   reducer: {
@@ -32,7 +33,8 @@ const store = configureStore({
     orders: orderReducer,
     notifications: notificationReducer,
     producerProducts: producerProductsReducer,
-    coupons: couponReducer
+    coupons: couponReducer,
+    supportTickets: supportTicketReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
