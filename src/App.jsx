@@ -33,6 +33,7 @@ import WelcomeCoupon from './components/features/promotions/WelcomeCoupon';
 import Unauthorized from './components/features/public/Unauthorized';
 import ForgotPassword from './components/features/auth/ForgotPassword';
 import NotFound from './components/features/public/NotFound';
+import { ROLES } from './components/security/ProtectedRoute';
 
 // Create a separate component for content that needs Redux
 const AppContent = () => {
@@ -89,7 +90,7 @@ const AppContent = () => {
             <Route 
               path="/producer/*" 
               element={
-                <ProtectedRoute producerOnly>
+                <ProtectedRoute allowedRoles={[ROLES.PRODUCER]}>
                   <ProducerLayout />
                 </ProtectedRoute>
               } 
@@ -97,7 +98,7 @@ const AppContent = () => {
             <Route
               path="/account"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={[ROLES.CUSTOMER, ROLES.PRODUCER, ROLES.ADMIN]}>
                   <AccountPage />
                 </ProtectedRoute>
               }
@@ -143,7 +144,7 @@ const AppContent = () => {
             <Route 
               path="/admin/*" 
               element={
-                <ProtectedRoute adminOnly>
+                <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
                   <AdminLayout />
                 </ProtectedRoute>
               } 
@@ -156,7 +157,7 @@ const AppContent = () => {
             <Route 
               path="/account/security" 
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={[ROLES.CUSTOMER, ROLES.PRODUCER, ROLES.ADMIN]}>
                   <SecurityPage />
                 </ProtectedRoute>
               } 
