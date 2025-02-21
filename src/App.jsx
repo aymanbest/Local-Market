@@ -25,7 +25,6 @@ import SellerApplication from './components/features/producer/SellerApplication'
 import MyReviews from './components/features/product/MyReviews';
 import AdminLayout from './components/layouts/admin/AdminLayout';
 import SecurityPage from './components/features/auth/SecurityPage';
-import ToastContainer from './components/common/ui/ToastContainer';
 import WebSocketInitializer from './components/common/WebSocketInitializer';
 import Support from './components/features/public/Support';
 import About from './components/features/public/About';
@@ -164,7 +163,6 @@ const AppContent = () => {
             />
           </Routes>
         </div>
-        <ToastContainer />
         <WelcomeCoupon />
       </div>
     </Router>

@@ -8,76 +8,16 @@ import {
 } from 'lucide-react';
 import { logoutUser } from '../../../store/slices/auth/authSlice';
 import { useTheme } from '../../../context/ThemeContext';
-import { markAsRead, markAllAsRead } from '../../../store/slices/common/notificationSlice';
+import { 
+  markNotificationAsRead, 
+  markAllNotificationsAsRead,
+  deleteNotification,
+  fetchNotifications,
+  fetchUnreadCount
+} from '../../../store/slices/common/notificationSlice';
+import NotificationItem from '../notifications/NotificationItem';
 
 
-const NotificationItem = ({ notification, onRead }) => {
-  const { isDark } = useTheme();
-
-  const getIcon = (type) => {
-    switch (type) {
-      case 'NEW_ORDER':
-        return <Package className="w-5 h-5 text-blue-500" />;
-      case 'LOW_STOCK_ALERT':
-      case 'CRITICAL_STOCK_ALERT':
-        return <BarChart2 className="w-5 h-5 text-red-500" />;
-      case 'PRODUCT_APPROVED':
-        return <StarIcon className="w-5 h-5 text-green-500" />;
-      case 'ORDER_STATUS_UPDATE':
-        return <ClipboardList className="w-5 h-5 text-purple-500" />;
-      case 'DELIVERY_UPDATE':
-        return <Package className="w-5 h-5 text-indigo-500" />;
-      case 'REVIEW_STATUS_UPDATE':
-        return <MailOpen className="w-5 h-5 text-yellow-500" />;
-      default:
-        return <Bell className="w-5 h-5 text-gray-500" />;
-    }
-  };
-
-  return (
-    <div 
-      className={`
-        p-4 border-b last:border-b-0 cursor-pointer
-        ${notification.read 
-          ? isDark 
-            ? 'bg-transparent' 
-            : 'bg-transparent' 
-          : isDark
-            ? 'bg-white/5'
-            : 'bg-black/5'
-        }
-        transition-all duration-300 hover:bg-primary/5
-      `}
-      onClick={() => onRead(notification.id)}
-    >
-      <div className="flex items-start gap-3">
-        <div className={`
-          p-2 rounded-xl
-          ${isDark ? 'bg-white/10' : 'bg-black/5'}
-        `}>
-          {getIcon(notification.type)}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className={`
-            text-sm font-medium mb-1 truncate
-            ${notification.read 
-              ? 'text-textSecondary' 
-              : 'text-text'
-            }
-          `}>
-            {notification.message}
-          </p>
-          <p className="text-xs text-textSecondary">
-            {new Date(notification.timestamp).toLocaleString()}
-          </p>
-        </div>
-        {!notification.read && (
-          <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
-        )}
-      </div>
-    </div>
-  );
-};
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -85,7 +25,7 @@ const Header = () => {
   const { items } = useSelector(state => state.cart);
   const location = useLocation();
   const { isDark, toggleTheme } = useTheme();
-  const { notifications, unreadCount } = useSelector(state => state.notifications);
+  const { notifications, unreadCount, loading, pagination } = useSelector(state => state.notifications);
   const navigate = useNavigate();
 
   const isAdmin = location.pathname.startsWith('/admin');
@@ -527,7 +467,7 @@ const Header = () => {
                         <h3 className="font-medium text-text">Notifications</h3>
                         {unreadCount > 0 && (
                           <button
-                            onClick={() => dispatch(markAllAsRead())}
+                            onClick={() => dispatch(markAllNotificationsAsRead())}
                             className="
                               text-sm text-primary hover:text-primaryHover
                               transition-colors duration-300
@@ -539,13 +479,70 @@ const Header = () => {
                       </div>
                       <div className="max-h-[400px] overflow-y-auto">
                         {notifications.length > 0 ? (
-                          notifications.map((notification) => (
-                            <NotificationItem
-                              key={notification.id}
-                              notification={notification}
-                              onRead={(id) => dispatch(markAsRead(id))}
-                            />
-                          ))
+                          <>
+                            {/* Group notifications by type and data.productId */}
+                            {Object.values(notifications.reduce((acc, notification) => {
+                              const key = `${notification.type}_${notification.data?.productId || 'no_product'}`;
+                              if (!acc[key]) {
+                                acc[key] = {
+                                  notification: { ...notification }, // Create a copy to avoid modifying the original
+                                  count: 0,
+                                  similarIds: [notification.id],
+                                  hasUnread: !notification.read // Track if there are any unread notifications in the group
+                                };
+                              } else {
+                                acc[key].count++;
+                                acc[key].similarIds.push(notification.id);
+                                // Update hasUnread if any notification in the group is unread
+                                acc[key].hasUnread = acc[key].hasUnread || !notification.read;
+                              }
+                              return acc;
+                            }, {})).map(({ notification, count, similarIds, hasUnread }) => (
+                              <NotificationItem
+                                key={notification.id}
+                                notification={{
+                                  ...notification,
+                                  read: !hasUnread // Override read status based on group's unread state
+                                }}
+                                onRead={(id) => dispatch(markNotificationAsRead(id))}
+                                onDelete={(id) => dispatch(deleteNotification(id))}
+                                onDeleteAll={(notification) => {
+                                  // Delete all similar notifications
+                                  similarIds.forEach(id => {
+                                    dispatch(deleteNotification(id));
+                                  });
+                                }}
+                                duplicateCount={count}
+                              />
+                            ))}
+                            
+                            {/* Load More Button */}
+                            {pagination.hasMore && !loading && (
+                              <button
+                                onClick={() => dispatch(fetchNotifications({
+                                  page: pagination.currentPage + 1,
+                                  size: 10
+                                }))}
+                                className={`
+                                  w-full py-3 text-sm font-medium
+                                  transition-colors duration-300
+                                  ${isDark 
+                                    ? 'text-gray-400 hover:text-white hover:bg-white/5' 
+                                    : 'text-gray-600 hover:text-black hover:bg-black/5'
+                                  }
+                                `}
+                              >
+                                Load More
+                              </button>
+                            )}
+                            
+                            {/* Loading Indicator */}
+                            {loading && (
+                              <div className="p-4 text-center">
+                                <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent mx-auto"></div>
+                              </div>
+                            )}
+                          </>
                         ) : (
                           <div className="p-4 text-center text-textSecondary">
                             No notifications
@@ -1124,6 +1121,14 @@ const Header = () => {
       </div>
     );
   };
+
+  // Add useEffect for initial data fetching
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchNotifications({ page: 0, size: 10 }));
+      dispatch(fetchUnreadCount());
+    }
+  }, [dispatch, isAuthenticated]);
 
   return (
     <>
