@@ -5,7 +5,7 @@ import store from './store/store';
 import Header from './components/features/public/Header';
 import MainPage from './components/features/public/MainPage';
 import ProducerLayout from './components/layouts/producer/ProducerLayout';
-import ProtectedRoute from './components/security/ProtectedRoute';
+import ProtectedRoute, { RedirectIfAuthenticated } from './components/security/ProtectedRoute';
 import Login from './components/features/auth/Login';
 import Register from './components/features/auth/Register';
 import Cart from './components/features/public/Cart';
@@ -64,18 +64,19 @@ const AppContent = () => {
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="/" element={<MainPage />} />
             <Route path="/login" element={
-
-                <Login />
-
+                <RedirectIfAuthenticated>
+                  <Login />
+                </RedirectIfAuthenticated>
             } />
             <Route path="/register" element={
-
-                <Register />
-
+                <RedirectIfAuthenticated>
+                  <Register />
+                </RedirectIfAuthenticated>
             } />
             <Route path="/forgot-password" element={
-                <ForgotPassword />
-
+                <RedirectIfAuthenticated>
+                  <ForgotPassword />
+                </RedirectIfAuthenticated>
             } />
             <Route path="/cart" element={<Cart />} />
             <Route 
@@ -149,9 +150,9 @@ const AppContent = () => {
               } 
             />
             <Route path="/admin/login" element={
-
-                <Login adminOnly />
-
+                <RedirectIfAuthenticated>
+                  <Login adminOnly />
+                </RedirectIfAuthenticated>
             } />
             <Route 
               path="/account/security" 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback, memo } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductById } from '../../../store/slices/product/categorySlice';
@@ -6,7 +6,7 @@ import { addToCart } from '../../../store/slices/product/cartSlice';
 import { 
   CheckCircle, ShoppingCart, ArrowRight, Upload, Info, 
   Plus, Minus, Star, Leaf, Package, Shield, Truck, Heart,
-  ChevronLeft, ChevronRight, ChevronDown, ChevronUp
+  ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Filter
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { checkReviewEligibility, submitReview } from '../../../store/slices/customer/reviewSlice';
@@ -34,7 +34,13 @@ const ProductDetails = () => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isDescriptionOverflowing, setIsDescriptionOverflowing] = useState(false);
   const descriptionRef = useRef(null);
-
+  
+  // New state for reviews filtering and pagination
+  const [starFilter, setStarFilter] = useState(0); // 0 means all stars
+  const [currentReviewPage, setCurrentReviewPage] = useState(0);
+  const [reviewsPerPage, setReviewsPerPage] = useState(5);
+  const [direction, setDirection] = useState('right');
+  
   const product = location.state?.product || selectedProduct;
 
   const handleQuantityChange = (value) => {
@@ -148,6 +154,24 @@ const ProductDetails = () => {
     // Add more images if available in your product data
   ].filter(Boolean);
 
+  // Filter reviews by star rating
+  const filteredReviews = product?.verifiedReviews 
+    ? (starFilter === 0 
+        ? product.verifiedReviews 
+        : product.verifiedReviews.filter(review => review.rating === starFilter))
+    : [];
+    
+  // Calculate pagination for reviews
+  const totalReviewPages = Math.ceil(filteredReviews.length / reviewsPerPage);
+  const indexOfLastReview = (currentReviewPage + 1) * reviewsPerPage;
+  const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
+  const currentReviews = filteredReviews.slice(indexOfFirstReview, indexOfLastReview);
+  
+  // Reset to first page when filter changes
+  useEffect(() => {
+    setCurrentReviewPage(0);
+  }, [starFilter]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -180,7 +204,7 @@ const ProductDetails = () => {
             Store
           </Link>
           <ChevronRight className="w-4 h-4 text-textSecondary" />
-          <span className="text-primary">{product.name}</span>
+          <span key="breadcrumb-product-name" className="text-primary">{product.name}</span>
         </nav>
 
         <div className="container">
@@ -389,7 +413,7 @@ const ProductDetails = () => {
                 `}>
                   <Shield className="w-5 h-5 text-primary mb-2" />
                   <h3 className="font-medium mb-1">Quality Guaranteed</h3>
-                  <p className="text-sm text-textSecondary">Locally sourced fresh products</p>
+                  <p key="quality-text" className="text-sm text-textSecondary">Locally sourced fresh products</p>
                 </div>
                 <div className={`
                   p-4 rounded-xl
@@ -397,7 +421,7 @@ const ProductDetails = () => {
                 `}>
                   <Truck className="w-5 h-5 text-primary mb-2" />
                   <h3 className="font-medium mb-1">Fast Delivery</h3>
-                  <p className="text-sm text-textSecondary">From local producers to you</p>
+                  <p key="delivery-text" className="text-sm text-textSecondary">From local producers to you</p>
                 </div>
               </div>
 
@@ -408,11 +432,11 @@ const ProductDetails = () => {
               `}>
                 <div className="flex items-center gap-2">
                   <Leaf className="w-5 h-5 text-primary" />
-                  <span className="text-textSecondary">Categories:</span>
+                  <span key="categories-label" className="text-textSecondary">Categories:</span>
                   <div className="flex gap-2">
                     {product.categories.map((category, index) => (
                       <span 
-                        key={category.id}
+                        key={category.id || `category-${index}`}
                         className={`
                           px-2 py-1 rounded-full text-sm
                           ${isDark ? 'bg-white/10' : 'bg-black/10'}
@@ -425,8 +449,8 @@ const ProductDetails = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Heart className="w-5 h-5 text-primary" />
-                  <span className="text-textSecondary">Producer:</span>
-                  <span className="font-medium">{product.producer.firstname} {product.producer.lastname}</span>
+                  <span key="producer-label" className="text-textSecondary">Producer:</span>
+                  <span key="producer-name" className="font-medium">{product.producer.firstname} {product.producer.lastname}</span>
                 </div>
               </div>
             </div>
@@ -512,7 +536,7 @@ const ProductDetails = () => {
                 )}
 
                 {product.createdAt && (
-                  <div className="text-sm text-textSecondary pt-4 border-t border-border">
+                  <div key="listed-date" className="text-sm text-textSecondary pt-4 border-t border-border">
                     Listed on: {new Date(product.createdAt).toLocaleDateString()}
                   </div>
                 )}
@@ -524,73 +548,157 @@ const ProductDetails = () => {
           <div className="mt-16 space-y-8">
             {product.verifiedReviews && product.verifiedReviews.length > 0 && (
               <div>
-                <h2 className="text-2xl font-recoleta mb-6">Verified Reviews</h2>
-                <div className="grid gap-4">
-                  {product.verifiedReviews.map((review) => (
-                    <motion.div
-                      key={review.reviewId}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`
-                        p-6 rounded-xl border transition-all
-                        ${isDark 
-                          ? 'bg-white/5 border-white/10 hover:bg-white/10' 
-                          : 'bg-black/5 border-black/10 hover:bg-black/10'
-                        }
-                      `}
-                    >
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className={`
-                              w-10 h-10 rounded-full flex items-center justify-center text-lg font-medium
-                              ${isDark ? 'bg-white/10' : 'bg-black/10'}
-                            `}>
-                              {review.customerUsername.charAt(0).toUpperCase()}
-                            </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+                  <h2 className="text-2xl font-recoleta">Verified Reviews</h2>
+                  
+                  {/* Star Filter */}
+                  <div className="mt-4 sm:mt-0 flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <Filter className="w-4 h-4 text-textSecondary" />
+                      <span key="filter-by-label" className="text-sm text-textSecondary">Filter by:</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        key="filter-all"
+                        onClick={() => setStarFilter(0)}
+                        className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                          starFilter === 0
+                            ? 'bg-primary text-white'
+                            : isDark 
+                              ? 'bg-white/10 hover:bg-white/20' 
+                              : 'bg-black/5 hover:bg-black/10'
+                        }`}
+                      >
+                        All
+                      </button>
+                      {[5, 4, 3, 2, 1].map(stars => (
+                        <button
+                          key={stars}
+                          onClick={() => setStarFilter(stars)}
+                          className={`px-3 py-1 text-sm rounded-full transition-colors flex items-center gap-1 ${
+                            starFilter === stars
+                              ? 'bg-primary text-white'
+                              : isDark 
+                                ? 'bg-white/10 hover:bg-white/20' 
+                                : 'bg-black/5 hover:bg-black/10'
+                          }`}
+                        >
+                          {stars} <Star className="w-3 h-3 fill-current" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                {filteredReviews.length > 0 ? (
+                  <>
+                    <div className="grid gap-4">
+                      {currentReviews.map((review) => (
+                        <motion.div
+                          key={review.reviewId}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={`
+                            p-6 rounded-xl border transition-all
+                            ${isDark 
+                              ? 'bg-white/5 border-white/10 hover:bg-white/10' 
+                              : 'bg-black/5 border-black/10 hover:bg-black/10'
+                            }
+                          `}
+                        >
+                          <div className="flex justify-between items-start mb-4">
                             <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">
-                                  {review.customerUsername.slice(0, Math.floor(review.customerUsername.length / 2))}*****
-                                </span>
-                                {review.verifiedPurchase && (
-                                  <span className={`
-                                    text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1
-                                    ${isDark 
-                                      ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                                      : 'bg-green-50 text-green-600 border border-green-200'
-                                    }
-                                  `}>
-                                    <CheckCircle className="w-3 h-3" />
-                                    Verified
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <div className="flex gap-0.5">
-                                  {[...Array(5)].map((_, index) => (
-                                    <Star
-                                      key={index}
-                                      className={`w-4 h-4 ${
-                                        index < review.rating 
-                                          ? 'text-yellow-400 fill-current' 
-                                          : 'text-gray-300'
-                                      }`}
-                                    />
-                                  ))}
+                              <div className="flex items-center gap-3 mb-2">
+                                <div className={`
+                                  w-10 h-10 rounded-full flex items-center justify-center text-lg font-medium
+                                  ${isDark ? 'bg-white/10' : 'bg-black/10'}
+                                `}>
+                                  {review.customerUsername.charAt(0).toUpperCase()}
                                 </div>
-                                <span className="text-sm text-textSecondary">
-                                  {new Date(review.createdAt).toLocaleDateString()}
-                                </span>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span key={`username-${review.reviewId}`} className="font-medium">
+                                      {review.customerUsername.slice(0, Math.floor(review.customerUsername.length / 2))}*****
+                                    </span>
+                                    {review.verifiedPurchase && (
+                                      <span 
+                                        key={`verified-${review.reviewId}`}
+                                        className={`
+                                        text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1
+                                        ${isDark 
+                                          ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                                          : 'bg-green-50 text-green-600 border border-green-200'
+                                        }
+                                      `}>
+                                        <CheckCircle className="w-3 h-3" />
+                                        Verified
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <div className="flex gap-0.5">
+                                      {[...Array(5)].map((_, index) => (
+                                        <Star
+                                          key={index}
+                                          className={`w-4 h-4 ${
+                                            index < review.rating 
+                                              ? 'text-yellow-400 fill-current' 
+                                              : 'text-gray-300'
+                                          }`}
+                                        />
+                                      ))}
+                                    </div>
+                                    <span key={`date-${review.reviewId}`} className="text-sm text-textSecondary">
+                                      {new Date(review.createdAt).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
+                              <p key={`comment-${review.reviewId}`} className="text-textSecondary">{review.comment}</p>
                             </div>
                           </div>
-                          <p className="text-textSecondary">{review.comment}</p>
+                        </motion.div>
+                      ))}
+                    </div>
+                    
+                    {/* Pagination for reviews */}
+                    {totalReviewPages > 1 && (
+                      <div className="mt-8 flex flex-col items-center gap-4">
+                        <div className="flex justify-center gap-2">
+                          {Array.from({ length: totalReviewPages }).map((_, index) => (
+                            <button
+                              key={index}
+                              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                currentReviewPage === index ? 'bg-primary w-6' : 'bg-border hover:bg-primary/50'
+                              }`}
+                              onClick={() => {
+                                setDirection(index > currentReviewPage ? 'right' : 'left');
+                                setCurrentReviewPage(index);
+                              }}
+                              aria-label={`Go to page ${index + 1}`}
+                            />
+                          ))}
+                        </div>
+                        
+                        <div key="pagination-info" className="text-sm text-textSecondary">
+                          Showing <span key="first-review">{indexOfFirstReview + 1}</span> to <span key="last-review">{Math.min(indexOfLastReview, filteredReviews.length)}</span> of <span key="total-reviews">{filteredReviews.length}</span> reviews
                         </div>
                       </div>
-                    </motion.div>
-                  ))}
-                </div>
+                    )}
+                  </>
+                ) : (
+                  <div 
+                    key="no-reviews-message"
+                    className={`
+                    p-6 rounded-xl border text-center
+                    ${isDark 
+                      ? 'bg-white/5 border-white/10' 
+                      : 'bg-black/5 border-black/10'
+                    }
+                  `}>
+                    No reviews match your filter. Try a different rating filter.
+                  </div>
+                )}
               </div>
             )}
 

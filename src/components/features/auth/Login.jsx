@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { loginUser, clearAuth } from '../../../store/slices/auth/authSlice';
 import { Eye, EyeClosed } from 'lucide-react';
+import { getDefaultRoute } from '../../security/ProtectedRoute';
 
 const Login = ({ adminOnly = false }) => {
   const [email, setEmail] = useState('');
@@ -44,18 +45,6 @@ const Login = ({ adminOnly = false }) => {
       }
     } catch (error) {
       console.error('Login error:', error);
-    }
-  };
-
-  const getDefaultRoute = (role) => {
-    switch (role) {
-      case 'admin':
-        return '/admin';
-      case 'producer':
-        return '/producer/products';
-      case 'customer':
-      default:
-        return '/';
     }
   };
 
