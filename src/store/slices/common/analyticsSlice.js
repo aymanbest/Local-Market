@@ -82,6 +82,39 @@ export const fetchOrderStats = createAsyncThunk(
   }
 );
 
+// Thunk for exporting analytics data
+export const exportAnalytics = createAsyncThunk(
+  'analytics/exportAnalytics',
+  async ({ startDate, endDate, format }, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/api/analytics/export', {
+        params: { startDate, endDate, format },
+        responseType: 'blob'  // Important for handling file downloads
+      });
+      
+      // Format the date for the filename
+      const date = new Date();
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+      const formattedDate = `${monthNames[date.getMonth()]}${date.getDate()}_${date.getFullYear()}`;
+      
+      // Create a download link and trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `analytics_export_${formattedDate}.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      return true;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to export analytics');
+    }
+  }
+);
+
 const analyticsSlice = createSlice({
   name: 'analytics',
   initialState: {

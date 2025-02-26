@@ -64,7 +64,7 @@ const ProductManagement = () => {
         products: allProducts?.items?.products || [],
         producerId: 'all'
       }];
-  const { pagination, sorting } = pendingProducts;
+  const { pagination, sorting } = viewMode === 'pending' ? pendingProducts : allProducts;
   
   const status = pendingProducts?.status || 'idle';
   const [searchTerm, setSearchTerm] = useState('');
@@ -76,7 +76,7 @@ const ProductManagement = () => {
   useEffect(() => {
     const paginationParams = {
       page: pagination?.currentPage || 0,
-      size: 2,
+      size: 3,
       sortBy: sorting?.sortBy || 'createdAt',
       direction: sorting?.direction || 'desc'
     };
@@ -407,7 +407,8 @@ const ProductManagement = () => {
                 }`}
                 onClick={() => {
                   setDirection('left');
-                  dispatch(fetchPendingProducts({
+                  const action = viewMode === 'pending' ? fetchPendingProducts : fetchProducts;
+                  dispatch(action({
                     page: pagination.currentPage - 1,
                     size: pagination.pageSize,
                     sortBy: sorting.sortBy,
@@ -430,7 +431,8 @@ const ProductManagement = () => {
                   }`}
                   onClick={() => {
                     setDirection(index > pagination.currentPage ? 'right' : 'left');
-                    dispatch(fetchPendingProducts({
+                    const action = viewMode === 'pending' ? fetchPendingProducts : fetchProducts;
+                    dispatch(action({
                       page: index,
                       size: pagination.pageSize,
                       sortBy: sorting.sortBy,
@@ -450,7 +452,8 @@ const ProductManagement = () => {
                 }`}
                 onClick={() => {
                   setDirection('right');
-                  dispatch(fetchPendingProducts({
+                  const action = viewMode === 'pending' ? fetchPendingProducts : fetchProducts;
+                  dispatch(action({
                     page: pagination.currentPage + 1,
                     size: pagination.pageSize,
                     sortBy: sorting.sortBy,

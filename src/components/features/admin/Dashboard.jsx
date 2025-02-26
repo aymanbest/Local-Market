@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Card } from '../../common/ui/Card';
-import { Users, DollarSign, ShoppingCart, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
+import { Users, DollarSign, ShoppingCart, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Download } from 'lucide-react';
 import Chart from 'react-apexcharts';
 import { useTheme } from '../../../context/ThemeContext';
-import { fetchBusinessMetrics, fetchTransactionData, fetchUserAnalytics } from '../../../store/slices/common/analyticsSlice';
+import { fetchBusinessMetrics, fetchTransactionData, fetchUserAnalytics, exportAnalytics } from '../../../store/slices/common/analyticsSlice';
 import { formatPercentage, formatCurrency } from '../../../utils/formatters';
 
 const Dashboard = () => {
@@ -12,6 +12,7 @@ const Dashboard = () => {
   const { isDark } = useTheme();
   const [dateRange, setDateRange] = useState('month');
   const [currentPage, setCurrentPage] = useState(1);
+  const [exportFormat, setExportFormat] = useState('pdf');
   const itemsPerPage = 5; // Number of transactions per page
   const [jumpToPage, setJumpToPage] = useState('');
   
@@ -463,6 +464,34 @@ const Dashboard = () => {
 
   RecentTransactions.displayName = 'RecentTransactions';
 
+  const handleExport = async () => {
+    const now = new Date();
+    let startDate, endDate;
+
+    switch (dateRange) {
+      case 'day':
+        startDate = now.toISOString().split('T')[0];
+        endDate = startDate;
+        break;
+      case 'week':
+        endDate = now.toISOString().split('T')[0];
+        startDate = new Date(now.setDate(now.getDate() - 7)).toISOString().split('T')[0];
+        break;
+      case 'month':
+        endDate = now.toISOString().split('T')[0];
+        startDate = new Date(now.setMonth(now.getMonth() - 1)).toISOString().split('T')[0];
+        break;
+      case 'year':
+        endDate = now.toISOString().split('T')[0];
+        startDate = new Date(now.setFullYear(now.getFullYear() - 1)).toISOString().split('T')[0];
+        break;
+      default:
+        break;
+    }
+
+    await dispatch(exportAnalytics({ startDate, endDate, format: exportFormat }));
+  };
+
   return (
     <div className="min-h-screen bg-background p-8 transition-colors duration-200">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -483,6 +512,25 @@ const Dashboard = () => {
               <option value="month">This Month</option>
               <option value="year">This Year</option>
             </select>
+            
+            <div className="flex items-center space-x-2">
+              <select
+                className="bg-inputBg text-text rounded-lg px-4 py-2 border border-border focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200"
+                value={exportFormat}
+                onChange={(e) => setExportFormat(e.target.value)}
+              >
+                <option value="pdf">PDF</option>
+                <option value="csv">CSV</option>
+              </select>
+              <button
+                onClick={handleExport}
+                className="flex items-center space-x-2 bg-primary text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-200"
+                disabled={loading}
+              >
+                <Download className="w-4 h-4" />
+                <span>Export</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -579,4 +627,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

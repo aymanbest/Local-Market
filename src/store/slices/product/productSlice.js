@@ -4,7 +4,7 @@ import api from '../../../lib/axios';
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async ({ page = 0, size = 4, sortBy = 'createdAt', direction = 'desc', search = '' } = {}) => {
-    const response = await api.get(`/api/products?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}&search=${search}`);
+    const response = await api.get(`/api/products?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}${search ? `&search=${search}` : ''}`);
     return response.data;
   }
 );
@@ -80,4 +80,3 @@ const productSlice = createSlice({
 });
 
 export default productSlice.reducer;
-
