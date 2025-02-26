@@ -3,7 +3,17 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import api from '../../../lib/axios';
 import { format } from 'date-fns';
-import { Package, ChevronRight, ChevronLeft } from 'lucide-react';
+import { 
+  Package, 
+  ChevronRight, 
+  ChevronLeft, 
+  CreditCard, 
+  PackageOpen, 
+  Truck, 
+  CheckCircle2, 
+  XCircle, 
+  RotateCcw 
+} from 'lucide-react';
 import Button from '../../common/ui/Button';
 
 const OrderHistory = () => {
@@ -22,6 +32,17 @@ const OrderHistory = () => {
     sortBy: 'orderDate',
     direction: 'desc'
   });
+
+  // Define the order status sequence for tracking
+  const ORDER_STATUS_SEQUENCE = [
+    'PAYMENT_COMPLETED',
+    'PROCESSING',
+    'SHIPPED',
+    'DELIVERED'
+  ];
+
+  // Special statuses that break the normal flow
+  const SPECIAL_STATUSES = ['CANCELLED', 'RETURNED'];
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -86,6 +107,98 @@ const OrderHistory = () => {
       default:
         return 'text-gray-500 bg-gray-500/10 border-gray-500/30';
     }
+  };
+
+  // Get status icon based on status
+  const getStatusIcon = (status, className = "w-5 h-5") => {
+    switch (status) {
+      case 'PAYMENT_COMPLETED':
+        return <CreditCard className={className} />;
+      case 'PROCESSING':
+        return <PackageOpen className={className} />;
+      case 'SHIPPED':
+        return <Truck className={className} />;
+      case 'DELIVERED':
+        return <CheckCircle2 className={className} />;
+      case 'CANCELLED':
+        return <XCircle className={className} />;
+      case 'RETURNED':
+        return <RotateCcw className={className} />;
+      default:
+        return <Package className={className} />;
+    }
+  };
+
+  // Component to display the order status tracker
+  const OrderStatusTracker = ({ status }) => {
+    // If order is cancelled or returned, show special status
+    if (SPECIAL_STATUSES.includes(status)) {
+      return (
+        <div className="mt-4 pt-4 border-t border-border">
+          <div className={`flex items-center gap-2 ${status === 'CANCELLED' ? 'text-red-500' : 'text-orange-500'}`}>
+            {getStatusIcon(status)}
+            <span className="font-medium">
+              {status === 'CANCELLED' ? 'Order Cancelled' : 'Order Returned'}
+            </span>
+          </div>
+          <p className="text-sm text-textSecondary mt-1 ml-7">
+            {status === 'CANCELLED' 
+              ? 'This order has been cancelled and will not be processed further.' 
+              : 'This order has been returned.'}
+          </p>
+        </div>
+      );
+    }
+
+    // Find the current status index in the sequence
+    const currentStatusIndex = ORDER_STATUS_SEQUENCE.indexOf(status);
+    
+    if (currentStatusIndex === -1) {
+      return null; // Status not in our tracking sequence
+    }
+
+    return (
+      <div className="mt-4 pt-4 border-t border-border">
+        <h4 className="text-sm font-medium mb-3">Order Status</h4>
+        <div className="flex items-center">
+          {ORDER_STATUS_SEQUENCE.map((stepStatus, index) => {
+            const isCompleted = index <= currentStatusIndex;
+            const isCurrent = index === currentStatusIndex;
+            
+            return (
+              <React.Fragment key={stepStatus}>
+                {/* Status circle */}
+                <div className="relative flex flex-col items-center">
+                  <div 
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      isCompleted 
+                        ? 'bg-primary text-white' 
+                        : 'bg-gray-200 text-gray-400'
+                    } ${isCurrent ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+                  >
+                    {getStatusIcon(stepStatus, "w-4 h-4")}
+                  </div>
+                  <span className={`text-xs mt-1 text-center w-20 ${
+                    isCompleted ? 'text-text font-medium' : 'text-textSecondary'
+                  }`}>
+                    {stepStatus.replace(/_/g, ' ')}
+                  </span>
+                </div>
+                
+                {/* Connector line */}
+                {index < ORDER_STATUS_SEQUENCE.length - 1 && (
+                  <div 
+                    className={`flex-1 h-0.5 ${
+                      index < currentStatusIndex ? 'bg-primary' : 'bg-gray-200'
+                    }`}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+    );
   };
 
   const PaginationControls = () => {
@@ -292,6 +405,8 @@ const OrderHistory = () => {
                           </div>
                         ))}
                       </div>
+
+                      <OrderStatusTracker status={order.status} />
 
                       <div className="mt-4 pt-4 border-t border-border">
                         <div className="flex justify-between items-center">

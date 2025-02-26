@@ -8,7 +8,8 @@ import {
 import Button from '../../common/ui/Button';
 import Preloader from './Preloader';
 import { useTheme } from '../../../context/ThemeContext';
-import { motion, LazyMotion, domAnimation } from 'framer-motion';
+// Import only what we need from framer-motion to reduce bundle size
+import { LazyMotion, domAnimation } from 'framer-motion';
 
 // Optimization: Using LazyMotion to load animations on demand
 // and reduce initial bundle size
@@ -78,14 +79,10 @@ const CategoriesGrid = memo(({ categories, direction, isDark }) => {
       {categories.map((category, index) => {
         const IconComponent = category.icon;
         return (
-          <motion.div
+          <div
             key={category.name}
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            // Reduce complexity of Framer Motion animations
-            style={{ willChange: 'transform, opacity' }}
+            className={`opacity-100 scale-100 transition-opacity transition-transform duration-300`}
+            style={{ animationDelay: `${index * 100}ms` }}
           >
             <Link
               to={category.name === 'Others' ? '/store' : `/store?category=${encodeURIComponent(category.name.toLowerCase())}`}
@@ -132,7 +129,7 @@ const CategoriesGrid = memo(({ categories, direction, isDark }) => {
                 </div>
               </div>
             </Link>
-          </motion.div>
+          </div>
         );
       })}
     </div>
@@ -140,7 +137,7 @@ const CategoriesGrid = memo(({ categories, direction, isDark }) => {
 });
 
 // Memoized component for Hero section
-const HeroSection = memo(({ container, item, isDark }) => {
+const HeroSection = memo(({ isDark }) => {
   return (
     <div className="relative overflow-hidden bg-gradient-to-br">
       {/* Background Pattern */}
@@ -148,18 +145,14 @@ const HeroSection = memo(({ container, item, isDark }) => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative pt-20 pb-20">
-          <motion.div 
+          <div 
             className="flex flex-col lg:flex-row items-center gap-16"
-            variants={container}
-            initial="hidden"
-            animate="show"
           >
             {/* Left Content */}
-            <motion.div className="flex-1 text-left relative z-10">
+            <div className="flex-1 text-left relative z-10">
               <div className="space-y-8">
                 {/* Badge */}
-                <motion.div 
-                  variants={item}
+                <div 
                   className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20"
                 >
                   <span className="relative flex h-2 w-2">
@@ -169,38 +162,34 @@ const HeroSection = memo(({ container, item, isDark }) => {
                   <span className="text-sm font-medium text-primary">
                     Now serving your local community
                   </span>
-                </motion.div>
+                </div>
 
                 {/* Main Title */}
-                <motion.h1 
-                  variants={item}
+                <h1 
                   className="text-6xl font-recoleta leading-tight tracking-tight"
                 >
                   <span className="block text-text">ENJOY FRESH</span>
                   <span className="block mt-1">
                     <span className="text-primary">LOCAL</span> PRODUCTS
                   </span>
-                </motion.h1>
+                </h1>
                 
-                <motion.h2 
-                  variants={item}
+                <h2 
                   className="text-2xl text-textSecondary font-medium"
                 >
                   Your <span className="text-primary font-semibold">#1</span> Local{" "}
                   <span className="text-primary font-semibold">Organic </span>Marketplace
-                </motion.h2>
+                </h2>
                 
-                <motion.p 
-                  variants={item}
+                <p 
                   className="text-lg text-textSecondary/80 max-w-xl"
                 >
                   We connect you directly with local farmers and artisans.
                   Fresh, organic, and sustainably sourced products delivered
                   right to your doorstep.
-                </motion.p>
+                </p>
 
-                <motion.div 
-                  variants={item}
+                <div 
                   className="flex items-center gap-6"
                 >
                   <Link to="/store">
@@ -209,17 +198,13 @@ const HeroSection = memo(({ container, item, isDark }) => {
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </Link>
-                </motion.div>
+                </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Right Content - SVG Animation - Optimized */}
-            <motion.div 
-              className="flex-1 relative"
-              variants={item}
-              whileHover={{ scale: 1.02 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              style={{ willChange: 'transform' }}
+            <div 
+              className="flex-1 relative hover:scale-[1.02] transition-transform duration-300"
             >
               <div className="relative z-10 w-full max-w-lg mx-auto">
                 {/* Decorative Elements - Simplified */}
@@ -238,8 +223,8 @@ const HeroSection = memo(({ container, item, isDark }) => {
                   </object>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -249,12 +234,8 @@ const HeroSection = memo(({ container, item, isDark }) => {
 // Memoized component for Stats section
 const StatsSection = memo(({ isDark }) => {
   return (
-    <motion.div 
-      className="max-w-7xl mx-auto px-4 py-12"
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
+    <div 
+      className="max-w-7xl mx-auto px-4 py-12 opacity-100 translate-y-0 transition-opacity transition-transform duration-500"
     >
       <div className="bg-cardBg backdrop-blur-sm rounded-xl p-8 border-cardBorder transition-colors duration-300">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -280,7 +261,24 @@ const StatsSection = memo(({ isDark }) => {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
+  );
+});
+
+// Optimization: Extracted feature card to reduce repetition and improve performance
+const FeatureCard = memo(({ icon: IconComponent, title, description, color }) => {
+  return (
+    <div className="col-span-2 rounded-lg border-cardBorder px-5 pb-5 bg-cardBg">
+      <div className="w-min mb-2">
+        <div className={`relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-${color} to-100%`}>
+          <IconComponent className="w-10 h-10 mx-auto text-white" />
+        </div>
+      </div>
+      <h4 className="text-xl font-semibold mb-1 text-text">{title}</h4>
+      <p className="text-sm text-textSecondary leading-relaxed">
+        {description}
+      </p>
+    </div>
   );
 });
 
@@ -328,35 +326,45 @@ const MainPage = () => {
     return mainCategories.slice(start, start + categoriesPerPage);
   }, [currentPage, categoriesPerPage, mainCategories]);
 
-  // Optimization: Reduce number of animations in Hero Section
-  const container = useMemo(() => ({
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1, // Reduced delay between animations
-        delayChildren: 0.2,   // Reduced initial delay
-        duration: 0.3         // Faster animation
-      }
+  // Features data - memoized to prevent recreation
+  const features = useMemo(() => [
+    {
+      icon: ShieldCheck,
+      title: "Secure Payment",
+      description: "We offer secure payment options including credit card and cryptocurrency. All transactions are protected with industry-standard encryption.",
+      color: "[#A62BDA]"
+    },
+    {
+      icon: Gem,
+      title: "Superior Quality",
+      description: "Our marketplace features only the highest quality local products. Each seller is carefully vetted to ensure premium standards.",
+      color: "[#31B3CC]"
+    },
+    {
+      icon: DollarSign,
+      title: "Best Prices",
+      description: "By connecting you directly with local sellers, we eliminate middlemen to offer the most competitive prices in your area.",
+      color: "[#FF9900]"
+    },
+    {
+      icon: Headphones,
+      title: "24×7 Support",
+      description: "Our dedicated support team is available around the clock to assist both buyers and sellers with any questions or concerns.",
+      color: "[#F46036]"
+    },
+    {
+      icon: Clock,
+      title: "Fast Delivery",
+      description: "With our network of local sellers, you can arrange quick pickup or delivery of your purchases within your community.",
+      color: "[#ED45CD]"
     }
-  }), []);
-
-  const item = useMemo(() => ({
-    hidden: { opacity: 0, y: 10 }, // Reduced animation distance
-    show: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        duration: 0.2 // Faster animation
-      }
-    }
-  }), []);
+  ], []);
 
   return (
     <LazyMotion features={domAnimation}>
       <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
         {/* Hero Section - Memoized */}
-        <HeroSection container={container} item={item} isDark={isDark} />
+        <HeroSection isDark={isDark} />
 
         {/* Stats Section - Memoized */}
         <StatsSection isDark={isDark} />
@@ -393,108 +401,26 @@ const MainPage = () => {
         </div>
 
         {/* Why Choose Us Section - Optimized with viewport.once to avoid repeated animations */}
-        <motion.div 
-          className="max-w-7xl mx-auto px-4 py-16"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+        <div 
+          className="max-w-7xl mx-auto px-4 py-16 opacity-100 transition-opacity duration-500"
         >
           <h2 className="text-4xl font-bold text-center mb-16 text-text">
             WHY SHOULD YOU <span className="text-primary">CHOOSE US?</span>
           </h2>
           
-          <motion.div 
-            className="grid grid-cols-2 md:grid-cols-6 gap-4"
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-          >
-            {/* Secure Payment */}
-            <motion.div 
-              variants={item}
-              className="col-span-2 rounded-lg  border-cardBorder px-5 pb-5 bg-cardBg"
-            >
-              <div className="w-min mb-2">
-                <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#A62BDA] to-100%">
-                  <ShieldCheck className="w-10 h-10 mx-auto text-white" />
-                </div>
-              </div>
-              <h4 className="text-xl font-semibold mb-1 text-text">Secure Payment</h4>
-              <p className="text-sm text-textSecondary leading-relaxed">
-                We offer secure payment options including credit card and cryptocurrency. All transactions are protected with industry-standard encryption.
-              </p>
-            </motion.div>
-
-            {/* Superior Quality */}
-            <motion.div 
-              variants={item}
-              className="col-span-2 rounded-lg  border-cardBorder px-5 pb-5 bg-cardBg"
-            >
-              <div className="w-min mb-2">
-                <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#31B3CC] to-100%">
-                  <Gem className="w-10 h-10 mx-auto text-white" />
-                </div>
-              </div>
-              <h4 className="text-xl font-semibold mb-1 text-text">Superior Quality</h4>
-              <p className="text-sm text-textSecondary leading-relaxed">
-                Our marketplace features only the highest quality local products. Each seller is carefully vetted to ensure premium standards.
-              </p>
-            </motion.div>
-
-            {/* Best Prices */}
-            <motion.div 
-              variants={item}
-              className="col-span-2 rounded-lg  border-cardBorder px-5 pb-5 bg-cardBg"
-            >
-              <div className="w-min mb-2">
-                <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#FF9900] to-100%">
-                  <DollarSign className="w-10 h-10 mx-auto text-white" />
-                </div>
-              </div>
-              <h4 className="text-xl font-semibold mb-1 text-text">Best Prices</h4>
-              <p className="text-sm text-textSecondary leading-relaxed">
-                By connecting you directly with local sellers, we eliminate middlemen to offer the most competitive prices in your area.
-              </p>
-            </motion.div>
-
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+            {/* Using memoized FeatureCard component for better performance */}
+            <FeatureCard {...features[0]} />
+            <FeatureCard {...features[1]} />
+            <FeatureCard {...features[2]} />
+            
             {/* Empty div for spacing */}
             <div className="hidden md:block"></div>
-
-            {/* 24×7 Support */}
-            <motion.div 
-              variants={item}
-              className="col-span-2 rounded-lg  border-cardBorder px-5 pb-5 bg-cardBg"
-            >
-              <div className="w-min mb-2">
-                <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#F46036] to-100%">
-                  <Headphones className="w-10 h-10 mx-auto text-white" />
-                </div>
-              </div>
-              <h4 className="text-xl font-semibold mb-1 text-text">24×7 Support</h4>
-              <p className="text-sm text-textSecondary leading-relaxed">
-                Our dedicated support team is available around the clock to assist both buyers and sellers with any questions or concerns.
-              </p>
-            </motion.div>
-
-            {/* Fast Delivery */}
-            <motion.div 
-              variants={item}
-              className="col-span-2 rounded-lg  border-cardBorder px-5 pb-5 bg-cardBg"
-            >
-              <div className="w-min mb-2">
-                <div className="relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-[#ED45CD] to-100%">
-                  <Clock className="w-10 h-10 mx-auto text-white" />
-                </div>
-              </div>
-              <h4 className="text-xl font-semibold mb-1 text-text">Fast Delivery</h4>
-              <p className="text-sm text-textSecondary leading-relaxed">
-                With our network of local sellers, you can arrange quick pickup or delivery of your purchases within your community.
-              </p>
-            </motion.div>
-          </motion.div>
-        </motion.div>
+            
+            <FeatureCard {...features[3]} />
+            <FeatureCard {...features[4]} />
+          </div>
+        </div>
       </div>
     </LazyMotion>
   );

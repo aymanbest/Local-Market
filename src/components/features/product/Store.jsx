@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { ChevronDown, Search, ArrowRight, Star, X, SlidersHorizontal, Filter, Check } from 'lucide-react';
+import { ChevronDown, Search, ArrowRight, Star, X, SlidersHorizontal, Filter, Check, Plus } from 'lucide-react';
 import Button from '../../common/ui/Button';
 import { fetchCategories, fetchProductsByCategory } from '../../../store/slices/product/categorySlice';
 import { fetchProducts } from '../../../store/slices/product/productSlice';
@@ -16,10 +16,7 @@ const Store = () => {
     const { currentCategoryProducts } = useSelector((state) => state.categories);
     const { items: { products }, pagination, sorting, status } = useSelector((state) => state.products);
     const isLoading = status === 'loading';
-    const location = useLocation();
     const navigate = useNavigate();
-    const user = useSelector((state) => state.auth.user);
-    const { isDark } = useTheme();
 
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
@@ -722,7 +719,7 @@ const Store = () => {
                             {(selectedCategory === 'all' ? products : currentCategoryProducts)?.map(product => (
                                 <div
                                     key={product.productId}
-                                    className="bg-cardBg rounded-lg overflow-hidden border border-border transition-colors duration-300"
+                                    className="bg-cardBg rounded-lg overflow-hidden border border-border transition-colors duration-300 flex flex-col"
                                 >
                                     <div className="relative aspect-[2/1] overflow-hidden">
                                         <img
@@ -730,18 +727,21 @@ const Store = () => {
                                             alt={product.name}
                                             className="w-full h-full object-cover"
                                         />
-
                                     </div>
-                                    <div className="p-4">
-                                        <h3 className="text-lg font-semibold text-text">{product.name}</h3>
-                                        <div className="flex items-center justify-between mt-2">
-                                            <p className="text-primary font-bold">From ${product.price}</p>
-                                            <Button
-                                                onClick={() => handleAddToCart(product)}
-                                                className="bg-primary hover:bg-primaryHover text-white rounded-full px-4 h-10"
+                                    <div className="p-4 flex flex-col flex-grow">
+                                        <h3 className="text-lg font-semibold text-text mb-2">{product.name}</h3>
+                                        <div className="mt-auto flex items-center justify-between">
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-textSecondary text-sm">From</span>
+                                                <span className="text-primary font-bold">${product.price}</span>
+                                            </div>
+                                            <button 
+                                                onClick={(e) => handleAddToCart(product)}
+                                                className="w-8 h-8 rounded-full bg-primary hover:bg-primaryHover text-white flex items-center justify-center transition-colors"
+                                                aria-label="Add to cart"
                                             >
-                                                Add to Cart
-                                            </Button>
+                                                <Plus className="w-5 h-5" />
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -816,23 +816,33 @@ const Store = () => {
                                             <a
                                                 key={product.productId}
                                                 href={`/store/products/${product.productId}`}
-                                                className="rounded-lg bg-cardBg relative hover:bg-cardBg/80 transition-colors duration-300 border border-border"
+                                                className="rounded-lg bg-cardBg relative hover:bg-cardBg/80 transition-colors duration-300 border border-border flex flex-col h-full"
                                             >
                                                 <div style={{ aspectRatio: '5 / 4' }} className="rounded-t-lg overflow-hidden w-full">
                                                     <img
                                                         src={getFullImageUrl(product.imageUrl)}
                                                         alt={product.name}
                                                         className="h-full w-full shrink-0 z-10 object-cover"
-
                                                     />
                                                 </div>
-                                                <div className="p-4">
-                                                    <h2 className="font-semibold text-text">{product.name}</h2>
-                                                    <div className="text-textSecondary text-sm flex gap-1 items-center">
-                                                        <span>From</span>
-                                                        <span className="text-xl text-primary font-bold">
-                                                            ${product.price}
-                                                        </span>
+                                                <div className="p-4 flex flex-col flex-grow">
+                                                    <h2 className="font-semibold text-text mb-2">{product.name}</h2>
+                                                    <div className="mt-auto flex items-center justify-between">
+                                                        <div className="flex items-center gap-1">
+                                                            <span className="text-textSecondary text-sm">From</span>
+                                                            <span className="text-primary font-bold">${product.price}</span>
+                                                        </div>
+                                                        <button 
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                handleAddToCart(product);
+                                                            }}
+                                                            className="w-8 h-8 rounded-full bg-primary hover:bg-primaryHover text-white flex items-center justify-center transition-colors"
+                                                            aria-label="Add to cart"
+                                                        >
+                                                            <Plus className="w-5 h-5" />
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </a>
