@@ -6,15 +6,13 @@ import Button from '../../common/ui/Button';
 import { fetchCategories, fetchProductsByCategory } from '../../../store/slices/product/categorySlice';
 import { fetchProducts } from '../../../store/slices/product/productSlice';
 import { addToCart } from '../../../store/slices/product/cartSlice';
-import useLoading from '../../../hooks/useLoading';
 import Preloader from '../public/Preloader';
-import { useTheme } from '../../../context/ThemeContext';
 
 const Store = () => {
     const dispatch = useDispatch();
     const { categories } = useSelector((state) => state.categories);
     const { currentCategoryProducts } = useSelector((state) => state.categories);
-    const { items: { products }, pagination, sorting, status } = useSelector((state) => state.products);
+    const { items: { products }, pagination, status } = useSelector((state) => state.products);
     const isLoading = status === 'loading';
     const navigate = useNavigate();
 
@@ -95,12 +93,12 @@ const Store = () => {
         if (!imageUrl) return 'https://placehold.co/600x400?text=No+Image';
         if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
         return `http://localhost:8080${imageUrl}`;
-      };
+    };
 
     // Update pagination controls
     const PaginationControls = () => {
         const paginationData = selectedCategory === 'all' ? pagination : useSelector(state => state.categories.pagination);
-        
+
         if (!paginationData || paginationData.totalElements <= paginationData.pageSize) {
             return null;
         }
@@ -110,7 +108,7 @@ const Store = () => {
         for (let i = 0; i < paginationData.totalPages; i++) {
             pageNumbers.push(i);
         }
-        
+
         return (
             <div className="max-w-6xl mx-auto px-4 flex items-center justify-between py-4">
                 <p className="text-sm text-textSecondary">
@@ -121,14 +119,14 @@ const Store = () => {
                     <span className="font-medium">{paginationData.totalElements || 0}</span> products
                 </p>
                 <div className="flex items-center space-x-2">
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
+                    <Button
+                        variant="outline"
+                        size="sm"
                         className="border hover:bg-cardBg text-text border-border"
                         disabled={paginationData.isFirst}
                         onClick={() => {
                             if (selectedCategory === 'all') {
-                                dispatch(fetchProducts({ 
+                                dispatch(fetchProducts({
                                     page: (paginationData.currentPage || 0) - 1,
                                     size: paginationData.pageSize || 4,
                                     sortBy: tempFilters.sorting.sortBy,
@@ -152,14 +150,13 @@ const Store = () => {
                             key={pageNumber}
                             variant={pageNumber === paginationData.currentPage ? "default" : "outline"}
                             size="sm"
-                            className={`${
-                                pageNumber === paginationData.currentPage 
-                                    ? 'bg-primary text-white' 
+                            className={`${pageNumber === paginationData.currentPage
+                                    ? 'bg-primary text-white'
                                     : 'border hover:bg-cardBg text-text border-border'
-                            }`}
+                                }`}
                             onClick={() => {
                                 if (selectedCategory === 'all') {
-                                    dispatch(fetchProducts({ 
+                                    dispatch(fetchProducts({
                                         page: pageNumber,
                                         size: paginationData.pageSize || 4,
                                         sortBy: tempFilters.sorting.sortBy,
@@ -179,14 +176,14 @@ const Store = () => {
                             {pageNumber + 1}
                         </Button>
                     ))}
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         size="sm"
                         className="border hover:bg-primary/10 text-primary border-primary"
                         disabled={paginationData.isLast}
                         onClick={() => {
                             if (selectedCategory === 'all') {
-                                dispatch(fetchProducts({ 
+                                dispatch(fetchProducts({
                                     page: (paginationData.currentPage || 0) + 1,
                                     size: paginationData.pageSize || 4,
                                     sortBy: tempFilters.sorting.sortBy,
@@ -213,7 +210,26 @@ const Store = () => {
     // Modify the category selection handler
     const handleCategorySelect = (categoryId) => {
         setSelectedCategory(categoryId);
-        
+        setSearchTerm(''); // Clear search term when changing categories
+
+        // If there's no search term, use the appropriate fetch based on category
+        if (categoryId === 'all') {
+            dispatch(fetchProducts({
+                page: 0,
+                size: 4,
+                sortBy: tempFilters.sorting.sortBy,
+                direction: tempFilters.sorting.direction
+            }));
+        } else {
+            dispatch(fetchProductsByCategory({
+                categoryId: categoryId,
+                page: 0,
+                size: 4,
+                sortBy: tempFilters.sorting.sortBy,
+                direction: tempFilters.sorting.direction
+            }));
+        }
+
         // Find the category name for the URL
         const selectedCat = categories.find(cat => cat.categoryId === categoryId);
         if (selectedCat) {
@@ -246,6 +262,20 @@ const Store = () => {
             }
         });
         setShowFiltersModal(true);
+    };
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        // Always use fetchProducts when searching, the slice will handle the data transformation
+        dispatch(fetchProducts({
+            page: 0,
+            size: 4,
+            sortBy: tempFilters.sorting.sortBy,
+            direction: tempFilters.sorting.direction,
+            search: searchTerm
+        }));
+        // Set selected category to 'all' when searching
+        setSelectedCategory('all');
     };
 
     const FilterModal = () => {
@@ -289,11 +319,11 @@ const Store = () => {
             <div className="fixed inset-0 z-[100] overflow-y-auto">
                 <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
                     {/* Backdrop */}
-                    <div 
-                        className="fixed inset-0 bg-black/60 transition-opacity" 
-                        onClick={() => setShowFiltersModal(false)} 
+                    <div
+                        className="fixed inset-0 bg-black/60 transition-opacity"
+                        onClick={() => setShowFiltersModal(false)}
                     />
-                    
+
                     {/* Modal Content */}
                     <div className="relative transform overflow-hidden rounded-2xl bg-cardBg border border-border text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl z-[101]">
                         <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-cardBg">
@@ -301,8 +331,8 @@ const Store = () => {
                                 <Filter className="w-5 h-5" />
                                 Filters
                             </h3>
-                            <button 
-                                onClick={() => setShowFiltersModal(false)} 
+                            <button
+                                onClick={() => setShowFiltersModal(false)}
                                 className="text-textSecondary hover:text-text transition-colors"
                             >
                                 <X className="w-6 h-6" />
@@ -334,11 +364,10 @@ const Store = () => {
                                                 ...prev,
                                                 sorting: { ...prev.sorting, direction: 'asc' }
                                             }))}
-                                            className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
-                                                localFilters.sorting.direction === 'asc'
+                                            className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${localFilters.sorting.direction === 'asc'
                                                     ? 'bg-primary text-white border-primary'
                                                     : 'border-border text-text hover:bg-white/5'
-                                            }`}
+                                                }`}
                                         >
                                             Ascending
                                         </button>
@@ -347,11 +376,10 @@ const Store = () => {
                                                 ...prev,
                                                 sorting: { ...prev.sorting, direction: 'desc' }
                                             }))}
-                                            className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
-                                                localFilters.sorting.direction === 'desc'
+                                            className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${localFilters.sorting.direction === 'desc'
                                                     ? 'bg-primary text-white border-primary'
                                                     : 'border-border text-text hover:bg-white/5'
-                                            }`}
+                                                }`}
                                         >
                                             Descending
                                         </button>
@@ -427,8 +455,8 @@ const Store = () => {
                                             }))}
                                             className={`
                                                 flex items-center gap-3 p-3 rounded-xl transition-colors
-                                                ${localFilters.rating === rating 
-                                                    ? 'bg-primary text-white' 
+                                                ${localFilters.rating === rating
+                                                    ? 'bg-primary text-white'
                                                     : 'hover:bg-white/5 text-text border border-border'
                                                 }
                                             `}
@@ -437,11 +465,10 @@ const Store = () => {
                                                 {[...Array(rating)].map((_, i) => (
                                                     <Star
                                                         key={i}
-                                                        className={`w-4 h-4 ${
-                                                            localFilters.rating === rating 
-                                                                ? 'fill-white text-white' 
+                                                        className={`w-4 h-4 ${localFilters.rating === rating
+                                                                ? 'fill-white text-white'
                                                                 : 'fill-yellow-400 text-yellow-400'
-                                                        }`}
+                                                            }`}
                                                     />
                                                 ))}
                                                 {[...Array(5 - rating)].map((_, i) => (
@@ -487,7 +514,7 @@ const Store = () => {
             <div className="p-6 bg-gradient-to-r from-primary/10 to-transparent">
                 <h3 className="text-lg font-semibold text-text">Categories</h3>
                 <p className="text-sm text-textSecondary mt-1">Discover local treasures</p>
-                
+
                 {/* Categories Search */}
                 <div className="mt-4 relative">
                     <input
@@ -500,17 +527,16 @@ const Store = () => {
                     <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-textSecondary" />
                 </div>
             </div>
-            
+
             <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                 <ul className="p-3 space-y-2">
                     <li className="relative">
                         <Link
                             to="/category/all"
-                            className={`rounded-xl px-4 py-3 block transition-all duration-300 ${
-                                selectedCategory === 'all'
+                            className={`rounded-xl px-4 py-3 block transition-all duration-300 ${selectedCategory === 'all'
                                     ? 'bg-primary text-white shadow-md shadow-primary/20 scale-102 font-medium'
                                     : 'hover:bg-white/5 text-text hover:scale-102'
-                            }`}
+                                }`}
                             onClick={(e) => {
                                 e.preventDefault();
                                 handleCategorySelect('all');
@@ -525,18 +551,17 @@ const Store = () => {
                         </Link>
                     </li>
                     {categories
-                        .filter(category => 
+                        .filter(category =>
                             category.name.toLowerCase().includes(categorySearch.toLowerCase())
                         )
                         .map(category => (
                             <li key={category.categoryId}>
                                 <Link
                                     to={`/category/${encodeURIComponent(category.name.toLowerCase())}`}
-                                    className={`rounded-xl px-4 py-3 block transition-all duration-300 ${
-                                        selectedCategory === category.categoryId
+                                    className={`rounded-xl px-4 py-3 block transition-all duration-300 ${selectedCategory === category.categoryId
                                             ? 'bg-primary text-white shadow-md shadow-primary/20 scale-102 font-medium'
                                             : 'hover:bg-white/5 text-text hover:scale-102'
-                                    }`}
+                                        }`}
                                     onClick={(e) => {
                                         e.preventDefault();
                                         handleCategorySelect(category.categoryId);
@@ -562,13 +587,13 @@ const Store = () => {
 
     return (
         <>
-            <div className="min-h-screen bg-background transition-colors duration-300">
+            <div className="min-h-screen bg-background transition-colors duration-300 relative">
                 {/* Mobile Layout */}
-                <div className="md:hidden">
+                <div className="md:hidden bg-background">
                     <div className="px-4 pt-4">
                         <h1 className="text-4xl font-bold text-center text-text mb-6">STORE</h1>
 
-                        <div className="flex gap-2 mb-4">
+                        <form onSubmit={handleSearch} className="flex gap-2 mb-4">
                             <div className="relative flex-1">
                                 <input
                                     type="text"
@@ -577,15 +602,18 @@ const Store = () => {
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
-                                <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text pointer-events-none" />
+                                <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2">
+                                    <Search className="w-5 h-5 text-text" />
+                                </button>
                             </div>
-                            <button
-                                onClick={() => setShowMobileFilters(true)}
-                                className="bg-cardBg border border-border rounded-full w-12 h-12 flex items-center justify-center"
-                            >
-                                <SlidersHorizontal className="w-5 h-5 text-text" />
-                            </button>
-                        </div>
+                        </form>
+
+                        <button
+                            onClick={() => setShowMobileFilters(true)}
+                            className="bg-cardBg border border-border rounded-full w-12 h-12 flex items-center justify-center"
+                        >
+                            <SlidersHorizontal className="w-5 h-5 text-text" />
+                        </button>
 
                         {/* Mobile Filters Modal */}
                         {showMobileFilters && (
@@ -666,8 +694,8 @@ const Store = () => {
                                                         onClick={() => setSelectedRating(rating === selectedRating ? 0 : rating)}
                                                         className={`
                                                             flex items-center gap-3 p-3 rounded-xl transition-colors
-                                                            ${selectedRating === rating 
-                                                                ? 'bg-primary text-white' 
+                                                            ${selectedRating === rating
+                                                                ? 'bg-primary text-white'
                                                                 : 'hover:bg-white/5 text-text border border-border'
                                                             }
                                                         `}
@@ -676,11 +704,10 @@ const Store = () => {
                                                             {[...Array(rating)].map((_, i) => (
                                                                 <Star
                                                                     key={i}
-                                                                    className={`w-4 h-4 ${
-                                                                        selectedRating === rating 
-                                                                            ? 'fill-white text-white' 
+                                                                    className={`w-4 h-4 ${selectedRating === rating
+                                                                            ? 'fill-white text-white'
                                                                             : 'fill-yellow-400 text-yellow-400'
-                                                                    }`}
+                                                                        }`}
                                                                 />
                                                             ))}
                                                             {[...Array(5 - rating)].map((_, i) => (
@@ -735,7 +762,7 @@ const Store = () => {
                                                 <span className="text-textSecondary text-sm">From</span>
                                                 <span className="text-primary font-bold">${product.price}</span>
                                             </div>
-                                            <button 
+                                            <button
                                                 onClick={(e) => handleAddToCart(product)}
                                                 className="w-8 h-8 rounded-full bg-primary hover:bg-primaryHover text-white flex items-center justify-center transition-colors"
                                                 aria-label="Add to cart"
@@ -752,7 +779,7 @@ const Store = () => {
                 </div>
 
                 {/* Desktop Layout */}
-                <div className="hidden md:block">
+                <div className="hidden md:block bg-background">
                     <div className="max-w-6xl mx-auto p-4 mb-12">
                         <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
                             <h2 className="text-4xl font-recoleta font-semibold uppercase text-center text-text">Store</h2>
@@ -774,16 +801,18 @@ const Store = () => {
                                 </span>
                             </label>
                             <label className="rounded-full flex items-center pl-4 pr-2 py-2 bg-cardBg">
-                                <input
-                                    type="text"
-                                    placeholder="Search"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="bg-transparent flex-1 text-text placeholder-textSecondary outline-none focus:outline-none focus:ring-0 border-none"
-                                />
-                                <button className="bg-primary hover:bg-primaryHover rounded-full p-1 transition-colors">
-                                    <Search className="w-6 h-6 text-white" />
-                                </button>
+                                <form onSubmit={handleSearch} className="flex flex-1">
+                                    <input
+                                        type="text"
+                                        placeholder="Search"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="bg-transparent flex-1 text-text placeholder-textSecondary outline-none focus:outline-none focus:ring-0 border-none"
+                                    />
+                                    <button type="submit" className="bg-primary hover:bg-primaryHover rounded-full p-1 transition-colors">
+                                        <Search className="w-6 h-6 text-white" />
+                                    </button>
+                                </form>
                             </label>
                         </div>
                         <div className="flex gap-6">
@@ -797,13 +826,13 @@ const Store = () => {
                                         <Filter className="w-5 h-5" />
                                         Filters
                                     </span>
-                                    {(currentPriceRange.min > priceRange.min || 
-                                      currentPriceRange.max < priceRange.max || 
-                                      selectedRating > 0) && (
-                                        <span className="bg-primary/10 text-primary text-sm px-2 py-0.5 rounded-full">
-                                            Active
-                                        </span>
-                                    )}
+                                    {(currentPriceRange.min > priceRange.min ||
+                                        currentPriceRange.max < priceRange.max ||
+                                        selectedRating > 0) && (
+                                            <span className="bg-primary/10 text-primary text-sm px-2 py-0.5 rounded-full">
+                                                Active
+                                            </span>
+                                        )}
                                 </button>
 
                                 <CategoriesSection />
@@ -832,7 +861,7 @@ const Store = () => {
                                                             <span className="text-textSecondary text-sm">From</span>
                                                             <span className="text-primary font-bold">${product.price}</span>
                                                         </div>
-                                                        <button 
+                                                        <button
                                                             onClick={(e) => {
                                                                 e.preventDefault();
                                                                 e.stopPropagation();
@@ -855,7 +884,7 @@ const Store = () => {
                                         </div>
                                         <h3 className="text-xl font-semibold text-text mb-2">No Products Found</h3>
                                         <p className="text-textSecondary max-w-md">
-                                            {searchTerm 
+                                            {searchTerm
                                                 ? "We couldn't find any products matching your search. Try different keywords or browse all products."
                                                 : "There are no products in this category yet. Check back soon or explore other categories."}
                                         </p>

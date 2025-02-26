@@ -3,8 +3,8 @@ import api from '../../../lib/axios';
 
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
-  async ({ page = 0, size = 4, sortBy = 'createdAt', direction = 'desc' } = {}) => {
-    const response = await api.get(`/api/products?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
+  async ({ page = 0, size = 4, sortBy = 'createdAt', direction = 'desc', search = '' } = {}) => {
+    const response = await api.get(`/api/products?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}&search=${search}`);
     return response.data;
   }
 );
@@ -48,14 +48,20 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        // Transform the data structure to match what the component expects
-        const allProducts = action.payload.content.flatMap(producer => {
-          return producer.products.map(product => ({
-            ...product,
-            producer: producer.username,
-            producerName: `${producer.firstname} ${producer.lastname}`
-          }));
-        });
+        // Check if we have nested producer products or direct products
+        const allProducts = action.payload.content[0]?.products 
+          ? action.payload.content[0].products.map(product => ({
+              ...product,
+              producer: action.payload.content[0].username,
+              producerName: `${action.payload.content[0].firstname} ${action.payload.content[0].lastname}`
+            }))
+          : action.payload.content.flatMap(producer => {
+              return producer.products.map(product => ({
+                ...product,
+                producer: producer.username,
+                producerName: `${producer.firstname} ${producer.lastname}`
+              }));
+            });
         state.items = { products: allProducts };
         state.pagination = {
           currentPage: action.payload.number,
