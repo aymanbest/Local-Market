@@ -33,6 +33,8 @@ import Unauthorized from './components/features/public/Unauthorized';
 import ForgotPassword from './components/features/auth/ForgotPassword';
 import NotFound from './components/features/public/NotFound';
 import { ROLES } from './components/security/ProtectedRoute';
+import TermsOfService from './components/features/public/TermsOfService';
+import Footer from './components/features/public/Footer';
 
 // Create a separate component for content that needs Redux
 const AppContent = () => {
@@ -162,9 +164,11 @@ const AppContent = () => {
                 </ProtectedRoute>
               } 
             />
+            <Route path="/tos" element={<TermsOfService />} />
           </Routes>
         </div>
         <WelcomeCoupon />
+        <Footer />
       </div>
     </Router>
   );
