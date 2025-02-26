@@ -20,7 +20,13 @@ const addressSlice = createSlice({
     loading: false,
     error: null
   },
-  reducers: {},
+  reducers: {
+    clearState: () => ({
+      regions: [],
+      loading: false,
+      error: null
+    })
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchRegions.pending, (state) => {

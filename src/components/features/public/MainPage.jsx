@@ -267,10 +267,21 @@ const StatsSection = memo(({ isDark }) => {
 
 // Optimization: Extracted feature card to reduce repetition and improve performance
 const FeatureCard = memo(({ icon: IconComponent, title, description, color }) => {
+  // Map color values to specific Tailwind classes
+  const colorClasses = {
+    '[#A62BDA]': 'to-purple-500',
+    '[#31B3CC]': 'to-cyan-500',
+    '[#FF9900]': 'to-amber-500',
+    '[#F46036]': 'to-orange-500',
+    '[#ED45CD]': 'to-pink-500'
+  };
+
+  const gradientClass = colorClasses[color] || 'to-primary';
+
   return (
     <div className="col-span-2 rounded-lg border-cardBorder px-5 pb-5 bg-cardBg">
       <div className="w-min mb-2">
-        <div className={`relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] to-${color} to-100%`}>
+        <div className={`relative w-16 h-16 rounded-b-full pt-3 pb-5 px-2 bg-gradient-to-b from-transparent from-[-10%] ${gradientClass} to-100%`}>
           <IconComponent className="w-10 h-10 mx-auto text-white" />
         </div>
       </div>

@@ -3,7 +3,7 @@ import { useTheme } from '../../../context/ThemeContext';
 import { 
   Package, BarChart2, StarIcon, ClipboardList, 
   MailOpen, Bell, Trash2, X, AlertCircle, ChevronDown, ChevronUp,
-  DollarSign, Calendar, MapPin, Phone, Check
+  DollarSign, Calendar, MapPin, Phone, Check, MessageCircle
 } from 'lucide-react';
 
 const DeleteConfirmation = ({ onConfirm, onCancel, count, isDark }) => (
@@ -108,6 +108,26 @@ const NotificationDetails = ({ data, isDark }) => {
   );
 
   switch (data.type) {
+    case 'TICKET_REPLY':
+      return (
+        <div className="pl-9 mt-2 space-y-2">
+          {renderDetailItem(
+            <MessageCircle className="w-4 h-4 text-blue-500" />,
+            "Subject",
+            data.subject
+          )}
+          {renderDetailItem(
+            <MessageCircle className="w-4 h-4 text-green-500" />,
+            "Message",
+            data.message
+          )}
+          {renderDetailItem(
+            <MessageCircle className="w-4 h-4 text-purple-500" />,
+            "Admin",
+            data.adminName
+          )}
+        </div>
+      );
     case 'NEW_ORDER':
       return (
         <div className="pl-9 mt-2 space-y-2">
@@ -181,6 +201,8 @@ const NotificationItem = ({
 
   const getIcon = (type) => {
     switch (type) {
+      case 'TICKET_REPLY':
+        return <MessageCircle className="w-5 h-5 text-blue-500" />;
       case 'NEW_ORDER':
         return <Package className="w-5 h-5 text-blue-500" />;
       case 'LOW_STOCK_ALERT':

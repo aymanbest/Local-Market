@@ -104,7 +104,29 @@ const categorySlice = createSlice({
       state.updateStatus = 'idle';
       state.deleteStatus = 'idle';
       state.error = null;
-    }
+    },
+    clearState: () => ({
+      categories: [],
+      currentCategoryProducts: null,
+      selectedProduct: null,
+      status: 'idle',
+      error: null,
+      pagination: {
+        currentPage: 0,
+        totalPages: 0,
+        totalElements: 0,
+        pageSize: 4,
+        isFirst: true,
+        isLast: false
+      },
+      sorting: {
+        sortBy: 'name',
+        direction: 'desc'
+      },
+      createStatus: 'idle',
+      updateStatus: 'idle',
+      deleteStatus: 'idle',
+    })
   },
   extraReducers: (builder) => {
     builder

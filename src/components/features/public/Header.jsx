@@ -124,11 +124,11 @@ const Header = () => {
     { path: '/about', label: 'About', icon: BookOpenText },
     { path: '/support', label: 'Support', icon: MailOpen },
     { path: '/faq', label: 'FAQ', icon: MessageCircleQuestion },
-    // Only show "Become a Seller" for customers
-    ...((!user || user.role === 'CUSTOMER' || user.role === 'ADMIN' || user.role === 'PRODUCER') ? [
+    // Only show "Become a Seller" for guests and customers
+    ...(!user || user.role === 'customer' ? [
       { path: '/become-seller', label: 'Become a Seller', icon: Building2 }
     ] : [])
-  ], [isAdmin, isProducer]);
+  ], [isAdmin, isProducer, user]);
 
   // Producer navigation items
   const producerNavigationItems = useMemo(() => [

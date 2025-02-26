@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { loginUser, clearAuth } from '../../../store/slices/auth/authSlice';
-import { Eye, EyeClosed } from 'lucide-react';
+import { Eye, EyeClosed, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { getDefaultRoute } from '../../security/ProtectedRoute';
 
 const Login = ({ adminOnly = false }) => {
@@ -13,10 +13,19 @@ const Login = ({ adminOnly = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { status, error } = useSelector((state) => state.auth);
+  const [message, setMessage] = useState(location.state?.message || '');
 
   useEffect(() => {
     dispatch(clearAuth());
-  }, [dispatch]);
+    
+    // Clear message after 5 seconds
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [dispatch, message]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,6 +71,22 @@ const Login = ({ adminOnly = false }) => {
           </Link>
         </p>
 
+        {/* Messages */}
+        {message && (
+          <div className="mb-6 flex items-center gap-2 text-green-500 bg-green-50 p-4 rounded-lg border border-green-200">
+            <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+            <span className="text-sm">{message}</span>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 flex items-center gap-2 text-red-500 bg-red-50 p-4 rounded-lg border border-red-200">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+            <span className="text-sm">{error}</span>
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
@@ -73,6 +98,7 @@ const Login = ({ adminOnly = false }) => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
                 placeholder="john.doe@email.com"
+                required
               />
             </div>
 
@@ -85,6 +111,7 @@ const Login = ({ adminOnly = false }) => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-inputBg border-border rounded-md px-4 py-3 text-text text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-colors duration-300"
                   placeholder="••••••••••"
+                  required
                 />
                 <button
                   type="button"
@@ -103,10 +130,10 @@ const Login = ({ adminOnly = false }) => {
 
           <button
             type="submit"
-            className="w-full bg-primary text-white py-3 rounded-md text-sm font-medium hover:bg-primaryHover transition-colors"
+            className="w-full bg-primary text-white py-3 rounded-md text-sm font-medium hover:bg-primaryHover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={status === 'loading'}
           >
-            Login
+            {status === 'loading' ? 'Logging in...' : 'Login'}
           </button>
 
           <div className="text-center">

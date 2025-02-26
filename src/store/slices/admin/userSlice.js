@@ -55,6 +55,11 @@ const userSlice = createSlice({
     sorting: {
       sortBy: 'createdAt',
       direction: 'desc'
+    },
+    totalCounts: {
+      total: 0,
+      producers: 0,
+      admins: 0
     }
   },
   reducers: {
@@ -82,14 +87,19 @@ const userSlice = createSlice({
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
-        state.users = action.payload.content;
+        state.users = action.payload.users.content;
         state.pagination = {
-          currentPage: action.payload.number,
-          totalPages: action.payload.totalPages,
-          totalElements: action.payload.totalElements,
-          pageSize: action.payload.size,
-          isFirst: action.payload.first,
-          isLast: action.payload.last
+          currentPage: action.payload.users.number,
+          totalPages: action.payload.users.totalPages,
+          totalElements: action.payload.users.totalElements,
+          pageSize: action.payload.users.size,
+          isFirst: action.payload.users.first,
+          isLast: action.payload.users.last
+        };
+        state.totalCounts = {
+          total: action.payload.totalActiveAccounts,
+          producers: action.payload.totalProducerAccounts,
+          admins: action.payload.totalAdminAccounts
         };
       })
       .addCase(fetchUsers.rejected, (state, action) => {

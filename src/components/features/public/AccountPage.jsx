@@ -60,9 +60,7 @@ const AccountPage = ({ adminOnly = false, producerOnly = false }) => {
         return (
           <Link 
             to={canReapply ? "/account/apply-seller" : "#"}
-            className={`border border-red-500/30 bg-red-500/5 ${
-              canReapply ? 'hover:bg-red-500/10 cursor-pointer' : 'cursor-not-allowed'
-            } ${baseCardClasses}`}
+            className={`border border-red-500 bg-white/80 hover:bg-white/90 dark:bg-cardBg dark:hover:bg-white/5 ${baseCardClasses}`}
           >
             <div>
               <div className="flex items-center gap-3 mb-2">

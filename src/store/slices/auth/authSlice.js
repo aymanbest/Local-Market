@@ -36,9 +36,24 @@ export const initializeState = createAsyncThunk(
         };
       }
     } catch (error) {
-      return initialState;
+      // For auth check failures, just return unauthenticated state without error
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        return {
+          user: null,
+          isAuthenticated: false,
+          status: 'succeeded', // Mark as succeeded but not authenticated
+          error: null
+        };
+      }
+      throw error; // Let the rejection handler deal with other errors
     }
-    return initialState;
+    // No user data case
+    return {
+      user: null,
+      isAuthenticated: false,
+      status: 'succeeded', // Mark as succeeded but not authenticated
+      error: null
+    };
   }
 );
 
@@ -96,7 +111,7 @@ export const loginUser = createAsyncThunk(
         return authData;
       }
     } catch (error) {
-      console.error('Login error:', error);
+
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
   }
@@ -109,10 +124,12 @@ export const logoutUser = createAsyncThunk(
       // First disconnect WebSocket and clear any pending reconnections
       await dispatch(disconnectWebSocket());
       
-      // Clear auth state before making the logout request
-      // This ensures no new WebSocket connections are attempted
+      // Clear all related states before making the logout request
       dispatch(clearAuth());
-      
+      dispatch({ type: 'producerApplications/clearState' });
+      dispatch({ type: 'categories/clearState' });
+      dispatch({ type: 'address/clearState' });
+
       // Then perform the actual logout
       await api.post('/api/auth/logout');
       
@@ -130,7 +147,10 @@ const authSlice = createSlice({
     setState: (state, action) => {
       return { ...state, ...action.payload };
     },
-    clearAuth: () => initialState,
+    clearAuth: () => ({
+      ...initialState,
+      status: 'idle'
+    }),
   },
   extraReducers: (builder) => {
     builder
@@ -186,8 +206,11 @@ const authSlice = createSlice({
       .addCase(initializeState.fulfilled, (state, action) => {
         return { ...state, ...action.payload };
       })
-      .addCase(initializeState.rejected, (state) => {
-        return initialState;
+      .addCase(initializeState.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+        state.user = null;
+        state.isAuthenticated = false;
       });
   }
 });

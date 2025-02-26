@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsers, updateUser, deleteUser } from '../../../store/slices/admin/userSlice';
+import { fetchUsers, updateUser, deleteUser, updatePagination } from '../../../store/slices/admin/userSlice';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../common/ui/Table';
 import { Card } from '../../common/ui/Card';
 import Button from '../../common/ui/Button';
@@ -191,9 +191,10 @@ UsersTable.displayName = 'UsersTable';
 
 const UserManagement = () => {
   const dispatch = useDispatch();
-  const { users, loading, error, pagination } = useSelector(state => state.users);
+  const { users = [], loading, error, pagination, totalCounts } = useSelector(state => state.users);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -204,12 +205,6 @@ const UserManagement = () => {
       direction: 'desc'
     }
   });
-  const [totalCounts, setTotalCounts] = useState({
-    total: 0,
-    producers: 0,
-    admins: 0,
-    customers: 0
-  });
   const [editForm, setEditForm] = useState({
     username: '',
     email: '',
@@ -219,27 +214,50 @@ const UserManagement = () => {
   });
   const { isDark } = useTheme();
 
-  // Initial fetch of users with pagination
+  // Add new useEffect for search and role filtering
+  useEffect(() => {
+    if (!users) return; // Guard against undefined users
+    
+    // Apply search filter
+    const filtered = users.filter(user => {
+      const searchMatch = searchTerm.toLowerCase() === '' || 
+        user.firstname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.lastname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.username?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const roleMatch = roleFilter === '' || user.role === roleFilter;
+      
+      return searchMatch && roleMatch;
+    });
+    
+    setFilteredUsers(filtered);
+  }, [users, searchTerm, roleFilter]);
+
+  // Update the useEffect for initial fetch
   useEffect(() => {
     dispatch(fetchUsers({
-      page: pagination?.currentPage || 0,
+      page: 0, // Always start from page 0 when role filter changes
       size: pagination?.pageSize || 10,
       sortBy: tempFilters.sorting.sortBy,
-      direction: tempFilters.sorting.direction
+      direction: tempFilters.sorting.direction,
+      role: roleFilter || undefined
     }));
-  }, [dispatch, pagination?.currentPage, tempFilters.sorting]);
+  }, [dispatch, roleFilter, tempFilters.sorting]); // Remove pagination?.currentPage dependency
 
-  // Update total counts when users array changes
+  // Add separate useEffect for pagination changes
   useEffect(() => {
-    if (users.length > 0) {
-      setTotalCounts({
-        total: users.length,
-        producers: users.filter(u => u.role === 'PRODUCER').length,
-        admins: users.filter(u => u.role === 'ADMIN').length,
-        customers: users.filter(u => u.role === 'CUSTOMER').length
-      });
+    // Skip initial render and only fetch when pagination changes
+    if (pagination?.currentPage !== undefined) {
+      dispatch(fetchUsers({
+        page: pagination.currentPage,
+        size: pagination?.pageSize || 10,
+        sortBy: tempFilters.sorting.sortBy,
+        direction: tempFilters.sorting.direction,
+        role: roleFilter || undefined
+      }));
     }
-  }, [users]);
+  }, [dispatch, pagination?.currentPage]);
 
   const handleEdit = (user) => {
     setSelectedUser(user);
@@ -473,7 +491,7 @@ const UserManagement = () => {
           {[
             { 
               label: 'Total Users', 
-              value: totalCounts.total, 
+              value: totalCounts?.total || 0, 
               icon: Users, 
               bgColor: 'bg-[#5D8736]/10 dark:bg-[#A9C46C]/10',
               iconColor: 'text-[#5D8736] dark:text-[#A9C46C]',
@@ -484,18 +502,18 @@ const UserManagement = () => {
             },
             { 
               label: 'Producers', 
-              value: totalCounts.producers, 
+              value: totalCounts?.producers || 0, 
               icon: UserCog, 
               bgColor: 'bg-[#5D8736]/10 dark:bg-[#A9C46C]/10',
               iconColor: 'text-[#5D8736] dark:text-[#A9C46C]',
               description: 'Registered producer accounts',
               descriptionIcon: Building2,
               bottomLabel: 'Active producers',
-              bottomValue: `${Math.round((totalCounts.producers / totalCounts.total) * 100)}%`
+              bottomValue: `${Math.round(((totalCounts?.producers || 0) / (totalCounts?.total || 1)) * 100)}%`
             },
             { 
               label: 'Admins', 
-              value: totalCounts.admins, 
+              value: totalCounts?.admins || 0, 
               icon: Shield, 
               bgColor: 'bg-[#5D8736]/10 dark:bg-[#A9C46C]/10',
               iconColor: 'text-[#5D8736] dark:text-[#A9C46C]',
@@ -544,7 +562,11 @@ const UserManagement = () => {
             </div>
             <select
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
+              onChange={(e) => {
+                setRoleFilter(e.target.value);
+                // Reset pagination in Redux store when role filter changes
+                dispatch(updatePagination({ currentPage: 0 }));
+              }}
               className={`w-full md:w-48 rounded-lg border border-border ${
                 isDark ? 'bg-[#2f2f2f]' : 'bg-inputBg'
               } text-text px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200`}
@@ -573,7 +595,7 @@ const UserManagement = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user) => (
+                  {(filteredUsers || []).map((user) => (
                     <tr key={user.userId} className="border-b border-border">
                       <td className="py-4">
                         <div className="flex items-center space-x-3">

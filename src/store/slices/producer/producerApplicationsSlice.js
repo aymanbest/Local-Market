@@ -112,7 +112,28 @@ const producerApplicationsSlice = createSlice({
       state.loading = false;
       state.error = null;
       state.submitSuccess = false;
-    }
+    },
+    clearState: () => ({
+      applications: [],
+      status: 'idle',
+      error: null,
+      pagination: {
+        currentPage: 0,
+        totalPages: 0,
+        totalElements: 0,
+        pageSize: 10,
+        isFirst: true,
+        isLast: false
+      },
+      sorting: {
+        sortBy: 'createdAt',
+        direction: 'desc'
+      },
+      currentApplication: null,
+      applicationStatus: null,
+      loading: false,
+      submitSuccess: false
+    })
   },
   extraReducers: (builder) => {
     builder
@@ -180,5 +201,5 @@ const producerApplicationsSlice = createSlice({
   }
 });
 
-export const { updateSorting, updatePagination, resetApplication } = producerApplicationsSlice.actions;
+export const { updateSorting, updatePagination, resetApplication, clearState } = producerApplicationsSlice.actions;
 export default producerApplicationsSlice.reducer; 

@@ -175,13 +175,13 @@ const ProductManagement = () => {
     }));
   }, [dispatch, pagination.currentPage, sorting]);
 
-  // Add debug logging
-  useEffect(() => {
-    console.log('Products from API:', products);
-    console.log('Filtered Products:', filteredProducts);
-    console.log('Loading State:', loading);
-    console.log('Error State:', error);
-  }, [products, filteredProducts, loading, error]);
+  // // Add debug logging
+  // useEffect(() => {
+  //   console.log('Products from API:', products);
+  //   console.log('Filtered Products:', filteredProducts);
+  //   console.log('Loading State:', loading);
+  //   console.log('Error State:', error);
+  // }, [products, filteredProducts, loading, error]);
 
   const handleSort = (field) => {
     if (tempFilters.sorting.sortBy === field) {

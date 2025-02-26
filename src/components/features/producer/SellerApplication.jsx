@@ -40,7 +40,12 @@ const SellerApplication = () => {
 
   useEffect(() => {
     const checkAccess = async () => {
-      if (!user || user.role !== 'customer') {
+      if (!user) {
+        navigate('/account');
+        return;
+      }
+
+      if (user.role !== 'customer') {
         navigate('/account');
         return;
       }
@@ -52,6 +57,7 @@ const SellerApplication = () => {
   }, [dispatch, navigate, user]);
 
   useEffect(() => {
+    
     if (applicationStatus) {
       const { status, processedAt } = applicationStatus;
       

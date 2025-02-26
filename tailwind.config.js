@@ -113,6 +113,21 @@ export default {
         'gray-800': '#1f2937',
         'gray-900': '#111827',
         foreground: 'var(--foreground)',
+        purple: {
+          500: '#A62BDA',
+        },
+        cyan: {
+          500: '#31B3CC',
+        },
+        amber: {
+          500: '#FF9900',
+        },
+        orange: {
+          500: '#F46036',
+        },
+        pink: {
+          500: '#ED45CD',
+        },
       },
       backgroundColor: {
         'gray-800': '#1f2937',

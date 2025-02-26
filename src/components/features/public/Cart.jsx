@@ -165,11 +165,11 @@ const Cart = () => {
                       <div className="flex-1 flex flex-col justify-between">
                         <div className="flex justify-between w-full">
                           <h2 className="uppercase font-bold">{item.name}</h2>
-                          <h2 className="text-xl text-white font-semibold">${item.price.toFixed(2)}</h2>
+                          <h2 className="text-xl text-text font-semibold">${(item.quantity * item.price).toFixed(2)}</h2>
                         </div>
                         
                         <div className="flex gap-2 items-center text-xs">
-                          <span className="text-neutral-300">${item.price.toFixed(2)}</span>
+                          <span className="text-text text-neutral-300">${item.price.toFixed(2)}</span>
                           <span className="w-px h-3 bg-white"></span>
                           <span className="text-blue-400">In Stock</span>
                         </div>
@@ -206,8 +206,8 @@ const Cart = () => {
                               onClick={() => handleRemoveFromCart(item.id)}
                               className="flex items-center gap-1.5 group text-neutral-300"
                             >
-                              <Trash2 className="w-5 group-hover:text-red-400 transition" />
-                              <span className="group-hover:text-red-400 transition">Remove</span>
+                              <Trash2 className="w-5 group-hover:text-red-400 text-text transition" />
+                              <span className=" text-text group-hover:text-red-400 transition">Remove</span>
                             </button>
                           </div>
                         </div>

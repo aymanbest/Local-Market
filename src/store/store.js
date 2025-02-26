@@ -45,28 +45,6 @@ const store = configureStore({
     })
 });
 
-// Initialize auth state immediately after store creation
-store.dispatch(initializeState()).then((resultAction) => {
-  if (initializeState.fulfilled.match(resultAction)) {
-    store.dispatch(setState(resultAction.payload));
-  }
-});
-
-// Clear cart if it's older than 24 hours
-store.subscribe(() => {
-  const state = store.getState();
-  const lastUpdated = state.cart.lastUpdated;
-  
-  if (lastUpdated) {
-    const now = new Date();
-    const lastUpdate = new Date(lastUpdated);
-    const hoursDiff = (now - lastUpdate) / (1000 * 60 * 60);
-    
-    if (hoursDiff > 24) {
-      store.dispatch(clearCart());
-    }
-  }
-});
-
+// Export the store directly without initializing auth state
 export default store;
 

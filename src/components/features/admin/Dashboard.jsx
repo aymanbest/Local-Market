@@ -88,18 +88,13 @@ const Dashboard = () => {
   // Update transaction stats to use formatted numbers
   const transactionStats = transactions ? [
     {
-      title: "Total Transaction Volume",
-      value: formatCurrency(transactions.totalTransactionVolume),
-      change: "+12.5%"
-    },
-    {
       title: "Completed Transactions",
-      value: transactions.transactionsByStatus.PAYMENT_COMPLETED.toLocaleString(),
+      value: (transactions?.transactionsByStatus?.DELIVERED || 0).toLocaleString(),
       change: "+8.2%"
     },
     {
       title: "Pending Transactions",
-      value: transactions.transactionsByStatus.PENDING_PAYMENT.toLocaleString(),
+      value: (transactions?.transactionsByStatus?.PENDING_PAYMENT || 0).toLocaleString(),
       change: "-3.1%"
     }
   ] : [];
