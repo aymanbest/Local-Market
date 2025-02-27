@@ -293,6 +293,112 @@ const FeatureCard = memo(({ icon: IconComponent, title, description, color }) =>
   );
 });
 
+const HowItWorks = () => {
+  const { isDark } = useTheme();
+  
+  return (
+    <div className="py-24">
+      <h2 className="text-4xl font-bold text-center mb-16 text-text">
+        HOW IT <span className="text-primary">WORKS</span>
+      </h2>
+      
+      <div className="grid md:grid-cols-2 gap-x-6 gap-y-20 max-w-3xl mx-auto px-4">
+        {/* Card 1 */}
+        <div className={`border border-border rounded-lg bg-cardBg relative`}>
+          <span className={`absolute -bottom-8 right-4 text-[180px] font-staatliches leading-none text-primary opacity-10`}>01</span>
+          <div className="overflow-hidden rounded-t-lg">
+            <img 
+              src="/01.svg" 
+              alt="Browse Products" 
+              className="w-full h-full bg-background object-cover"
+              loading="lazy"
+              width="636"
+              height="293"
+            />
+          </div>
+          <div className="p-4 pb-12">
+            <h3 className="font-staatliches uppercase text-3xl text-text">BROWSE LOCAL PRODUCTS</h3>
+            <p className={`${isDark ? 'text-neutral-400' : 'text-textSecondary'}`}>
+              Explore our marketplace filled with fresh, local products. 
+              Filter by category, producer, or search for specific items. 
+              All products come directly from verified local sellers.
+            </p>
+          </div>
+        </div>
+
+        {/* Card 2 */}
+        <div className={`border border-border rounded-lg bg-cardBg relative`}>
+          <span className={`absolute -bottom-8 right-4 text-[180px] font-staatliches leading-none text-primary opacity-10`}>02</span>
+          <div className="overflow-hidden rounded-t-lg">
+            <img 
+              src="/02.svg" 
+              alt="Add to Cart" 
+              className="w-full h-full bg-background object-cover"
+              loading="lazy"
+              width="634"
+              height="292"
+            />
+          </div>
+          <div className="p-4 pb-12">
+            <h3 className="font-staatliches uppercase text-3xl text-text">SELECT & ADD TO CART</h3>
+            <p className={`${isDark ? 'text-neutral-400' : 'text-textSecondary'}`}>
+              Choose your desired products and quantities. Add items to your 
+              cart with one click. Review your selections before proceeding 
+              to checkout.
+            </p>
+          </div>
+        </div>
+
+        {/* Card 3 */}
+        <div className={`border border-border rounded-lg bg-cardBg relative`}>
+          <span className={`absolute -bottom-8 right-4 text-[180px] font-staatliches leading-none text-primary opacity-10`}>03</span>
+          <div className="overflow-hidden rounded-t-lg">
+            <img 
+              src="/03.svg" 
+              alt="Secure Checkout" 
+              className="w-full h-full bg-background object-cover"
+              loading="lazy"
+              width="636"
+              height="360"
+            />
+          </div>
+          <div className="p-4 pb-12">
+            <h3 className="font-staatliches uppercase text-3xl text-text">SECURE CHECKOUT</h3>
+            <p className={`${isDark ? 'text-neutral-400' : 'text-textSecondary'}`}>
+              Complete your purchase through our secure payment system. 
+              Choose your preferred payment method and delivery options. 
+              All transactions are encrypted and protected.
+            </p>
+          </div>
+        </div>
+
+        {/* Card 4 */}
+        <div className={`border border-border rounded-lg bg-cardBg relative`}>
+          <span className={`absolute -bottom-8 right-4 text-[180px] font-staatliches leading-none text-primary opacity-10`}>04</span>
+          <div className="overflow-hidden rounded-t-lg">
+            <img 
+              src="/04.svg" 
+              alt="Fast Delivery" 
+              className="w-full h-full bg-background object-cover"
+              loading="lazy"
+              width="636"
+              height="360"
+            />
+          </div>
+          <div className="p-4 pb-12">
+            <h3 className="font-staatliches uppercase text-3xl text-text">FAST LOCAL DELIVERY</h3>
+            <p className={`${isDark ? 'text-neutral-400' : 'text-textSecondary'}`}>
+              Receive your fresh products directly to your doorstep. 
+              Track your order in real-time and rate your experience 
+              after delivery is completed.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const MainPage = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [direction, setDirection] = useState('right');
@@ -432,6 +538,9 @@ const MainPage = () => {
             <FeatureCard {...features[4]} />
           </div>
         </div>
+
+        {/* How It Works Section */}
+        <HowItWorks />
       </div>
     </LazyMotion>
   );

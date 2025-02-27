@@ -2,7 +2,7 @@ import React from 'react';
 import { useTheme } from '../../../context/ThemeContext';
 
 export const Table = ({ children, className = '' }) => {
-  const { isDark } = useTheme();
+
   
   return (
     <div className={`w-full overflow-hidden bg-white dark:bg-cardBg rounded-xl border border-border ${className}`}>
