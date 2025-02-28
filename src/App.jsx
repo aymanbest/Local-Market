@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store/store';
 import Header from './components/features/public/Header';
@@ -36,8 +36,11 @@ import { ROLES } from './components/security/ProtectedRoute';
 import TermsOfService from './components/features/public/TermsOfService';
 import Footer from './components/features/public/Footer';
 
-// Create a separate component for content that needs Redux
-const AppContent = () => {
+// Create a separate component for the main content
+const MainContent = () => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const isProducerRoute = location.pathname.startsWith('/producer');
   const [initialLoading, setInitialLoading] = useState(true);
   const isLoading = useLoading();
 
@@ -55,7 +58,7 @@ const AppContent = () => {
   }, []);
 
   return (
-    <Router>
+    <>
       <WebSocketInitializer />
       {(initialLoading || isLoading) && <Preloader />}
       <div className={`min-h-screen bg-background transition-colors duration-300 ${initialLoading ? 'hidden' : ''}`}>
@@ -167,9 +170,22 @@ const AppContent = () => {
             <Route path="/tos" element={<TermsOfService />} />
           </Routes>
         </div>
-        <WelcomeCoupon />
-        <Footer />
+        {!isAdminRoute && !isProducerRoute && (
+          <>
+            <WelcomeCoupon />
+            <Footer />
+          </>
+        )}
       </div>
+    </>
+  );
+};
+
+// AppContent component with Router
+const AppContent = () => {
+  return (
+    <Router>
+      <MainContent />
     </Router>
   );
 };
