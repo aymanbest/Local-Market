@@ -61,13 +61,17 @@ export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await api.post('/api/auth/register', {
+      // Only include role in the request if it's provided (admin registration)
+      const requestBody = {
         username: userData.username,
         email: userData.email,
         firstname: userData.firstname,
         lastname: userData.lastname,
-        password: userData.password
-      });
+        password: userData.password,
+        ...(userData.role && { role: userData.role }) // Only include role if it exists
+      };
+      
+      const response = await api.post('/api/auth/register', requestBody);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Registration failed');

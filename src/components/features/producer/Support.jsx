@@ -539,12 +539,17 @@ const Support = () => {
                       )}
                       <div className={`flex items-end gap-2 group ${isProducerMessage ? 'justify-end' : 'justify-start'}`}>
                         {!isProducerMessage && (
-                          <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
-                            isDark ? 'bg-primary/10' : 'bg-primary-50'
-                          }`}>
-                            <UserCircle2 className={`w-5 h-5 ${
-                              isDark ? 'text-primary' : 'text-primary-600'
-                            }`} />
+                          <div className="flex flex-col items-center gap-1">
+                            <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
+                              isDark ? 'bg-red-500/20' : 'bg-red-100'
+                            }`}>
+                              <UserCircle2 className={`w-5 h-5 ${
+                                isDark ? 'text-red-400' : 'text-red-600'
+                              }`} />
+                            </div>
+                            <span className={`text-[10px] font-medium ${
+                              isDark ? 'text-red-400' : 'text-red-600'
+                            }`}>Admin</span>
                           </div>
                         )}
                         <div className={`

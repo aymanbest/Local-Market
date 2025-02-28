@@ -69,9 +69,9 @@ export const assignTicket = createAsyncThunk(
 // Forward ticket
 export const forwardTicket = createAsyncThunk(
   'supportTickets/forward',
-  async ({ ticketId, adminId }, { rejectWithValue }) => {
+  async ({ ticketId, newAdminId }, { rejectWithValue }) => {
     try {
-      const response = await api.post(`/api/support/tickets/${ticketId}/forward`, { adminId });
+      const response = await api.post(`/api/support/tickets/${ticketId}/forward?newAdminId=${newAdminId}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to forward ticket');

@@ -82,9 +82,10 @@ const Support = () => {
     try {
       await dispatch(forwardTicket({ 
         ticketId: currentTicket.ticketId, 
-        adminId: selectedAdmin 
+        newAdminId: selectedAdmin 
       })).unwrap();
       setShowForwardModal(false);
+      setShowChatModal(false);
       setSelectedAdmin('');
       dispatch(fetchAdminTickets());
     } catch (error) {
@@ -348,8 +349,8 @@ const Support = () => {
         {/* Filter Modal */}
         {showFilterModal && (
           <div className="fixed inset-0 flex items-center justify-center z-[9999]">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowFilterModal(false)} />
-            <div className="relative bg-cardBg rounded-xl w-full max-w-md mx-4 shadow-xl border border-border p-6">
+            <div className="fixed inset-0 bg-black/95 z-[9998]" onClick={() => setShowFilterModal(false)} />
+            <div className="relative bg-cardBg rounded-xl w-full max-w-md mx-4 shadow-xl border border-border p-6 z-[9999]">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-semibold text-text">Filter Options</h3>
                 <button
@@ -531,7 +532,7 @@ const Support = () => {
                   )}
                   <div className={`flex items-end gap-2 group ${isAdminMessage ? 'justify-end' : 'justify-start'}`}>
                     {!isAdminMessage && (
-                      <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
+                      <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center self-end ${
                         isDark ? 'bg-primary/10' : 'bg-primary-50'
                       }`}>
                         <UserCircle2 className={`w-5 h-5 ${
@@ -562,7 +563,7 @@ const Support = () => {
                           : 'rounded-2xl rounded-tl-md'
                         }
                       `}>
-                        <p className="whitespace-pre-wrap break-words">
+                        <p className="whitespace-pre-wrap text-text break-words">
                           {message.content}
                         </p>
                       </div>
@@ -585,11 +586,11 @@ const Support = () => {
                       </div>
                     </div>
                     {isAdminMessage && (
-                      <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center order-3 ${
+                      <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center self-end order-3 ${
                         isDark ? 'bg-primary/10' : 'bg-primary-50'
                       }`}>
                         <UserCircle2 className={`w-5 h-5 ${
-                          isDark ? 'text-primary' : 'text-primary-600'
+                          isDark ? 'text-red-500' : 'text-red-500'
                         }`} />
                       </div>
                     )}
@@ -680,8 +681,8 @@ const Support = () => {
         {/* Forward Modal */}
         {showForwardModal && (
           <div className="fixed inset-0 flex items-center justify-center z-[9999]">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowForwardModal(false)} />
-            <div className="relative bg-cardBg rounded-xl w-full max-w-md mx-4 shadow-xl border border-border p-6">
+            <div className="fixed inset-0 bg-black/95 z-[9998]" onClick={() => setShowForwardModal(false)} />
+            <div className="relative bg-cardBg rounded-xl w-full max-w-md mx-4 shadow-xl border border-border p-6 z-[9999]">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-semibold text-text">Forward Ticket</h3>
                 <button
@@ -694,17 +695,17 @@ const Support = () => {
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-textSecondary mb-2">
+                  <label className="block text-sm text-text font-medium text-textSecondary mb-2">
                     Select Admin
                   </label>
                   <select
                     value={selectedAdmin}
                     onChange={(e) => setSelectedAdmin(e.target.value)}
-                    className="w-full p-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full p-2.5 text-text rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
-                    <option value="">Select an admin</option>
+                    <option className='text-text' value="">Select an admin</option>
                     {users.map(user => (
-                      <option key={user.userId} value={user.userId}>
+                      <option className='text-text' key={user.userId} value={user.userId}>
                         {user.firstname} {user.lastname}
                       </option>
                     ))}
@@ -733,8 +734,8 @@ const Support = () => {
         {/* Close Ticket Confirmation Modal */}
         {showCloseTicketModal && (
           <div className="fixed inset-0 flex items-center justify-center z-[9999]">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowCloseTicketModal(false)} />
-            <div className="relative bg-cardBg rounded-xl w-full max-w-md mx-4 shadow-xl border border-border p-6">
+            <div className="fixed inset-0 bg-black/95 z-[9998]" onClick={() => setShowCloseTicketModal(false)} />
+            <div className="relative bg-cardBg rounded-xl w-full max-w-md mx-4 shadow-xl border border-border p-6 z-[9999]">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-3 text-red-500">
                   <AlertTriangle className="w-6 h-6" />

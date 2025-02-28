@@ -4,8 +4,9 @@ import { fetchUsers, updateUser, deleteUser, updatePagination } from '../../../s
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../common/ui/Table';
 import { Card } from '../../common/ui/Card';
 import Button from '../../common/ui/Button';
-import { Search, Filter, ArrowUpDown, Edit2, Trash2, X, UserCog, Shield, Users, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Activity, Gauge, Lock, UserCheck, Building2, Key, SlidersHorizontal } from 'lucide-react';
+import { Search, Edit2, Trash2, X, UserCog, Shield, Users, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Activity, Building2, Key, SlidersHorizontal, Plus } from 'lucide-react';
 import { useTheme } from '../../../context/ThemeContext';
+import { registerUser } from '../../../store/slices/auth/authSlice';
 
 // Create a memoized UsersTable component
 const UsersTable = React.memo(({ users, onEdit, onDelete, isDark }) => {
@@ -213,6 +214,15 @@ const UserManagement = () => {
     role: ''
   });
   const { isDark } = useTheme();
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({
+    username: '',
+    email: '',
+    firstname: '',
+    lastname: '',
+    password: '',
+    role: 'CUSTOMER'
+  });
 
   // Add new useEffect for search and role filtering
   useEffect(() => {
@@ -297,6 +307,38 @@ const UserManagement = () => {
       sortBy: tempFilters.sorting.sortBy,
       direction: tempFilters.sorting.direction
     }));
+  };
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    try {
+      const resultAction = await dispatch(registerUser({
+        ...newUserForm,
+        role: newUserForm.role // This will only be included in the request when called from admin
+      }));
+      
+      if (registerUser.fulfilled.match(resultAction)) {
+        setShowAddUserModal(false);
+        // Refresh the users list
+        dispatch(fetchUsers({
+          page: pagination.currentPage,
+          size: pagination.pageSize,
+          sortBy: tempFilters.sorting.sortBy,
+          direction: tempFilters.sorting.direction
+        }));
+        // Reset form
+        setNewUserForm({
+          username: '',
+          email: '',
+          firstname: '',
+          lastname: '',
+          password: '',
+          role: 'CUSTOMER'
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create user:', error);
+    }
   };
 
   const FilterModal = () => {
@@ -469,7 +511,7 @@ const UserManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-2 transition-colors duration-200">
+    <div className="min-h-screen p-2 transition-colors duration-200">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header Section */}
         <div className="flex items-center justify-between">
@@ -477,13 +519,22 @@ const UserManagement = () => {
             <h2 className="text-3xl font-bold text-text tracking-tight">User Management</h2>
             <p className="text-textSecondary mt-1">Manage and monitor system users</p>
           </div>
-          <Button
-            onClick={() => setShowFiltersModal(true)}
-            variant="outline"
-            className="border-border hover:bg-cardBg"
-          >
-            <SlidersHorizontal className="w-4 h-4 mr-2" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setShowAddUserModal(true)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add User
+            </Button>
+            <Button
+              onClick={() => setShowFiltersModal(true)}
+              variant="outline"
+              className=" hover:bg-cardBg"
+            >
+              <SlidersHorizontal className="w-4 h-4 mr-2" />
+            </Button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -792,6 +843,144 @@ const UserManagement = () => {
 
         {/* Filters Modal */}
         {showFiltersModal && <FilterModal />}
+
+        {/* Add User Modal */}
+        {showAddUserModal && (
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowAddUserModal(false)} />
+            <div className={`relative rounded-lg w-full max-w-md ${
+              isDark ? 'bg-[#1E1E1E]' : 'bg-cardBg'
+            }`}>
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-semibold text-text">Add New User</h3>
+                  <button
+                    onClick={() => setShowAddUserModal(false)}
+                    className="text-textSecondary hover:text-red-500 transition-colors duration-200"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleAddUser} className="space-y-4">
+                  <div>
+                    <label htmlFor="new-username" className="block text-sm font-medium text-textSecondary mb-1">
+                      Username
+                    </label>
+                    <input
+                      id="new-username"
+                      type="text"
+                      value={newUserForm.username}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, username: e.target.value })}
+                      className={`w-full rounded-lg border border-border ${
+                        isDark ? 'bg-[#2f2f2f]' : 'bg-inputBg'
+                      } text-text px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200`}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="new-email" className="block text-sm font-medium text-textSecondary mb-1">
+                      Email
+                    </label>
+                    <input
+                      id="new-email"
+                      type="email"
+                      value={newUserForm.email}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
+                      className={`w-full rounded-lg border border-border ${
+                        isDark ? 'bg-[#2f2f2f]' : 'bg-inputBg'
+                      } text-text px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200`}
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="new-firstname" className="block text-sm font-medium text-textSecondary mb-1">
+                        First Name
+                      </label>
+                      <input
+                        id="new-firstname"
+                        type="text"
+                        value={newUserForm.firstname}
+                        onChange={(e) => setNewUserForm({ ...newUserForm, firstname: e.target.value })}
+                        className={`w-full rounded-lg border border-border ${
+                          isDark ? 'bg-[#2f2f2f]' : 'bg-inputBg'
+                        } text-text px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200`}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="new-lastname" className="block text-sm font-medium text-textSecondary mb-1">
+                        Last Name
+                      </label>
+                      <input
+                        id="new-lastname"
+                        type="text"
+                        value={newUserForm.lastname}
+                        onChange={(e) => setNewUserForm({ ...newUserForm, lastname: e.target.value })}
+                        className={`w-full rounded-lg border border-border ${
+                          isDark ? 'bg-[#2f2f2f]' : 'bg-inputBg'
+                        } text-text px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200`}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="new-password" className="block text-sm font-medium text-textSecondary mb-1">
+                      Password
+                    </label>
+                    <input
+                      id="new-password"
+                      type="password"
+                      value={newUserForm.password}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, password: e.target.value })}
+                      className={`w-full rounded-lg border border-border ${
+                        isDark ? 'bg-[#2f2f2f]' : 'bg-inputBg'
+                      } text-text px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200`}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="new-role" className="block text-sm font-medium text-textSecondary mb-1">
+                      Role
+                    </label>
+                    <select
+                      id="new-role"
+                      value={newUserForm.role}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value })}
+                      className={`w-full rounded-lg border border-border ${
+                        isDark ? 'bg-[#2f2f2f]' : 'bg-inputBg'
+                      } text-text px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200`}
+                    >
+                      <option value="CUSTOMER">Customer</option>
+                      <option value="PRODUCER">Producer</option>
+                      <option value="ADMIN">Admin</option>
+                    </select>
+                  </div>
+
+                  <div className="flex justify-end gap-3 mt-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowAddUserModal(false)}
+                      className="border-border"
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit">
+                      Add User
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
