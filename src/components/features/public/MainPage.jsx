@@ -6,7 +6,7 @@ import {
   Shield, User, Apple, Beef, Egg, Croissant, Coffee, Wine, UtensilsCrossed, Cookie, Fish
 } from 'lucide-react';
 import Button from '../../common/ui/Button';
-import Preloader from './Preloader';
+import Preloader from '../preloader/Preloader';
 import { useTheme } from '../../../context/ThemeContext';
 // Import only what we need from framer-motion to reduce bundle size
 import { LazyMotion, domAnimation } from 'framer-motion';
@@ -479,7 +479,7 @@ const MainPage = () => {
 
   return (
     <LazyMotion features={domAnimation}>
-      <div className="min-h-screen bg-background text-text pb-16 transition-colors duration-300">
+      <div className="min-h-screen text-text pb-16 transition-colors duration-300">
         {/* Hero Section - Memoized */}
         <HeroSection isDark={isDark} />
 

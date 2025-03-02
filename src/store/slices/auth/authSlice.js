@@ -15,7 +15,11 @@ export const initializeState = createAsyncThunk(
   'auth/initialize',
   async (_, { dispatch }) => {
     try {
-      const response = await api.get('/api/auth/me');
+      const response = await api.get('/api/auth/me', {
+        headers: {
+          'x-auth-check': 'true'
+        }
+      });
       const userData = response.data;
       
       if (userData) {

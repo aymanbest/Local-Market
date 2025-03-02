@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams, Link } from 'react-router-dom';
-import { Package, Truck, CheckCircle, XCircle, Clock, AlertCircle, ArrowRight } from 'lucide-react';
+import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { Package, Truck, CheckCircle, XCircle, Clock, AlertCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import api from '../../../lib/axios';
 import useLoading from '../../../hooks/useLoading';
-import Preloader from '../public/Preloader';
+import Preloader from '../preloader/Preloader';
 
 const OrderBundle = () => {
   const { bundleId } = useParams();
@@ -12,6 +12,7 @@ const OrderBundle = () => {
   const [orders, setOrders] = useState(null);
   const [error, setError] = useState('');
   const isLoading = useLoading();
+  const navigate = useNavigate();
 
   const statusConfig = {
     'PENDING_PAYMENT': { icon: Clock, color: 'yellow', text: 'Pending Payment' },
@@ -60,7 +61,16 @@ const OrderBundle = () => {
       <div className="min-h-screen bg-background py-8 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-text">Order Details</h1>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate(-1)}
+                className="rounded-full border border-border hover:bg-cardBg transition flex gap-2 items-center px-4 py-2"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Back</span>
+              </button>
+              <h1 className="text-3xl font-bold text-text">Order Details</h1>
+            </div>
             <div className="text-right">
               <p className="text-sm text-textSecondary">Bundle Total</p>
               <p className="text-2xl font-bold text-text">${getTotalBundlePrice().toFixed(2)}</p>

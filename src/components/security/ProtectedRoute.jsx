@@ -24,24 +24,16 @@ export const getDefaultRoute = (role) => {
 };
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
-  const dispatch = useDispatch();
   const location = useLocation();
-  const { user, status } = useSelector(state => state.auth);
+  const { user, status, isAuthenticated } = useSelector(state => state.auth);
   
-  useEffect(() => {
-    // Only initialize if we haven't tried authentication yet
-    if (status === 'idle' && allowedRoles.length > 0) {
-      dispatch(initializeState());
-    }
-  }, [dispatch, status, allowedRoles.length]);
-
   // Show nothing while checking authentication
   if (status === 'loading') {
     return null;
   }
 
   // If authentication is required but user is not logged in
-  if (allowedRoles.length > 0 && !user) {
+  if (allowedRoles.length > 0 && !isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
@@ -55,22 +47,10 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 
 // Component to redirect authenticated users away from auth pages
 export const RedirectIfAuthenticated = ({ children }) => {
-  const dispatch = useDispatch();
   const { user, status, isAuthenticated } = useSelector(state => state.auth);
-  const [hasChecked, setHasChecked] = useState(false);
   
-  useEffect(() => {
-    // Only check once when component mounts
-    if (!hasChecked && status === 'idle') {
-      dispatch(initializeState())
-        .finally(() => {
-          setHasChecked(true);
-        });
-    }
-  }, [dispatch, status, hasChecked]);
-
-  // Show nothing only on initial load
-  if (!hasChecked && status === 'loading') {
+  // If authentication is still loading, show nothing
+  if (status === 'loading') {
     return null;
   }
 

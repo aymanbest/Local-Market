@@ -57,14 +57,8 @@ api.interceptors.response.use(
       // Check if current path is a public route
       const isPublicRoute = publicRoutes.some(route => currentPath.startsWith(route));
       
-      // Always redirect on /api/auth/me 401 response, unless on public routes
-      if (requestUrl.includes('/api/auth/me')) {
-        if (!isPublicRoute) {
-          store.dispatch(clearAuth());
-          if (!currentPath.includes('/login')) {
-            window.location.href = '/login';
-          }
-        }
+      // Don't clear auth on /api/auth/me 401 responses during normal navigation
+      if (requestUrl.includes('/api/auth/me') && error.config.headers['x-auth-check'] !== 'true') {
         return Promise.reject(error);
       }
       

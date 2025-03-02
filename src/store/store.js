@@ -1,4 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
 import authReducer from './slices/auth/authSlice';
 import cartReducer from './slices/product/cartSlice';
 import categoryReducer from './slices/product/categorySlice';
@@ -14,12 +16,21 @@ import notificationReducer from './slices/common/notificationSlice';
 import producerProductsReducer from './slices/producer/producerProductsSlice';
 import producerApplicationsReducer from './slices/producer/producerApplicationsSlice';
 import couponReducer from './slices/customer/couponSlice';
-import { initializeState, setState } from './slices/auth/authSlice';
 import supportTicketReducer from './slices/common/supportTicketSlice';
+
+// Configuration for Redux Persist
+const authPersistConfig = {
+  key: 'auth',
+  storage,
+  whitelist: ['isAuthenticated', 'user', 'status'] // only persist these fields
+};
+
+// Create persisted reducers
+const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 
 const store = configureStore({
   reducer: {
-    auth: authReducer,
+    auth: persistedAuthReducer,
     cart: cartReducer,
     categories: categoryReducer,
     products: productReducer,
@@ -39,12 +50,19 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Ignore these action types
-        ignoredActions: ['persist/PERSIST'],
+        // Ignore these action types from redux-persist
+        ignoredActions: [
+          'persist/PERSIST',
+          'persist/REHYDRATE',
+          'persist/REGISTER'
+        ],
       },
     })
 });
 
-// Export the store directly without initializing auth state
+// Create persistor
+export const persistor = persistStore(store);
+
+// Export the store
 export default store;
 

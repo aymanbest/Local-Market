@@ -1,17 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../lib/axios';
+import usePageLoaded from './usePageLoaded';
 
 const useLoading = () => {
-  const [isLoading, setIsLoading] = useState(false);
-
+  const [isApiLoading, setIsApiLoading] = useState(false);
+  const isPageLoaded = usePageLoaded(1200); // Minimum 1.2 seconds display time
+  
   // Add request interceptor
   api.interceptors.request.use(
     (config) => {
-      setIsLoading(true);
+      setIsApiLoading(true);
       return config;
     },
     (error) => {
-      setIsLoading(false);
+      setIsApiLoading(false);
       return Promise.reject(error);
     }
   );
@@ -19,16 +21,17 @@ const useLoading = () => {
   // Add response interceptor
   api.interceptors.response.use(
     (response) => {
-      setIsLoading(false);
+      setIsApiLoading(false);
       return response;
     },
     (error) => {
-      setIsLoading(false);
+      setIsApiLoading(false);
       return Promise.reject(error);
     }
   );
 
-  return isLoading;
+  // Return true if either API is loading or page is not fully loaded yet
+  return isApiLoading || !isPageLoaded;
 };
 
 export default useLoading; 

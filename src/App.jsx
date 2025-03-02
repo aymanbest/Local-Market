@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import store from './store/store';
+import store, { persistor } from './store/store';
 import Header from './components/features/public/Header';
 import MainPage from './components/features/public/MainPage';
 import ProducerLayout from './components/layouts/producer/ProducerLayout';
@@ -12,7 +12,7 @@ import Cart from './components/features/public/Cart';
 import AccountPage from './components/features/public/AccountPage';
 import { ThemeProvider } from './context/ThemeContext';
 import Store from './components/features/product/Store';
-import Preloader from './components/features/public/Preloader';
+import Preloader from './components/features/preloader/Preloader';
 import BecomeSeller from './components/features/public/BecomeSeller';
 import FAQ from './components/features/public/FAQ';
 import ProductDetails from './components/features/product/ProductDetails';
@@ -35,35 +35,46 @@ import NotFound from './components/features/public/NotFound';
 import { ROLES } from './components/security/ProtectedRoute';
 import TermsOfService from './components/features/public/TermsOfService';
 import Footer from './components/features/public/Footer';
+import AuthPersistence from './components/common/AuthPersistence';
+import { PersistGate } from 'redux-persist/integration/react';
 
 // Create a separate component for the main content
 const MainContent = () => {
-  const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/admin');
-  const isProducerRoute = location.pathname.startsWith('/producer');
-  const [initialLoading, setInitialLoading] = useState(true);
   const isLoading = useLoading();
-
+  const location = useLocation();
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [navigationLoading, setNavigationLoading] = useState(false);
+  
+  // Track route changes to show preloader on navigation
   useEffect(() => {
-    // Initial app load
-    window.onload = () => {
-      setTimeout(() => {
-        setInitialLoading(false);
-      }, 1000);
-    };
-
-    setTimeout(() => {
-      setInitialLoading(false);
-    }, 3000);
-  }, []);
-
+    // On first load, the preloader will be shown by default through useLoading
+    if (initialLoad) {
+      setInitialLoad(false);
+      return;
+    }
+    
+    // For subsequent route changes, briefly show the preloader
+    setNavigationLoading(true);
+    
+    // Scroll to top when route changes
+    window.scrollTo(0, 0);
+    
+    // Hide the navigation preloader after a short delay
+    const timer = setTimeout(() => {
+      setNavigationLoading(false);
+    }, 800); // Show for 800ms during navigation
+    
+    return () => clearTimeout(timer);
+  }, [location.pathname, initialLoad]);
+  
   return (
     <>
+      <AuthPersistence />
+      {(isLoading || navigationLoading) && <Preloader />}
       <WebSocketInitializer />
-      {(initialLoading || isLoading) && <Preloader />}
-      <div className={`min-h-screen bg-background transition-colors duration-300 ${initialLoading ? 'hidden' : ''}`}>
+      <div className="flex flex-col min-h-screen bg-background">
         <Header />
-        <div className="pt-28 md:pt-32">
+        <main className="pt-28 md:pt-32">
           <Routes>
             <Route path='*' element={<NotFound />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
@@ -169,33 +180,23 @@ const MainContent = () => {
             />
             <Route path="/tos" element={<TermsOfService />} />
           </Routes>
-        </div>
-        {!isAdminRoute && !isProducerRoute && (
-          <>
-            <WelcomeCoupon />
-            <Footer />
-          </>
-        )}
+        </main>
+        <Footer />
       </div>
     </>
-  );
-};
-
-// AppContent component with Router
-const AppContent = () => {
-  return (
-    <Router>
-      <MainContent />
-    </Router>
   );
 };
 
 function App() {
   return (
     <Provider store={store}>
-      <ThemeProvider>
-        <AppContent />
-      </ThemeProvider>
+      <PersistGate loading={null} persistor={persistor}>
+        <ThemeProvider>
+          <Router>
+            <MainContent />
+          </Router>
+        </ThemeProvider>
+      </PersistGate>
     </Provider>
   );
 }

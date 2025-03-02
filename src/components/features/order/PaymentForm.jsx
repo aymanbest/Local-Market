@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { CreditCard, Bitcoin, Calendar, HelpCircle, Lock, Shield } from 'lucide-react';
+import { CreditCard, Bitcoin, Calendar, HelpCircle, Lock, Shield, ArrowLeft } from 'lucide-react';
 import api from '../../../lib/axios';
 import PaymentSuccess from '../public/PaymentSuccess';
 import { FaCcVisa, FaCcMastercard, FaBitcoin, FaLock, FaShieldAlt } from 'react-icons/fa';
@@ -159,9 +159,18 @@ const PaymentForm = () => {
           <div className="mx-auto max-w-screen-xl px-4">
             <div className="mx-auto max-w-5xl">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold text-text sm:text-3xl">
-                  Secure Checkout
-                </h2>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => navigate(-1)}
+                    className="rounded-full border border-border hover:bg-cardBg transition flex gap-2 items-center px-4 py-2"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                    <span>Back</span>
+                  </button>
+                  <h2 className="text-2xl font-bold text-text sm:text-3xl">
+                    Secure Checkout
+                  </h2>
+                </div>
                 <div className="flex items-center gap-2 text-green-500">
                   <FaLock className="h-5 w-5" />
                   <span className="text-sm font-medium">SSL Encrypted</span>

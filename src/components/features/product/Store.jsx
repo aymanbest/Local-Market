@@ -6,7 +6,7 @@ import Button from '../../common/ui/Button';
 import { fetchCategories, fetchProductsByCategory } from '../../../store/slices/product/categorySlice';
 import { fetchProducts } from '../../../store/slices/product/productSlice';
 import { addToCart } from '../../../store/slices/product/cartSlice';
-import Preloader from '../public/Preloader';
+import Preloader from '../preloader/Preloader';
 
 const Store = () => {
     const dispatch = useDispatch();
