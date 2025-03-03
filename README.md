@@ -130,7 +130,7 @@ The JAR file will be created in the `target/` directory.
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
 ## 👥 Contributors
 
