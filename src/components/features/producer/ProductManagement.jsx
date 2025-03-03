@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
-  Plus, Pencil, Trash2, ArrowUpDown, Search, Filter, X, Upload, 
-  Edit2, MoreVertical, Eye, ChevronLeft, ChevronRight, Package,
-  TrendingUp, TrendingDown, Box, DollarSign, BarChart2, AlertTriangle, Check, Text,
+  Plus, Pencil, Trash2, Search, Filter, X, Upload, 
+  Edit2,  Eye,  Package, Box, DollarSign, BarChart2, AlertTriangle, Check, Text,
   SlidersHorizontal
 } from 'lucide-react';
 import Button from '../../common/ui/Button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../common/ui/Table';
-import { Card, CardHeader, CardTitle, CardContent } from '../../common/ui/Card';
+import { Card} from '../../common/ui/Card';
 import { useTheme } from '../../../context/ThemeContext';
 import { 
-  fetchMyProducts, createProduct, updateProduct, resetCreateStatus, 
-  resetUpdateStatus, deleteProduct, updateSorting, updatePagination 
+  fetchMyProducts, createProduct, updateProduct, deleteProduct, updateSorting
 } from '../../../store/slices/producer/producerProductsSlice';
 import { fetchCategories } from '../../../store/slices/product/categorySlice';
-// import { //toast } from 'react-hot-//toast';
+import { getFullImageUrl } from '../../../utils/getFullImageUrl';
+
 
 const StatusBadge = ({ status = 'PENDING', declineReason }) => {
   const getStatusStyles = () => {
@@ -64,11 +63,6 @@ const StatusBadge = ({ status = 'PENDING', declineReason }) => {
   );
 };
 
-const getFullImageUrl = (imageUrl) => {
-  if (!imageUrl) return 'https://placehold.co/600x400?text=No+Image';
-  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
-  return `http://localhost:8080${imageUrl}`;
-};
 
 const ProductManagement = () => {
   const dispatch = useDispatch();

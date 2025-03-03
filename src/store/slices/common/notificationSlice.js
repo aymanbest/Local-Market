@@ -72,7 +72,9 @@ export const initializeWebSocket = createAsyncThunk(
     const baseDelay = 2000; // 2 seconds
 
     const connect = () => {
-      wsConnection = new WebSocket(`ws://localhost:8080/ws`);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+      const wsUrl = apiUrl.replace('http://', 'ws://').replace('https://', 'wss://');
+      wsConnection = new WebSocket(`${wsUrl}/ws`);
 
       wsConnection.onopen = () => {
         console.log('WebSocket Connected!');

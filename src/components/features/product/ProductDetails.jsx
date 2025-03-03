@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom';
 import { checkReviewEligibility, submitReview } from '../../../store/slices/customer/reviewSlice';
 import { useTheme } from '../../../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { getFullImageUrl } from '../../../utils/getFullImageUrl';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -48,11 +48,6 @@ const ProductDetails = () => {
     setQuantity(newQuantity);
   };
 
-  const getFullImageUrl = (imageUrl) => {
-    if (!imageUrl) return 'https://placehold.co/600x400?text=No+Image';
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
-    return `http://localhost:8080${imageUrl}`;
-  };
 
   const handleAddToCart = () => {
     if (product) {

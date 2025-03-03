@@ -19,7 +19,8 @@ const PaymentSuccess = ({ orderData }) => {
 
   const handleDownloadReceipt = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/orders/receipt?accessToken=${displayData.ordercheckout}`);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+      const response = await fetch(`${apiUrl}/api/orders/receipt?accessToken=${displayData.ordercheckout}`);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');

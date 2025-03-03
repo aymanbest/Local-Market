@@ -7,6 +7,7 @@ import { fetchCategories, fetchProductsByCategory } from '../../../store/slices/
 import { fetchProducts } from '../../../store/slices/product/productSlice';
 import { addToCart } from '../../../store/slices/product/cartSlice';
 import Preloader from '../preloader/Preloader';
+import { getFullImageUrl } from '../../../utils/getFullImageUrl';
 
 const Store = () => {
     const dispatch = useDispatch();
@@ -87,12 +88,6 @@ const Store = () => {
             quantity: 1
         };
         dispatch(addToCart(cartItem));
-    };
-
-    const getFullImageUrl = (imageUrl) => {
-        if (!imageUrl) return 'https://placehold.co/600x400?text=No+Image';
-        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
-        return `http://localhost:8080${imageUrl}`;
     };
 
     // Update pagination controls
