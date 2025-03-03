@@ -3,9 +3,8 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductById } from '../../../store/slices/product/categorySlice';
 import { addToCart } from '../../../store/slices/product/cartSlice';
-import { initializeState } from '../../../store/slices/auth/authSlice';
 import { 
-  CheckCircle, ShoppingCart, ArrowRight, Upload, Info, 
+  CheckCircle, ShoppingCart, Info, 
   Plus, Minus, Star, Leaf, Package, Shield, Truck, Heart,
   ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Filter
 } from 'lucide-react';
@@ -13,7 +12,7 @@ import { Link } from 'react-router-dom';
 import { checkReviewEligibility, submitReview } from '../../../store/slices/customer/reviewSlice';
 import { useTheme } from '../../../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
-// import { toast } from 'react-hot-toast';
+
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -107,8 +106,6 @@ const ProductDetails = () => {
       if (!location.state?.product && id) {
         setIsLoading(true);
         try {
-          // Initialize auth state first
-          await dispatch(initializeState());
           await dispatch(fetchProductById(id)).unwrap();
         } catch (error) {
           console.error('Error fetching product:', error);
@@ -120,8 +117,6 @@ const ProductDetails = () => {
           setIsLoading(false);
         }
       } else {
-        // Even if we have the product from state, still initialize auth
-        dispatch(initializeState());
         setIsLoading(false);
       }
     };

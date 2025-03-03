@@ -164,8 +164,8 @@ const PaymentForm = () => {
                     onClick={() => navigate(-1)}
                     className="rounded-full border border-border hover:bg-cardBg transition flex gap-2 items-center px-4 py-2"
                   >
-                    <ArrowLeft className="w-5 h-5" />
-                    <span>Back</span>
+                    <ArrowLeft className="w-5 h-5 text-text" />
+                    <span className="text-text">Back</span>
                   </button>
                   <h2 className="text-2xl font-bold text-text sm:text-3xl">
                     Secure Checkout

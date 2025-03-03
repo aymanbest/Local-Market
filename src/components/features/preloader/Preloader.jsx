@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '../../../context/ThemeContext';
 import { useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import './PreloaderStyles.css';
 
 const Preloader = () => {
@@ -8,16 +9,22 @@ const Preloader = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [isFading, setIsFading] = useState(false);
   const location = useLocation();
+  const authStatus = useSelector(state => state.auth.status);
 
-  // Reset states when route changes
+  // Reset states when route changes or auth status is loading
   useEffect(() => {
-    setIsVisible(true);
-    setIsFading(false);
-  }, [location.pathname]);
+    if (authStatus === 'loading') {
+      setIsVisible(true);
+      setIsFading(false);
+    }
+  }, [location.pathname, authStatus]);
 
   // Ensure the preloader has a minimum display time and smooth fade-out
   useEffect(() => {
     if (!isVisible) return; // Skip if already hidden
+    
+    // Don't start fade-out if we're in the middle of authentication
+    if (authStatus === 'loading') return;
     
     // The preloader will always be visible for at least 1 second
     const minDisplayTimer = setTimeout(() => {
@@ -33,7 +40,7 @@ const Preloader = () => {
     }, 1000);
 
     return () => clearTimeout(minDisplayTimer);
-  }, [isVisible]);
+  }, [isVisible, authStatus]);
 
   if (!isVisible) return null;
 

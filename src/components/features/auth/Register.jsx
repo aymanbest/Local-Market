@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { registerUser } from '../../../store/slices/auth/authSlice';
+import { registerUser, initializeState } from '../../../store/slices/auth/authSlice';
 import { Eye, EyeClosed } from 'lucide-react';
 
 const Register = () => {
@@ -19,9 +19,14 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const resultAction = await dispatch(registerUser(formData));
-    if (registerUser.fulfilled.match(resultAction)) {
-      navigate('/');
+    try {
+      const resultAction = dispatch(registerUser(formData));
+      if (registerUser.fulfilled.match(resultAction)) {
+        dispatch(initializeState());
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
     }
   };
 
@@ -134,7 +139,7 @@ const Register = () => {
             className="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-md text-sm font-medium transition-colors duration-300"
             disabled={status === 'loading'}
           >
-            Register
+            {status === 'loading' ? 'Processing...' : 'Register'}
           </button>
 
           {error && (

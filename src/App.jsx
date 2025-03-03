@@ -25,7 +25,7 @@ import SellerApplication from './components/features/producer/SellerApplication'
 import MyReviews from './components/features/product/MyReviews';
 import AdminLayout from './components/layouts/admin/AdminLayout';
 import SecurityPage from './components/features/auth/SecurityPage';
-import WebSocketInitializer from './components/common/WebSocketInitializer';
+import WebSocketInitializer from './components/socket/WebSocketInitializer';
 import Support from './components/features/public/Support';
 import About from './components/features/public/About';
 import WelcomeCoupon from './components/features/promotions/WelcomeCoupon';
@@ -35,7 +35,7 @@ import NotFound from './components/features/public/NotFound';
 import { ROLES } from './components/security/ProtectedRoute';
 import TermsOfService from './components/features/public/TermsOfService';
 import Footer from './components/features/public/Footer';
-import AuthPersistence from './components/common/AuthPersistence';
+import AuthPersistence from './components/security/AuthPersistence';
 import { PersistGate } from 'redux-persist/integration/react';
 
 // Create a separate component for the main content
@@ -72,6 +72,7 @@ const MainContent = () => {
       <AuthPersistence />
       {(isLoading || navigationLoading) && <Preloader />}
       <WebSocketInitializer />
+      <WelcomeCoupon />
       <div className="flex flex-col min-h-screen bg-background">
         <Header />
         <main className="pt-28 md:pt-32">
