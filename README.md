@@ -2,6 +2,10 @@
 
 A modern e-commerce platform built with React and Spring Boot, featuring a responsive UI with Tailwind CSS.
 
+## 🌐 Demo
+
+Check out our live design prototype: [Local Market](https://local-market-gigd.vercel.app) (Frontend only - no backend functionality)
+
 ## 🚀 Features
 
 - **User Authentication**: Secure login, registration, and password recovery
