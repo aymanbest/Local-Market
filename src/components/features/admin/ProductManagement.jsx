@@ -76,7 +76,7 @@ const ProductManagement = () => {
   useEffect(() => {
     const paginationParams = {
       page: pagination?.currentPage || 0,
-      size: 3,
+      size: 6,
       sortBy: sorting?.sortBy || 'createdAt',
       direction: sorting?.direction || 'desc'
     };

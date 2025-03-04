@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { 
   ShoppingCart, CircleUser, Leaf, Sun, Moon, Menu, X,
   Building2, LayoutDashboard, Users, Package, StarIcon, Home, Store, BookOpenText, MailOpen, MessageCircleQuestion, LogIn, UserPlus, LogOut, ChevronRight, ClipboardList, BarChart2, Bell, BadgePercent,
-  ChevronDown, Grid, Settings, ChevronUp
+  ChevronDown, Grid, Settings, ChevronUp, ArrowLeft
 } from 'lucide-react';
 import { logoutUser } from '../../../store/slices/auth/authSlice';
 import { useTheme } from '../../../context/ThemeContext';
@@ -119,14 +119,18 @@ const Header = () => {
 
   // Regular navigation items
   const regularNavigationItems = useMemo(() => [
-    { path: '/', label: 'Home', icon: Home },
+    // Removed Home as the logo serves as home link
     { path: '/store', label: 'Store', icon: Store },
     { path: '/about', label: 'About', icon: BookOpenText },
-    { path: '/support', label: 'Support', icon: MailOpen },
-    { path: '/faq', label: 'FAQ', icon: MessageCircleQuestion },
-    // Only show "Become a Seller" for guests and customers
+    // Removed About, Support, and FAQ items
+    // Only show "Become a Seller" for guests and customers with special styling
     ...(!user || user.role === 'customer' ? [
-      { path: '/become-seller', label: 'Become a Seller', icon: Building2 }
+      { 
+        path: '/become-seller', 
+        label: 'Become a Seller', 
+        icon: Building2,
+        isSpecial: true // Flag to apply special styling
+      }
     ] : [])
   ], [isAdmin, isProducer, user]);
 
@@ -320,75 +324,113 @@ const Header = () => {
           p-2 md:p-2.5 lg:p-3
         `}>
           <div className="flex items-center justify-between">
-            {/* Logo Section */}
-            <Link to="/" className="flex items-center gap-1 md:gap-1.5 lg:gap-2 group">
-              <div className="relative w-6 md:w-7 lg:w-8 h-6 md:h-7 lg:h-8">
-                <div className="absolute inset-0 rotate-45 bg-gradient-to-r from-primary/50 to-transparent rounded-xl blur-xl"></div>
-                <Leaf className="w-6 md:w-7 lg:w-8 h-6 md:h-7 lg:h-8 text-primary relative z-10" />
-              </div>
-              <span className="font-recoleta text-base md:text-lg lg:text-xl text-text relative">
-                LocalMarket
-                <span className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-primary/0 via-primary to-primary/0 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
-              </span>
-            </Link>
+            {/* Logo and Navigation Section */}
+            <div className="flex items-center">
+              {/* Logo */}
+              <Link to="/" className="flex items-center gap-1 md:gap-1.5 lg:gap-2 group">
+                <div className="relative w-6 md:w-7 lg:w-8 h-6 md:h-7 lg:h-8">
+                  <div className="absolute inset-0 rotate-45 bg-gradient-to-r from-primary/50 to-transparent rounded-xl blur-xl"></div>
+                  <Leaf className="w-6 md:w-7 lg:w-8 h-6 md:h-7 lg:h-8 text-primary relative z-10" />
+                </div>
+                <span className="font-recoleta text-base md:text-lg lg:text-xl text-text relative">
+                  LocalMarket
+                  <span className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-primary/0 via-primary to-primary/0 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+                </span>
+              </Link>
 
-            {/* Navigation Section */}
-            {isAdmin ? (
-              // Admin Navigation
-              <div ref={adminMenuRef} className="flex-1 mx-4 md:mx-6 lg:mx-8">
-                <div className="flex items-center justify-start gap-1.5 md:gap-2">
-                  {Object.entries(adminGroups).map(([group, items]) => (
-                    <AdminNavGroup
-                      key={group}
-                      group={items.name}
-                      items={items.items}
-                      isOpen={activeGroup === group}
-                      onToggle={() => setActiveGroup(activeGroup === group ? null : group)}
-                    />
-                  ))}
+              {/* Navigation Items - Now next to logo */}
+              {!isAdmin && (
+                <nav className="ml-6 md:ml-8 lg:ml-10">
+                  <div className="flex items-center gap-2 md:gap-3 lg:gap-4">
+                    {/* Regular Navigation Items */}
+                    {(isProducer ? producerNavigationItems : regularNavigationItems)
+                      .filter(item => !item.isSpecial)
+                      .map((item) => (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          className={`
+                            relative px-1.5 md:px-2 lg:px-3 py-1.5 md:py-2 rounded-xl overflow-hidden group
+                            transition-all duration-300 whitespace-nowrap
+                            ${isActivePath(item.path)
+                              ? isDark
+                                ? 'text-white bg-white/10'
+                                : 'text-gray-900 bg-black/5'
+                              : 'text-text hover:text-primary'
+                            }
+                          `}
+                        >
+                          <div className={`
+                            absolute inset-0 rounded-xl opacity-0
+                            bg-gradient-to-r from-primary/10 via-primary/5 to-transparent
+                            group-hover:opacity-100 transition-opacity duration-500
+                            ${isActivePath(item.path) ? 'opacity-100' : ''}
+                          `} />
+                          <span className="relative z-10 flex items-center gap-1 md:gap-1.5">
+                            <item.icon className={`
+                              w-3.5 sm:w-4 h-3.5 sm:h-4 transition-all duration-300
+                              ${isActivePath(item.path) ? 'text-primary scale-110' : ''}
+                              group-hover:scale-110 group-hover:text-primary
+                            `} />
+                            <span className="font-medium text-xs md:text-sm lg:text-base">{item.label}</span>
+                          </span>
+                          {isActivePath(item.path) && (
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/0 via-primary to-primary/0"></div>
+                          )}
+                        </Link>
+                      ))}
+
+                    {/* Become a Seller - Special Button */}
+                    {!isProducer && (!user || user.role === 'customer') && (
+                      <Link
+                        to="/become-seller"
+                        className={`
+                          relative w-48 h-10 rounded-2xl overflow-hidden
+                          transition-all duration-300 group
+                          ${isDark 
+                            ? 'bg-white/10 border-2 border-white/20' 
+                            : 'bg-black/5 border-2 border-black/10'
+                          }
+                        `}
+                      >
+                        <div className={`
+                          absolute left-1 top-[3px] h-8 w-8 grid place-items-center
+                          rounded-xl transition-all duration-500 z-10
+                          group-hover:w-[calc(100%-8px)]
+                          bg-primary
+                        `}>
+                          <Building2 className="w-4 h-4 text-white" />
+                        </div>
+                        <p className={`
+                          absolute inset-0 flex items-center justify-center
+                          translate-x-4 font-semibold text-sm
+                          ${isDark ? 'text-white' : 'text-black'}
+                        `}>
+                          Become a Seller
+                        </p>
+                      </Link>
+                    )}
+                  </div>
+                </nav>
+              )}
+              
+              {/* Admin Navigation */}
+              {isAdmin && (
+                <div ref={adminMenuRef} className="ml-6 md:ml-8 lg:ml-10">
+                  <div className="flex items-center justify-start gap-1.5 md:gap-2">
+                    {Object.entries(adminGroups).map(([group, items]) => (
+                      <AdminNavGroup
+                        key={group}
+                        group={items.name}
+                        items={items.items}
+                        isOpen={activeGroup === group}
+                        onToggle={() => setActiveGroup(activeGroup === group ? null : group)}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              // Regular/Producer Navigation
-              <nav className="flex-1 mx-2 sm:mx-3 md:mx-4 lg:mx-6 xl:mx-8">
-                <div className="flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2">
-                  {(isProducer ? producerNavigationItems : regularNavigationItems).map((item) => (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className={`
-                        relative px-1 sm:px-1.5 md:px-2 lg:px-3 xl:px-4 py-1.5 md:py-2 lg:py-2.5 rounded-xl overflow-hidden group
-                        transition-all duration-300 whitespace-nowrap
-                        ${isActivePath(item.path)
-                          ? isDark
-                            ? 'text-white bg-white/10'
-                            : 'text-gray-900 bg-black/5'
-                          : 'text-text hover:text-primary'
-                        }
-                      `}
-                    >
-                      <div className={`
-                        absolute inset-0 rounded-xl opacity-0
-                        bg-gradient-to-r from-primary/10 via-primary/5 to-transparent
-                        group-hover:opacity-100 transition-opacity duration-500
-                        ${isActivePath(item.path) ? 'opacity-100' : ''}
-                      `} />
-                      <span className="relative z-10 flex items-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2">
-                        <item.icon className={`
-                          w-3.5 sm:w-4 h-3.5 sm:h-4 transition-all duration-300
-                          ${isActivePath(item.path) ? 'text-primary scale-110' : ''}
-                          group-hover:scale-110 group-hover:text-primary
-                        `} />
-                        <span className="font-medium text-[11px] sm:text-xs md:text-sm lg:text-base">{item.label}</span>
-                      </span>
-                      {isActivePath(item.path) && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/0 via-primary to-primary/0"></div>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              </nav>
-            )}
+              )}
+            </div>
 
             {/* Right Section */}
             <div className="flex items-center gap-1.5 md:gap-2 lg:gap-3 xl:gap-4">
@@ -963,46 +1005,82 @@ const Header = () => {
                     ))
                   ) : (
                     // Regular Navigation
-                    regularNavigationItems.map((item) => (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        onClick={() => setShowMobileMenu(false)}
-                        className={`
-                          group flex items-center justify-between p-3 rounded-xl
-                          transition-all duration-300
-                          ${isActivePath(item.path)
-                            ? isDark 
-                              ? 'bg-white/10 text-white' 
-                              : 'bg-black/5 text-gray-900'
-                            : isDark
+                    <>
+                      {/* Regular Navigation Items */}
+                      {regularNavigationItems
+                        .filter(item => !item.isSpecial)
+                        .map((item) => (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            onClick={() => setShowMobileMenu(false)}
+                            className={`
+                              group flex items-center justify-between p-3 rounded-xl
+                              transition-all duration-300
+                              ${isActivePath(item.path)
+                                ? isDark 
+                                  ? 'bg-white/10 text-white' 
+                                  : 'bg-black/5 text-gray-900'
+                                : isDark
+                                  ? 'text-gray-300 hover:bg-white/5' 
+                                  : 'text-gray-600 hover:bg-black/5'
+                              }
+                            `}
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className={`
+                                p-2 rounded-xl
+                                ${isActivePath(item.path)
+                                  ? 'bg-primary text-white'
+                                  : isDark
+                                    ? 'bg-white/10' 
+                                    : 'bg-black/5'
+                                }
+                                transition-colors duration-300
+                              `}>
+                                <item.icon className="w-5 h-5" />
+                              </div>
+                              <span className="font-medium">{item.label}</span>
+                            </div>
+                            <ChevronRight className={`
+                              w-5 h-5 text-gray-400
+                              transition-transform duration-300
+                              group-hover:translate-x-1
+                            `} />
+                          </Link>
+                        ))}
+                      
+                      {/* Special "Become a Seller" Button for Mobile */}
+                      {(!user || user.role === 'customer') && (
+                        <Link
+                          to="/become-seller"
+                          onClick={() => setShowMobileMenu(false)}
+                          className={`
+                            group flex items-center justify-between p-3 rounded-xl
+                            transition-all duration-300
+                            ${isDark 
                               ? 'text-gray-300 hover:bg-white/5' 
                               : 'text-gray-600 hover:bg-black/5'
-                          }
-                        `}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className={`
-                            p-2 rounded-xl
-                            ${isActivePath(item.path)
-                              ? 'bg-primary text-white'
-                              : isDark
-                                ? 'bg-white/10' 
-                                : 'bg-black/5'
                             }
-                            transition-colors duration-300
-                          `}>
-                            <item.icon className="w-5 h-5" />
+                          `}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className={`
+                              p-2 rounded-xl
+                              ${isDark ? 'bg-white/10' : 'bg-black/5'}
+                            `}>
+                              <Building2 className="w-5 h-5" />
+                            </div>
+                            <span className="font-medium">Become a Seller</span>
                           </div>
-                          <span className="font-medium">{item.label}</span>
-                        </div>
-                        <ChevronRight className={`
-                          w-5 h-5 text-gray-400
-                          transition-transform duration-300
-                          group-hover:translate-x-1
-                        `} />
-                      </Link>
-                    ))
+                          <ChevronRight className={`
+                            w-5 h-5 text-gray-400
+                            transition-transform duration-300
+                            group-hover:translate-x-1
+                          `} />
+                        </Link>
+                      )}
+                    </>
                   )}
                 </div>
 

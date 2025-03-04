@@ -21,6 +21,7 @@ const AuthPersistence = () => {
           // If the result shows we were previously authenticated but now we're not,
           // it means the session expired
           if (!result.isAuthenticated && isAuthenticated) {
+            dispatch(clearAuth());
             navigate('/login', { 
               state: { message: 'Your session has expired. Please log in again.' }
             });

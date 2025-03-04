@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { ChevronDown, Search, ArrowRight, Star, X, SlidersHorizontal, Filter, Check, Plus } from 'lucide-react';
 import Button from '../../common/ui/Button';
@@ -16,6 +16,7 @@ const Store = () => {
     const { items: { products }, pagination, status } = useSelector((state) => state.products);
     const isLoading = status === 'loading';
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
@@ -33,6 +34,8 @@ const Store = () => {
         }
     });
     const [categorySearch, setCategorySearch] = useState('');
+
+    const regionalPageSize = 6;
 
     // Update price range when products change
     useEffect(() => {
@@ -52,29 +55,57 @@ const Store = () => {
         dispatch(fetchCategories());
         dispatch(fetchProducts({
             page: 0,
-            size: 4,
+            size: regionalPageSize,
             sortBy: 'createdAt',
             direction: 'desc'
         }));
     }, [dispatch]);
 
-    // Handle category change
+    //handling URL parameters
     useEffect(() => {
+        const categoryParam = searchParams.get('category');
+        
+        if (categoryParam && categories.length > 0) {
+            const category = categories.find(
+                cat => cat.name.toLowerCase() === decodeURIComponent(categoryParam).toLowerCase()
+            );
+            if (category) {
+                setSelectedCategory(category.categoryId);
+                fetchProductsWithFilters(0);
+            }
+        }
+    }, [categories, searchParams]);
+
+    const handleSearchInputChange = (e) => {
+        const value = e.target.value;
+        setSearchTerm(value);
+        if (value === '') {
+            // Automatically search when input is cleared
+            fetchProductsWithFilters(0);
+        }
+    };
+
+    // Helper function to fetch products
+    const fetchProductsWithFilters = (page = 0) => {
+        const params = {
+            page,
+            size: regionalPageSize,
+            sortBy: tempFilters.sorting.sortBy,
+            direction: tempFilters.sorting.direction,
+            ...(searchTerm && { search: searchTerm })  // Only include search param if searchTerm exists
+        };
+
         if (selectedCategory === 'all') {
-            dispatch(fetchProducts({
-                page: 0,
-                size: 4,
-                sortBy: tempFilters.sorting.sortBy,
-                direction: tempFilters.sorting.direction
-            }));
+            dispatch(fetchProducts(params));
         } else {
-            dispatch(fetchProductsByCategory({
-                categoryId: selectedCategory,
-                page: 0,
-                size: 4,
-                sortBy: tempFilters.sorting.sortBy,
-                direction: tempFilters.sorting.direction
-            }));
+            dispatch(fetchProductsByCategory({ ...params, categoryId: selectedCategory }));
+        }
+    };
+
+    // Update category change effect
+    useEffect(() => {
+        if (selectedCategory !== 'all' || tempFilters.sorting.sortBy !== 'createdAt' || tempFilters.sorting.direction !== 'desc') {
+            fetchProductsWithFilters(0);
         }
     }, [selectedCategory, tempFilters.sorting, dispatch]);
 
@@ -94,22 +125,22 @@ const Store = () => {
     const PaginationControls = () => {
         const paginationData = selectedCategory === 'all' ? pagination : useSelector(state => state.categories.pagination);
 
-        if (!paginationData || paginationData.totalElements <= paginationData.pageSize) {
+        if (!paginationData || paginationData.totalElements <= regionalPageSize) {
             return null;
         }
 
         // Generate array of page numbers
         const pageNumbers = [];
-        for (let i = 0; i < paginationData.totalPages; i++) {
+        for (let i = 0; i < Math.ceil(paginationData.totalElements / regionalPageSize); i++) {
             pageNumbers.push(i);
         }
 
         return (
             <div className="max-w-6xl mx-auto px-4 flex items-center justify-between py-4">
                 <p className="text-sm text-textSecondary">
-                    Showing <span className="font-medium">{(paginationData.currentPage || 0) * (paginationData.pageSize || 4) + 1}</span> to{' '}
+                    Showing <span className="font-medium">{(paginationData.currentPage || 0) * regionalPageSize + 1}</span> to{' '}
                     <span className="font-medium">
-                        {Math.min(((paginationData.currentPage || 0) + 1) * (paginationData.pageSize || 4), paginationData.totalElements || 0)}
+                        {Math.min(((paginationData.currentPage || 0) + 1) * regionalPageSize, paginationData.totalElements || 0)}
                     </span> of{' '}
                     <span className="font-medium">{paginationData.totalElements || 0}</span> products
                 </p>
@@ -119,24 +150,7 @@ const Store = () => {
                         size="sm"
                         className="border hover:bg-cardBg text-text border-border"
                         disabled={paginationData.isFirst}
-                        onClick={() => {
-                            if (selectedCategory === 'all') {
-                                dispatch(fetchProducts({
-                                    page: (paginationData.currentPage || 0) - 1,
-                                    size: paginationData.pageSize || 4,
-                                    sortBy: tempFilters.sorting.sortBy,
-                                    direction: tempFilters.sorting.direction
-                                }));
-                            } else {
-                                dispatch(fetchProductsByCategory({
-                                    categoryId: selectedCategory,
-                                    page: (paginationData.currentPage || 0) - 1,
-                                    size: paginationData.pageSize || 4,
-                                    sortBy: tempFilters.sorting.sortBy,
-                                    direction: tempFilters.sorting.direction
-                                }));
-                            }
-                        }}
+                        onClick={() => fetchProductsWithFilters((paginationData.currentPage || 0) - 1)}
                     >
                         Previous
                     </Button>
@@ -149,24 +163,7 @@ const Store = () => {
                                     ? 'bg-primary text-white'
                                     : 'border hover:bg-cardBg text-text border-border'
                                 }`}
-                            onClick={() => {
-                                if (selectedCategory === 'all') {
-                                    dispatch(fetchProducts({
-                                        page: pageNumber,
-                                        size: paginationData.pageSize || 4,
-                                        sortBy: tempFilters.sorting.sortBy,
-                                        direction: tempFilters.sorting.direction
-                                    }));
-                                } else {
-                                    dispatch(fetchProductsByCategory({
-                                        categoryId: selectedCategory,
-                                        page: pageNumber,
-                                        size: paginationData.pageSize || 4,
-                                        sortBy: tempFilters.sorting.sortBy,
-                                        direction: tempFilters.sorting.direction
-                                    }));
-                                }
-                            }}
+                            onClick={() => fetchProductsWithFilters(pageNumber)}
                         >
                             {pageNumber + 1}
                         </Button>
@@ -176,24 +173,7 @@ const Store = () => {
                         size="sm"
                         className="border hover:bg-primary/10 text-primary border-primary"
                         disabled={paginationData.isLast}
-                        onClick={() => {
-                            if (selectedCategory === 'all') {
-                                dispatch(fetchProducts({
-                                    page: (paginationData.currentPage || 0) + 1,
-                                    size: paginationData.pageSize || 4,
-                                    sortBy: tempFilters.sorting.sortBy,
-                                    direction: tempFilters.sorting.direction
-                                }));
-                            } else {
-                                dispatch(fetchProductsByCategory({
-                                    categoryId: selectedCategory,
-                                    page: (paginationData.currentPage || 0) + 1,
-                                    size: paginationData.pageSize || 4,
-                                    sortBy: tempFilters.sorting.sortBy,
-                                    direction: tempFilters.sorting.direction
-                                }));
-                            }
-                        }}
+                        onClick={() => fetchProductsWithFilters((paginationData.currentPage || 0) + 1)}
                     >
                         Next
                     </Button>
@@ -202,35 +182,18 @@ const Store = () => {
         );
     };
 
-    // Modify the category selection handler
+    // Update handleCategorySelect
     const handleCategorySelect = (categoryId) => {
         setSelectedCategory(categoryId);
         setSearchTerm(''); // Clear search term when changing categories
-
-        // If there's no search term, use the appropriate fetch based on category
-        if (categoryId === 'all') {
-            dispatch(fetchProducts({
-                page: 0,
-                size: 4,
-                sortBy: tempFilters.sorting.sortBy,
-                direction: tempFilters.sorting.direction
-            }));
-        } else {
-            dispatch(fetchProductsByCategory({
-                categoryId: categoryId,
-                page: 0,
-                size: 4,
-                sortBy: tempFilters.sorting.sortBy,
-                direction: tempFilters.sorting.direction
-            }));
-        }
+        fetchProductsWithFilters(0);
 
         // Find the category name for the URL
         const selectedCat = categories.find(cat => cat.categoryId === categoryId);
         if (selectedCat) {
-            navigate(`/category/${encodeURIComponent(selectedCat.name.toLowerCase())}`);
+            setSearchParams({ category: selectedCat.name.toLowerCase() });
         } else if (categoryId === 'all') {
-            navigate('/store');
+            setSearchParams({});
         }
     };
 
@@ -259,18 +222,13 @@ const Store = () => {
         setShowFiltersModal(true);
     };
 
+    // Update handleSearch
     const handleSearch = (e) => {
         e.preventDefault();
-        // Always use fetchProducts when searching, the slice will handle the data transformation
-        dispatch(fetchProducts({
-            page: 0,
-            size: 4,
-            sortBy: tempFilters.sorting.sortBy,
-            direction: tempFilters.sorting.direction,
-            search: searchTerm
-        }));
-        // Set selected category to 'all' when searching
-        setSelectedCategory('all');
+        if (searchTerm.trim() !== '') {  // Only search if there's a non-empty search term
+            setSelectedCategory('all');
+            fetchProductsWithFilters(0);
+        }
     };
 
     const FilterModal = () => {
@@ -595,7 +553,7 @@ const Store = () => {
                                     placeholder="Search..."
                                     className="w-full bg-cardBg text-text rounded-full px-6 h-12 border border-border"
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onChange={handleSearchInputChange}
                                 />
                                 <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2">
                                     <Search className="w-5 h-5 text-text" />
@@ -801,7 +759,7 @@ const Store = () => {
                                         type="text"
                                         placeholder="Search"
                                         value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        onChange={handleSearchInputChange}
                                         className="bg-transparent flex-1 text-text placeholder-textSecondary outline-none focus:outline-none focus:ring-0 border-none"
                                     />
                                     <button type="submit" className="bg-primary hover:bg-primaryHover rounded-full p-1 transition-colors">
@@ -835,7 +793,7 @@ const Store = () => {
 
                             <div className="flex-1">
                                 {products && products.length > 0 ? (
-                                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 h-max">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {(selectedCategory === 'all' ? products : currentCategoryProducts)?.map(product => (
                                             <a
                                                 key={product.productId}

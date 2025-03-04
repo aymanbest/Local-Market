@@ -11,7 +11,7 @@ export const fetchCategories = createAsyncThunk(
 
 export const fetchProductsByCategory = createAsyncThunk(
   'categories/fetchProductsByCategory',
-  async ({ categoryId, page = 0, size = 4, sortBy = 'name', direction = 'desc' }) => {
+  async ({ categoryId, page = 0, size = 6, sortBy = 'name', direction = 'desc' }) => {
     const response = await api.get(`/api/products/category/${categoryId}?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
     return response.data;
   }
@@ -83,7 +83,7 @@ const categorySlice = createSlice({
       currentPage: 0,
       totalPages: 0,
       totalElements: 0,
-      pageSize: 4,
+      pageSize: 6,
       isFirst: true,
       isLast: false
     },
@@ -115,7 +115,7 @@ const categorySlice = createSlice({
         currentPage: 0,
         totalPages: 0,
         totalElements: 0,
-        pageSize: 4,
+        pageSize: 6,
         isFirst: true,
         isLast: false
       },

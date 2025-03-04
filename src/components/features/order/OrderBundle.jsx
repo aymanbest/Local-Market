@@ -66,8 +66,8 @@ const OrderBundle = () => {
                 onClick={() => navigate(-1)}
                 className="rounded-full border border-border hover:bg-cardBg transition flex gap-2 items-center px-4 py-2"
               >
-                <ArrowLeft className="w-5 h-5" />
-                <span>Back</span>
+                <ArrowLeft className="w-5 h-5 text-text" />
+                <span className="text-text">Back</span>
               </button>
               <h1 className="text-3xl font-bold text-text">Order Details</h1>
             </div>

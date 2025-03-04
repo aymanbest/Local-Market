@@ -411,7 +411,7 @@ const MainPage = () => {
     { name: 'Fresh Produce', icon: Apple, color: 'from-green-500/50 to-green-700/50', darkColor: 'from-green-600/50 to-green-800/50', border: 'border-green-500/20' },
     { name: 'Meat & Poultry', icon: Beef, color: 'from-red-500/50 to-red-700/50', darkColor: 'from-red-600/50 to-red-800/50', border: 'border-red-500/20' },
     { name: 'Seafood', icon: Fish, color: 'from-blue-400/50 to-blue-600/50', darkColor: 'from-blue-500/50 to-blue-700/50', border: 'border-blue-400/20' },
-    { name: 'Dairy and Eggs', icon: Egg, color: 'from-yellow-500/50 to-yellow-700/50', darkColor: 'from-yellow-600/50 to-yellow-800/50', border: 'border-yellow-500/20' },
+    { name: 'Dairy & Eggs', icon: Egg, color: 'from-yellow-500/50 to-yellow-700/50', darkColor: 'from-yellow-600/50 to-yellow-800/50', border: 'border-yellow-500/20' },
     { name: 'Baked Goods', icon: Croissant, color: 'from-amber-500/50 to-amber-700/50', darkColor: 'from-amber-600/50 to-amber-800/50', border: 'border-amber-500/20' },
     { name: 'Specialty Foods', icon: UtensilsCrossed, color: 'from-purple-500/50 to-purple-700/50', darkColor: 'from-purple-600/50 to-purple-800/50', border: 'border-purple-500/20' },
     { name: 'Beverages', icon: Coffee, color: 'from-teal-500/50 to-teal-700/50', darkColor: 'from-teal-600/50 to-teal-800/50', border: 'border-teal-500/20' },
