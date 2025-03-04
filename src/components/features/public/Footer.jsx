@@ -8,7 +8,7 @@ const Footer = () => {
   
   return (
     <footer className={`
-      border-t transition-colors duration-300
+      border-t transition-colors duration-300 mt-auto
       ${isDark ? 'border-white/10' : 'border-black/10'}
     `}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

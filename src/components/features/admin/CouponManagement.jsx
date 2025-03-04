@@ -38,6 +38,8 @@ const CouponManagement = () => {
     usageLimit: 0,
     isActive: true
   });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedCouponId, setSelectedCouponId] = useState(null);
 
   useEffect(() => {
     dispatch(fetchCoupons({
@@ -99,9 +101,8 @@ const CouponManagement = () => {
   };
 
   const handleDelete = async (couponId) => {
-    if (window.confirm('Are you sure you want to delete this coupon?')) {
-      await dispatch(deleteCoupon(couponId));
-    }
+    setSelectedCouponId(couponId);
+    setShowDeleteModal(true);
   };
 
   const handleStatusToggle = async (couponId, currentStatus) => {
@@ -700,7 +701,7 @@ const CouponManagement = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border border-border rounded-lg hover:bg-primary/10 transition-colors"
+                  className="px-4 text-text py-2 border border-border rounded-lg hover:bg-primary/10 transition-colors"
                 >
                   Cancel
                 </button>
@@ -716,6 +717,38 @@ const CouponManagement = () => {
         </div>
       )}
       <FilterModal />
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)} />
+          <div className={`relative rounded-lg p-6 w-full max-w-md ${
+            isDark ? 'bg-[#1a1a1a] border border-white/10' : 'bg-white border border-black/10'
+          }`}>
+            <h3 className="text-xl font-semibold text-text mb-4">Confirm Delete</h3>
+            <p className="text-textSecondary">Are you sure you want to delete this coupon? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDeleteModal(false)}
+                className="border-border hover:bg-cardBg"
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={() => {
+                  dispatch(deleteCoupon(selectedCouponId));
+                  setShowDeleteModal(false);
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white"
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

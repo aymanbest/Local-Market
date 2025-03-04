@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Check, X, Eye, Search, Package, User, ChevronLeft, ChevronRight, Trash2, ClipboardList, LayoutGrid } from 'lucide-react';
-import { fetchPendingProducts, approveProduct, declineProduct } from '../../../store/slices/product/pendingProductsSlice';
+import { fetchPendingProducts, approveProduct, declineProduct , adminDeleteProduct } from '../../../store/slices/product/pendingProductsSlice';
 import Button from '../../common/ui/Button';
 import { Card } from '../../common/ui/Card';
 // import { // toast } from 'react-hot-// toast';
@@ -53,6 +53,66 @@ const DeclineModal = React.memo(({ isOpen, onClose, onDecline: onDeclineProps })
 DeclineModal.displayName = 'DeclineModal';
 DeclineButton.displayName = 'DeclineButton';
 
+const AdminDeleteModal = React.memo(() => {
+  const dispatch = useDispatch();
+  const pendingProducts = useSelector((state) => state.pendingProducts);
+  const allProducts = useSelector((state) => state.products);
+  const { pagination, sorting } = pendingProducts || allProducts;
+  const [showAdminDeleteModal, setShowAdminDeleteModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
+
+  if (!showAdminDeleteModal || !productToDelete) return null;
+  
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+      <div className="absolute inset-0 bg-black/70" onClick={() => setShowAdminDeleteModal(false)} />
+      <div className="bg-cardBg rounded-lg p-6 w-full max-w-md relative mx-4 shadow-xl border border-border">
+        <div className="space-y-4">
+          <h3 className="text-xl font-bold text-text">Confirm Delete</h3>
+          <p className="text-textSecondary">
+            Are you sure you want to delete "{productToDelete.name}"? This action cannot be undone.
+          </p>
+          <div className="flex justify-end space-x-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAdminDeleteModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                dispatch(adminDeleteProduct(productToDelete.productId)).unwrap()
+                  .then(() => {
+                    // toast.success('Product deleted successfully');
+                    // Refresh the products list
+                    dispatch(fetchProducts({
+                      page: pagination?.currentPage || 0,
+                      size: pagination?.pageSize || 2,
+                      sortBy: sorting?.sortBy || 'createdAt',
+                      direction: sorting?.direction || 'desc'
+                    }));
+                  })
+                  .catch(error => {
+                    // toast.error('Failed to delete product');
+                  })
+                  .finally(() => {
+                    setShowAdminDeleteModal(false);
+                    setProductToDelete(null);
+                  });
+              }}
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+AdminDeleteModal.displayName = 'AdminDeleteModal';
+
 const ProductManagement = () => {
   const dispatch = useDispatch();
   const pendingProducts = useSelector((state) => state.pendingProducts);
@@ -72,6 +132,8 @@ const ProductManagement = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [direction, setDirection] = useState('right');
+  const [showAdminDeleteModal, setShowAdminDeleteModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   useEffect(() => {
     const paginationParams = {
@@ -201,22 +263,10 @@ const ProductManagement = () => {
     </div>
   );
 
-  const handleAdminDelete = async (productId) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await dispatch(adminDeleteProduct(productId)).unwrap();
-        // toast.success('Product deleted successfully');
-        // Refresh the products list
-        dispatch(fetchProducts({
-          page: pagination?.currentPage || 0,
-          size: pagination?.pageSize || 2,
-          sortBy: sorting?.sortBy || 'createdAt',
-          direction: sorting?.direction || 'desc'
-        }));
-      } catch (error) {
-        // toast.error('Failed to delete product');
-      }
-    }
+  const handleAdminDelete = (product) => {
+    console.log('Product to delete:', product);
+    setProductToDelete(product);
+    setShowAdminDeleteModal(true);
   };
 
   return (
@@ -379,7 +429,7 @@ const ProductManagement = () => {
                           <Eye className="w-5 h-5" />
                         </Button>
                         <Button
-                          onClick={() => handleAdminDelete(product.productId)}
+                          onClick={() => handleAdminDelete(product)}
                           variant="ghost"
                           className="hover:bg-red-500/10 hover:text-red-500 transition-colors duration-200"
                         >
@@ -483,6 +533,52 @@ const ProductManagement = () => {
         onClose={() => setShowDeclineModal(false)}
         onDecline={handleDecline}
       />
+      {showAdminDeleteModal && productToDelete && (
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          <div className="absolute inset-0 bg-black/70" onClick={() => setShowAdminDeleteModal(false)} />
+          <div className="bg-cardBg rounded-lg p-6 w-full max-w-md relative mx-4 shadow-xl border border-border">
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold text-text">Confirm Delete</h3>
+              <p className="text-textSecondary">
+                Are you sure you want to delete "{productToDelete.name}"? This action cannot be undone.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowAdminDeleteModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={() => {
+                    dispatch(adminDeleteProduct(productToDelete.productId)).unwrap()
+                      .then(() => {
+                        // toast.success('Product deleted successfully');
+                        // Refresh the products list
+                        dispatch(fetchProducts({
+                          page: pagination?.currentPage || 0,
+                          size: pagination?.pageSize || 2,
+                          sortBy: sorting?.sortBy || 'createdAt',
+                          direction: sorting?.direction || 'desc'
+                        }));
+                      })
+                      .catch(error => {
+                        // toast.error('Failed to delete product');
+                      })
+                      .finally(() => {
+                        setShowAdminDeleteModal(false);
+                        setProductToDelete(null);
+                      });
+                  }}
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

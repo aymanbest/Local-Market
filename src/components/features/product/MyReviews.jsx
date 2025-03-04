@@ -307,16 +307,16 @@ const MyReviews = () => {
               {userReviews.map((review) => (
                 <div 
                   key={review.reviewId} 
-                  className="bg-cardBg rounded-xl p-6 border border-border"
+                  className="bg-cardBg rounded-xl p-6 border border-border w-full overflow-hidden"
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <div>
+                    <div className="max-w-[70%]">
                       <Link 
                         to={`/store/products/${review.productId}`}
                         className="text-xl font-semibold hover:text-primary transition-colors flex items-center gap-2"
                       >
-                        {review.productName}
-                        <ExternalLink className="w-4 h-4" />
+                        <span className="truncate">{review.productName}</span>
+                        <ExternalLink className="w-4 h-4 flex-shrink-0" />
                       </Link>
                       <div className="flex items-center gap-2 mt-1">
                         <div className="flex gap-1">
@@ -334,12 +334,24 @@ const MyReviews = () => {
                         </span>
                       </div>
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-sm border ${getStatusColor(review.status)}`}>
+                    <div className={`px-3 py-1 rounded-full text-sm border ${getStatusColor(review.status)} flex-shrink-0`}>
                       {review.status}
                     </div>
                   </div>
 
-                  <p className="text-textSecondary">{review.comment}</p>
+                  <div className="w-full overflow-hidden">
+                    <p 
+                      className="text-textSecondary" 
+                      style={{ 
+                        wordBreak: 'break-word', 
+                        overflowWrap: 'break-word',
+                        whiteSpace: 'normal',
+                        maxWidth: '100%'
+                      }}
+                    >
+                      {review.comment}
+                    </p>
+                  </div>
 
                   {review.verifiedPurchase && (
                     <div className="mt-4 flex items-center gap-2 text-sm text-green-500">

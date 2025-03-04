@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Star, CheckCircle, XCircle, MessageSquare, Search, Check, X, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { Star, CheckCircle, XCircle, MessageSquare, Search, Check, X, ChevronLeft, ChevronRight, SlidersHorizontal, Eye } from 'lucide-react';
 import { fetchPendingReviews, approveReview, declineReview } from '../../../store/slices/customer/reviewSlice';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../common/ui/Table';
 import { Card } from '../../common/ui/Card';
@@ -12,6 +12,7 @@ const ReviewManagement = () => {
   const { pendingReviews, loading, error, pagination } = useSelector((state) => state.reviews);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedReviews, setExpandedReviews] = useState({});
+  const [viewingComment, setViewingComment] = useState(null);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [tempFilters, setTempFilters] = useState({
     sorting: {
@@ -19,6 +20,34 @@ const ReviewManagement = () => {
       direction: 'desc'
     }
   });
+  const [truncatedComments, setTruncatedComments] = useState({});
+  
+  // Add a ref to check if comments are truncated
+  const commentRefs = useRef({});
+  
+  // Function to check if a comment is truncated
+  const checkTruncation = useCallback(() => {
+    const newTruncatedState = {};
+    
+    Object.keys(commentRefs.current).forEach(id => {
+      const element = commentRefs.current[id];
+      if (element) {
+        newTruncatedState[id] = element.scrollWidth > element.clientWidth;
+      }
+    });
+    
+    setTruncatedComments(newTruncatedState);
+  }, []);
+  
+  // Check for truncation on window resize and initial render
+  useEffect(() => {
+    checkTruncation();
+    window.addEventListener('resize', checkTruncation);
+    
+    return () => {
+      window.removeEventListener('resize', checkTruncation);
+    };
+  }, [checkTruncation, pendingReviews]);
 
   useEffect(() => {
     dispatch(fetchPendingReviews({
@@ -28,6 +57,31 @@ const ReviewManagement = () => {
       direction: tempFilters.sorting.direction
     }));
   }, [dispatch, pagination?.currentPage, tempFilters.sorting]);
+
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.3);
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   const handleApprove = async (reviewId) => {
     try {
@@ -44,9 +98,9 @@ const ReviewManagement = () => {
     }
   };
 
-  const handleDecline = async (reviewId, declineReason) => {
+  const handleDecline = async (reviewId) => {
     try {
-      await dispatch(declineReview({ reviewId, declineReason })).unwrap();
+      await dispatch(declineReview(reviewId)).unwrap();
       // toast.success('Review declined successfully');
       dispatch(fetchPendingReviews({
         page: pagination.currentPage,
@@ -64,6 +118,14 @@ const ReviewManagement = () => {
       ...prev,
       [reviewId]: !prev[reviewId]
     }));
+  };
+
+  const openCommentModal = (review) => {
+    setViewingComment(review);
+  };
+
+  const closeCommentModal = () => {
+    setViewingComment(null);
   };
 
   const filteredReviews = pendingReviews.filter(review =>
@@ -260,6 +322,77 @@ const ReviewManagement = () => {
     );
   };
 
+  const CommentModal = () => {
+    if (!viewingComment) return null;
+
+    return (
+      <div className="fixed inset-0 z-[100] overflow-y-auto">
+        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <div className="fixed inset-0 bg-black/60 transition-opacity" onClick={closeCommentModal} />
+          
+          <div className="relative transform overflow-hidden rounded-2xl bg-cardBg border border-border text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl z-[101]">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-cardBg">
+              <h3 className="text-xl font-semibold text-text flex items-center gap-2">
+                <MessageSquare className="w-5 h-5" />
+                Review Comment
+              </h3>
+              <button 
+                onClick={closeCommentModal} 
+                className="text-textSecondary hover:text-text transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="px-6 py-6 bg-cardBg">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-text">{viewingComment.productName}</h4>
+                    <p className="text-sm text-textSecondary">By {viewingComment.customerUsername}</p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-text">{viewingComment.rating}</span>
+                  </div>
+                </div>
+                <div className="mt-4 p-4 bg-background rounded-lg border border-border">
+                  <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                    <p className="text-text whitespace-pre-wrap break-words">{viewingComment.comment}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-textSecondary text-right">
+                  {new Date(viewingComment.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-border flex items-center justify-end gap-3 bg-cardBg">
+              <button
+                onClick={() => {
+                  handleDecline(viewingComment.reviewId);
+                  closeCommentModal();
+                }}
+                className="px-4 py-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500/10 transition-colors"
+              >
+                Decline
+              </button>
+              <button
+                onClick={() => {
+                  handleApprove(viewingComment.reviewId);
+                  closeCommentModal();
+                }}
+                className="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors"
+              >
+                Approve
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -338,8 +471,22 @@ const ReviewManagement = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="max-w-md">
-                          <p className="text-text truncate">{review.comment}</p>
+                        <div className="max-w-md flex items-center gap-2">
+                          <p 
+                            ref={el => commentRefs.current[review.reviewId] = el}
+                            className="text-text truncate"
+                          >
+                            {review.comment}
+                          </p>
+                          {truncatedComments[review.reviewId] && (
+                            <button
+                              onClick={() => openCommentModal(review)}
+                              className="p-1 hover:bg-primary/10 rounded-lg transition-colors"
+                              title="View full comment"
+                            >
+                              <Eye className="w-4 h-4 text-primary" />
+                            </button>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -354,7 +501,7 @@ const ReviewManagement = () => {
                             <CheckCircle className="w-4 h-4 text-green-500" />
                           </button>
                           <button
-                            onClick={() => handleDecline(review.reviewId, 'Inappropriate content')}
+                            onClick={() => handleDecline(review.reviewId)}
                             className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
                           >
                             <XCircle className="w-4 h-4 text-red-500" />
@@ -372,6 +519,7 @@ const ReviewManagement = () => {
       )}
 
       <FilterModal />
+      <CommentModal />
     </div>
   );
 };

@@ -3,7 +3,7 @@ import api from '../../../lib/axios';
 
 export const fetchMyProducts = createAsyncThunk(
   'producerProducts/fetchMyProducts',
-  async ({ page = 0, size = 10, sortBy = 'createdAt', direction = 'desc' } = {}, { rejectWithValue }) => {
+  async ({ page = 0, size = 4, sortBy = 'createdAt', direction = 'desc' } = {}, { rejectWithValue }) => {
     try {
       const response = await api.get(`/api/products/my-products?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
       return response.data;
@@ -93,7 +93,7 @@ const initialState = {
     currentPage: 0,
     totalPages: 0,
     totalElements: 0,
-    pageSize: 10,
+    pageSize: 4,
     isFirst: true,
     isLast: false
   },

@@ -20,9 +20,9 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const resultAction = dispatch(registerUser(formData));
+      const resultAction = await dispatch(registerUser(formData));
       if (registerUser.fulfilled.match(resultAction)) {
-        dispatch(initializeState());
+        await dispatch(initializeState());
         navigate('/');
       }
     } catch (error) {

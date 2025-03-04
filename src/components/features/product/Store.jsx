@@ -509,24 +509,33 @@ const Store = () => {
                         )
                         .map(category => (
                             <li key={category.categoryId}>
-                                <Link
-                                    to={`/category/${encodeURIComponent(category.name.toLowerCase())}`}
-                                    className={`rounded-xl px-4 py-3 block transition-all duration-300 ${selectedCategory === category.categoryId
-                                            ? 'bg-primary text-white shadow-md shadow-primary/20 scale-102 font-medium'
-                                            : 'hover:bg-white/5 text-text hover:scale-102'
-                                        }`}
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        handleCategorySelect(category.categoryId);
-                                    }}
-                                >
-                                    <span className="flex items-center gap-2">
-                                        <span>{category.name}</span>
-                                        {selectedCategory === category.categoryId && (
-                                            <ArrowRight className="w-4 h-4 ml-auto" />
-                                        )}
-                                    </span>
-                                </Link>
+                                {category.productCount > 0 ? (
+                                    <Link
+                                        to={`/category/${encodeURIComponent(category.name.toLowerCase())}`}
+                                        className={`rounded-xl px-4 py-3 block transition-all duration-300 ${selectedCategory === category.categoryId
+                                                ? 'bg-primary text-white shadow-md shadow-primary/20 scale-102 font-medium'
+                                                : 'hover:bg-white/5 text-text hover:scale-102'
+                                            }`}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleCategorySelect(category.categoryId);
+                                        }}
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <span>{category.name}</span>
+                                            {selectedCategory === category.categoryId && (
+                                                <ArrowRight className="w-4 h-4 ml-auto" />
+                                            )}
+                                        </span>
+                                    </Link>
+                                ) : (
+                                    <div className="rounded-xl px-4 py-3 block bg-gray-100 dark:bg-gray-800/30 border border-dashed border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed">
+                                        <span className="flex items-center gap-2">
+                                            <span>{category.name}</span>
+                                            <span className="text-xs ml-auto bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full">Empty</span>
+                                        </span>
+                                    </div>
+                                )}
                             </li>
                         ))}
                 </ul>
@@ -737,15 +746,24 @@ const Store = () => {
                         <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
                             <h2 className="text-4xl font-recoleta font-semibold uppercase text-center text-text">Store</h2>
                             <label className="md:hidden rounded-full flex relative justify-end bg-cardBg">
-                                <select className="flex-1 px-4 py-3 appearance-none bg-transparent absolute inset-0 w-full text-text">
-                                    <option className="bg-background text-text" value="">All</option>
+                                <select 
+                                    className="flex-1 px-4 py-3 appearance-none bg-transparent absolute inset-0 w-full text-text"
+                                    onChange={(e) => {
+                                        if (e.target.value) {
+                                            handleCategorySelect(e.target.value);
+                                        }
+                                    }}
+                                    value={selectedCategory}
+                                >
+                                    <option className="bg-background text-text" value="all">All Products</option>
                                     {categories.map(category => (
                                         <option
                                             key={category.categoryId}
-                                            className="bg-background text-text"
+                                            className={`bg-background ${category.productCount > 0 ? 'text-text' : 'text-gray-400'}`}
                                             value={category.categoryId}
+                                            disabled={category.productCount === 0}
                                         >
-                                            {category.name}
+                                            {category.name} {category.productCount === 0 ? '(Empty)' : ''}
                                         </option>
                                     ))}
                                 </select>

@@ -392,6 +392,41 @@ const OrderManagement = () => {
       dispatch(fetchFunction(params));
     };
 
+    // Function to generate page numbers with ellipses for large page counts
+    const getPageNumbers = () => {
+      const currentPage = pagination.currentPage;
+      const totalPages = pagination.totalPages;
+      
+      // Always show first page, last page, current page, and pages around current
+      const pageNumbers = [];
+      const rangeSize = 1; // Number of pages to show before and after current page
+      
+      // Add first page
+      pageNumbers.push(0);
+      
+      // Add ellipsis after first page if needed
+      if (currentPage - rangeSize > 1) {
+        pageNumbers.push('ellipsis1');
+      }
+      
+      // Add pages around current page
+      for (let i = Math.max(1, currentPage - rangeSize); i <= Math.min(totalPages - 2, currentPage + rangeSize); i++) {
+        pageNumbers.push(i);
+      }
+      
+      // Add ellipsis before last page if needed
+      if (currentPage + rangeSize < totalPages - 2) {
+        pageNumbers.push('ellipsis2');
+      }
+      
+      // Add last page if there is more than one page
+      if (totalPages > 1) {
+        pageNumbers.push(totalPages - 1);
+      }
+      
+      return pageNumbers;
+    };
+
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-4">
         <div className="text-sm text-textSecondary">
@@ -406,19 +441,29 @@ const OrderManagement = () => {
             Previous
           </button>
 
-          {Array.from({ length: pagination.totalPages }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => handlePageChange(index)}
-              className={`min-w-[32px] px-2 py-1 text-sm rounded ${
-                index === pagination.currentPage
-                  ? 'bg-primary text-white'
-                  : 'text-text hover:bg-background'
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
+          {getPageNumbers().map((pageNum, index) => {
+            if (pageNum === 'ellipsis1' || pageNum === 'ellipsis2') {
+              return (
+                <span key={pageNum} className="px-2 py-1 text-sm text-textSecondary">
+                  ...
+                </span>
+              );
+            }
+            
+            return (
+              <button
+                key={index}
+                onClick={() => handlePageChange(pageNum)}
+                className={`min-w-[32px] px-2 py-1 text-sm rounded ${
+                  pageNum === pagination.currentPage
+                    ? 'bg-primary text-white'
+                    : 'text-text hover:bg-background'
+                }`}
+              >
+                {pageNum + 1}
+              </button>
+            );
+          })}
 
           <button
             onClick={() => handlePageChange(pagination.currentPage + 1)}

@@ -23,7 +23,7 @@ const ApplicationCard = ({ app, onApprove, onDecline }) => {
   ];
 
   return (
-    <div className="bg-cardBg border border-border rounded-2xl overflow-hidden transition-all duration-300">
+    <div className="bg-cardBg border border-border rounded-2xl overflow-hidden transition-all duration-300" style={{ height: 'fit-content', gridColumn: 'span 1' }}>
       {/* Main Card Content */}
       <div className="p-6">
         <div className="flex justify-between items-start mb-6">
@@ -175,6 +175,50 @@ const ApplicationCard = ({ app, onApprove, onDecline }) => {
   );
 };
 
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, customCategory }) => {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/70" onClick={onClose} />
+      
+      {/* Modal content */}
+      <div className="relative bg-cardBg p-6 rounded-2xl w-full max-w-md mx-4 shadow-xl border border-border">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold text-text">Custom Category</h3>
+          <button
+            onClick={onClose}
+            className="text-textSecondary hover:text-text transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        
+        <p className="text-textSecondary mb-6">
+          This application has a custom category: <span className="text-primary font-medium">{customCategory}</span>. 
+          Do you want to add it to the category list?
+        </p>
+        
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={() => onConfirm(false)}
+            className="px-4 py-2 border border-border rounded-xl text-text hover:bg-inputBg transition-colors"
+          >
+            Don't Add
+          </button>
+          <button
+            onClick={() => onConfirm(true)}
+            className="px-4 py-2 bg-primary hover:bg-primaryHover text-white rounded-xl transition-colors"
+          >
+            Add Category
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ApplicationManagement = () => {
   const dispatch = useDispatch();
   const { applications, status, error, pagination, sorting } = useSelector(state => state.producerApplications);
@@ -182,6 +226,7 @@ const ApplicationManagement = () => {
   const [selectedApp, setSelectedApp] = useState(null);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
+  const [showCustomCategoryModal, setShowCustomCategoryModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [tempFilters, setTempFilters] = useState({
     sorting: {
@@ -193,7 +238,7 @@ const ApplicationManagement = () => {
   useEffect(() => {
     dispatch(fetchPendingApplications({
       page: 0,
-      size: 10,
+      size: 4,
       sortBy: tempFilters.sorting.sortBy,
       direction: tempFilters.sorting.direction
     }));
@@ -201,14 +246,20 @@ const ApplicationManagement = () => {
 
   const handleApprove = async (application) => {
     if (application.customCategory) {
-      if (window.confirm(`This application has a custom category: ${application.customCategory}. Do you want to add it to the category list?`)) {
-        await dispatch(approveApplication({ applicationId: application.applicationId, approveCC: true }));
-      } else {
-        await dispatch(approveApplication({ applicationId: application.applicationId, approveCC: false }));
-      }
+      setSelectedApp(application);
+      setShowCustomCategoryModal(true);
     } else {
       await dispatch(approveApplication({ applicationId: application.applicationId }));
     }
+  };
+
+  const handleCustomCategoryConfirm = async (approveCC) => {
+    await dispatch(approveApplication({ 
+      applicationId: selectedApp.applicationId, 
+      approveCC 
+    }));
+    setShowCustomCategoryModal(false);
+    setSelectedApp(null);
   };
 
   const handleDecline = async () => {
@@ -472,21 +523,33 @@ const ApplicationManagement = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredApplications.map((app) => (
-            <MemoizedApplicationCard 
-              key={app.applicationId} 
-              app={app}
-              onApprove={handleApprove}
-              onDecline={() => {
-                setSelectedApp(app);
-                setShowDeclineModal(true);
-              }}
-            />
+            <div key={app.applicationId} className="contents">
+              <MemoizedApplicationCard 
+                app={app}
+                onApprove={handleApprove}
+                onDecline={() => {
+                  setSelectedApp(app);
+                  setShowDeclineModal(true);
+                }}
+              />
+            </div>
           ))}
         </div>
       )}
 
       <PaginationControls />
       <FilterModal />
+
+      {/* Custom Category Confirmation Modal */}
+      <ConfirmationModal 
+        isOpen={showCustomCategoryModal}
+        onClose={() => {
+          setShowCustomCategoryModal(false);
+          setSelectedApp(null);
+        }}
+        onConfirm={handleCustomCategoryConfirm}
+        customCategory={selectedApp?.customCategory}
+      />
 
       {/* Decline Modal */}
       {showDeclineModal && (

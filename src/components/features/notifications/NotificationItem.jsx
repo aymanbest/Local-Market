@@ -2,8 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { useTheme } from '../../../context/ThemeContext';
 import { 
   Package, BarChart2, StarIcon, ClipboardList, 
-  MailOpen, Bell, Trash2, X, AlertCircle, ChevronDown, ChevronUp,
-  DollarSign, Calendar, MapPin, Phone, Check, MessageCircle
+  MailOpen, Bell, Mail, X, AlertCircle, ChevronDown, ChevronUp,
+  DollarSign, Calendar, MapPin, Phone, Check, MessageCircle, UserPlus
 } from 'lucide-react';
 
 const DeleteConfirmation = ({ onConfirm, onCancel, count, isDark }) => (
@@ -108,6 +108,26 @@ const NotificationDetails = ({ data, isDark }) => {
   );
 
   switch (data.type) {
+    case 'NEW_PRODUCER_APPLICATION':
+      return (
+        <div className="pl-9 mt-2 space-y-2">
+          {renderDetailItem(
+            <UserPlus className="w-4 h-4 text-green-500" />,
+            "Business Name",
+            data.businessName
+          )}
+          {renderDetailItem(
+            <Mail className="w-4 h-4 text-blue-500" />,
+            "Email",
+            data.customerEmail
+          )}
+          {data.applicationId && renderDetailItem(
+            <ClipboardList className="w-4 h-4 text-purple-500" />,
+            "Application ID",
+            data.applicationId
+          )}
+        </div>
+      );
     case 'TICKET_REPLY':
       return (
         <div className="pl-9 mt-2 space-y-2">
@@ -201,6 +221,8 @@ const NotificationItem = ({
 
   const getIcon = (type) => {
     switch (type) {
+      case 'NEW_PRODUCER_APPLICATION':
+        return <UserPlus className="w-5 h-5 text-green-500" />;
       case 'TICKET_REPLY':
         return <MessageCircle className="w-5 h-5 text-blue-500" />;
       case 'NEW_ORDER':

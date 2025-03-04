@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   Plus, Pencil, Trash2, Search, Filter, X, Upload, 
@@ -30,36 +30,73 @@ const StatusBadge = ({ status = 'PENDING', declineReason }) => {
     }
   };
 
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const tooltipRef = useRef(null);
+
+  const handleMouseEnter = (e) => {
+    if (!declineReason || status !== 'DECLINED') return;
+    
+    // Calculate position to show tooltip directly on top of the alert icon
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltipPosition({
+      x: Math.max(10, rect.left - 130), // Center tooltip above the icon
+      y: Math.max(10, rect.top - 110) // Position higher above the icon
+    });
+    setShowTooltip(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false);
+  };
+
   return (
-    <div className="flex items-center gap-2">
-      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusStyles()}`}>
-        {status ? status.charAt(0) + status.slice(1).toLowerCase() : 'Pending'}
-      </span>
-      {status === 'DECLINED' && declineReason && (
-        <div className="relative group">
-          <AlertTriangle className="w-4 h-4 text-red-500 cursor-help" />
-          <div className="absolute z-20 bottom-full left-0 mb-2 w-72 p-4 bg-red-50 dark:bg-red-950 
-                       rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 
-                       group-hover:visible transition-all duration-200 pointer-events-none
-                       border border-red-200 dark:border-red-800">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="font-medium text-red-800 dark:text-red-200 mb-1">
-                  Decline Reason
-                </p>
-                <p className="text-sm text-red-600 dark:text-red-300">
-                  {declineReason}
-                </p>
-              </div>
-            </div>
-            <div className="absolute bottom-0 left-4 w-2 h-2 bg-red-50 dark:bg-red-950 
-                          border-b border-r border-red-200 dark:border-red-800 
-                          transform translate-y-1 rotate-45" />
+    <>
+      <div className="flex items-center gap-2">
+        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusStyles()}`}>
+          {status ? status.charAt(0) + status.slice(1).toLowerCase() : 'Pending'}
+        </span>
+        {status === 'DECLINED' && declineReason && (
+          <div 
+            className="cursor-help" 
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <AlertTriangle className="w-4 h-4 text-red-500" />
           </div>
+        )}
+      </div>
+
+      {/* Portal for tooltip outside of table structure */}
+      {showTooltip && status === 'DECLINED' && declineReason && (
+        <div 
+          ref={tooltipRef}
+          className="fixed z-[9999] p-4 bg-red-50 dark:bg-red-950 rounded-xl shadow-xl
+                   border border-red-200 dark:border-red-800 w-80 pointer-events-none"
+          style={{ 
+            left: `${tooltipPosition.x}px`, 
+            top: `${tooltipPosition.y}px`,
+            animation: 'fadeIn 0.2s ease-in-out',
+            maxWidth: '320px'
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 overflow-hidden">
+              <p className="font-medium text-red-800 dark:text-red-200 mb-1">
+                Decline Reason
+              </p>
+              <p className="text-sm text-red-600 dark:text-red-300 break-words whitespace-normal overflow-wrap-anywhere">
+                {declineReason}
+              </p>
+            </div>
+          </div>
+          <div className="absolute bottom-[-8px] left-[140px] w-2 h-2 bg-red-50 dark:bg-red-950 
+                        border-b border-r border-red-200 dark:border-red-800 
+                        transform rotate-45" />
         </div>
       )}
-    </div>
+    </>
   );
 };
 

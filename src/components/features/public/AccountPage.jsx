@@ -182,7 +182,7 @@ const AccountPage = ({ adminOnly = false, producerOnly = false }) => {
             {user?.role === 'producer' && !isInProducerSection && (
               <Link 
                 to="/producer/products" 
-                className={`border border-primary/30 bg-primary/5 hover:bg-primary/10 ${baseCardClasses}`}
+                className={`border border-border bg-white/80 hover:bg-white/90 dark:bg-cardBg dark:hover:bg-white/5 ${baseCardClasses}`}
               >
                 <div>
                   <h2 className="text-2xl font-recoleta uppercase font-bold text-primary">Producer Dashboard</h2>
