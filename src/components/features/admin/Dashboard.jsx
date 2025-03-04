@@ -10,7 +10,7 @@ import { formatPercentage, formatCurrency } from '../../../utils/formatters';
 const Dashboard = () => {
   const dispatch = useDispatch();
   const { isDark } = useTheme();
-  const [dateRange, setDateRange] = useState('month');
+  const [dateRange, setDateRange] = useState('year');
   const [currentPage, setCurrentPage] = useState(1);
   const [exportFormat, setExportFormat] = useState('pdf');
   const itemsPerPage = 5; // Number of transactions per page
@@ -102,7 +102,10 @@ const Dashboard = () => {
 
   // Helper function to generate monthly data points
   const generateMonthlyData = (revenueData) => {
-    if (!revenueData || revenueData.length === 0) return [];
+    if (!revenueData || revenueData.length === 0) {
+      // Return default data structure with empty arrays
+      return { months: Array(12).fill(''), revenues: Array(12).fill(0) };
+    }
     
     const months = [];
     const revenues = [];
@@ -188,7 +191,7 @@ const Dashboard = () => {
 
   const revenueChartSeries = [{
     name: 'Revenue',
-    data: revenues
+    data: revenues || [] // Ensure data is always an array
   }];
 
   // Add this handler for the jump to page functionality

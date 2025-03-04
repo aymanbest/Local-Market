@@ -13,7 +13,7 @@ import { formatPercentage, formatCurrency } from '../../../utils/formatters';
 const Analytics = () => {
   const dispatch = useDispatch();
   const { isDark } = useTheme();
-  const [dateRange, setDateRange] = useState('month');
+  const [dateRange, setDateRange] = useState('year');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5; // Number of transactions per page
   const [jumpToPage, setJumpToPage] = useState('');
@@ -99,7 +99,10 @@ const Analytics = () => {
 
   // Helper function to generate monthly data points
   const generateMonthlyData = (revenueData) => {
-    if (!revenueData || revenueData.length === 0) return [];
+    if (!revenueData || revenueData.length === 0) {
+      // Return default data structure with empty arrays
+      return { months: Array(12).fill(''), revenues: Array(12).fill(0) };
+    }
     
     const months = [];
     const revenues = [];
