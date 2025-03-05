@@ -20,6 +20,9 @@
     --color-card-border: #e5e7eb;
     --color-stats-card: #ffffff80;
     --color-divider: rgba(26, 26, 26, 0.2);
+    --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
+    --scrollbar-track: rgba(0, 0, 0, 0.1);
   }
 
   .dark {
@@ -36,6 +39,9 @@
     --color-card-border: #2f2f2f;
     --color-stats-card: #1E1E1E80;
     --color-divider: rgba(255, 255, 255, 0.2);
+    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
+    --scrollbar-track: rgba(255, 255, 255, 0.1);
   }
 }
 @font-face {
@@ -73,4 +79,31 @@ input[type="number"].hide-spinner {
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+}
+
+/* Cross-browser compatible scrollbar styling */
+.custom-scrollbar {
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* Chrome, Edge, and Safari */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
