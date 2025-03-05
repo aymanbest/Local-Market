@@ -113,10 +113,10 @@ const OrderBundle = () => {
                     <div key={item.orderItemId} className="p-6 hover:bg-background/50 transition-colors">
                       <div className="flex items-center gap-6">
                         <div className="w-20 h-20 bg-inputBg rounded-lg flex items-center justify-center flex-shrink-0">
-                          {item.product.imageUrl ? (
+                          {item.productImageUrl	 ? (
                             <img 
-                              src={item.product.imageUrl} 
-                              alt={item.product.name} 
+                              src={item.productImageUrl	} 
+                              alt={item.name} 
                               className="w-full h-full object-cover rounded-lg"
                             />
                           ) : (
@@ -127,13 +127,13 @@ const OrderBundle = () => {
                           <div className="flex justify-between items-start gap-4">
                             <div>
                               <h3 className="text-lg font-medium text-text truncate">
-                                {item.product.name}
+                                {item.productName}
                               </h3>
                               <p className="text-sm text-textSecondary mt-1">
                                 Quantity: {item.quantity} × ${item.price.toFixed(2)}
                               </p>
                               <p className="text-sm text-textSecondary">
-                                Seller: {item.product.producer.firstname} {item.product.producer.lastname}
+                                Seller: {item.producerName}
                               </p>
                             </div>
                             <div className="text-right flex-shrink-0">
@@ -141,7 +141,7 @@ const OrderBundle = () => {
                                 ${(item.quantity * item.price).toFixed(2)}
                               </p>
                               <Link 
-                                to={`/store/products/${item.product.productId}`}
+                                to={`/store/products/${item.productId}`}
                                 className="inline-flex items-center gap-1 text-primary hover:text-primaryHover mt-2 text-sm"
                               >
                                 Order Again

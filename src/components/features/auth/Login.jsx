@@ -14,6 +14,7 @@ const Login = ({ adminOnly = false }) => {
   const location = useLocation();
   const { status, error } = useSelector((state) => state.auth);
   const [message, setMessage] = useState(location.state?.message || '');
+  const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
     dispatch(clearAuth());
@@ -27,8 +28,17 @@ const Login = ({ adminOnly = false }) => {
     }
   }, [dispatch, message]);
 
+  // Update local error state when Redux error changes
+  useEffect(() => {
+    if (error) {
+      setLoginError(error);
+    }
+  }, [error]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoginError(''); // Clear previous errors
+    
     try {
       const resultAction = await dispatch(loginUser({ email, password }));
       
@@ -48,12 +58,11 @@ const Login = ({ adminOnly = false }) => {
           const from = location.state?.from?.pathname || getDefaultRoute(role);
           navigate(from, { replace: true });
         }
-      } else if (loginUser.rejected.match(resultAction)) {
-        // Handle login error
-        console.error('Login failed:', resultAction.payload);
       }
     } catch (error) {
       console.error('Login error:', error);
+      // This will catch any errors not handled by the Redux action
+      setLoginError(error.message || 'Authentication failed');
     }
   };
 
@@ -80,10 +89,10 @@ const Login = ({ adminOnly = false }) => {
         )}
 
         {/* Error Message */}
-        {error && (
+        {loginError && (
           <div className="mb-6 flex items-center gap-2 text-red-500 bg-red-50 p-4 rounded-lg border border-red-200">
             <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-            <span className="text-sm">{error}</span>
+            <span className="text-sm">{loginError}</span>
           </div>
         )}
 

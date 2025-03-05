@@ -254,22 +254,22 @@ const ApplicationManagement = () => {
   };
 
   const handleCustomCategoryConfirm = async (approveCC) => {
+    setShowCustomCategoryModal(false);
     await dispatch(approveApplication({ 
       applicationId: selectedApp.applicationId, 
       approveCC 
     }));
-    setShowCustomCategoryModal(false);
     setSelectedApp(null);
   };
 
   const handleDecline = async () => {
     const reason = declineReasonRef.current.value.trim();
     if (reason) {
+      setShowDeclineModal(false);
       await dispatch(declineApplication({
         applicationId: selectedApp.applicationId,
         reason: reason
       }));
-      setShowDeclineModal(false);
       declineReasonRef.current.value = '';
       setSelectedApp(null);
     }

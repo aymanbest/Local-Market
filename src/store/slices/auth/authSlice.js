@@ -119,8 +119,12 @@ export const loginUser = createAsyncThunk(
         return authData;
       }
     } catch (error) {
-
-      return rejectWithValue(error.response?.data?.message || 'Login failed');
+      // Extract the error message from the response
+      const errorMessage = error.response?.data?.message || 
+                          (error.response?.data?.code === 'AUTHENTICATION_FAILED' ? 
+                           'Invalid email or password' : 'Login failed');
+      
+      return rejectWithValue(errorMessage);
     }
   }
 );
