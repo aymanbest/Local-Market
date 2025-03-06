@@ -115,6 +115,18 @@ export const exportAnalytics = createAsyncThunk(
   }
 );
 
+export const fetchOrderStatistics = createAsyncThunk(
+  'analytics/fetchOrderStatistics',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/api/analytics/order-statistics');
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch order statistics');
+    }
+  }
+);
+
 const analyticsSlice = createSlice({
   name: 'analytics',
   initialState: {
@@ -124,7 +136,13 @@ const analyticsSlice = createSlice({
     overview: null,
     orderStats: null,
     loading: false,
-    error: null
+    error: null,
+    orderStatistics: {
+      totalOrders: 0,
+      pendingOrders: 0,
+      processingOrders: 0,
+      deliveredOrders: 0
+    }
   },
   reducers: {
     clearAnalytics: (state) => {
@@ -199,6 +217,18 @@ const analyticsSlice = createSlice({
         state.orderStats = action.payload;
       })
       .addCase(fetchOrderStats.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchOrderStatistics.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrderStatistics.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orderStatistics = action.payload;
+      })
+      .addCase(fetchOrderStatistics.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

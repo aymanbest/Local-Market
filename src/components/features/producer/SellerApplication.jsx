@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Store, MapPin, Globe, MessageSquare, Calendar, ChevronDown, Plus, X, Clock, XCircle } from 'lucide-react';
+import { Building2, Store, MessageSquare } from 'lucide-react';
 import { submitApplication, fetchApplicationStatus } from '../../../store/slices/producer/producerApplicationsSlice';
 import Button from '../../common/ui/Button';
 import { fetchCategories } from '../../../store/slices/product/categorySlice';

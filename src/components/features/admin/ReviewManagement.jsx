@@ -5,13 +5,11 @@ import { fetchPendingReviews, approveReview, declineReview } from '../../../stor
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../common/ui/Table';
 import { Card } from '../../common/ui/Card';
 import Button from '../../common/ui/Button';
-//import { // toast } from 'react-hot-// toast';
+import {  toast } from 'react-hot-toast';
 
 const ReviewManagement = () => {
   const dispatch = useDispatch();
   const { pendingReviews, loading, error, pagination } = useSelector((state) => state.reviews);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [expandedReviews, setExpandedReviews] = useState({});
   const [viewingComment, setViewingComment] = useState(null);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [tempFilters, setTempFilters] = useState({
@@ -61,7 +59,7 @@ const ReviewManagement = () => {
   const handleApprove = async (reviewId) => {
     try {
       await dispatch(approveReview(reviewId)).unwrap();
-      // toast.success('Review approved successfully');
+      toast.success('Review approved successfully');
       dispatch(fetchPendingReviews({
         page: pagination.currentPage,
         size: pagination.pageSize,
@@ -69,14 +67,14 @@ const ReviewManagement = () => {
         direction: tempFilters.sorting.direction
       }));
     } catch (error) {
-      // toast.error(error.message || 'Failed to approve review');
+      toast.error(error.message || 'Failed to approve review');
     }
   };
 
   const handleDecline = async (reviewId) => {
     try {
       await dispatch(declineReview(reviewId)).unwrap();
-      // toast.success('Review declined successfully');
+      toast.success('Review declined successfully');
       dispatch(fetchPendingReviews({
         page: pagination.currentPage,
         size: pagination.pageSize,
@@ -84,7 +82,7 @@ const ReviewManagement = () => {
         direction: tempFilters.sorting.direction
       }));
     } catch (error) {
-      // toast.error(error.message || 'Failed to decline review');
+      toast.error(error.message || 'Failed to decline review');
     }
   };
 
@@ -102,12 +100,6 @@ const ReviewManagement = () => {
   const closeCommentModal = () => {
     setViewingComment(null);
   };
-
-  const filteredReviews = pendingReviews.filter(review =>
-    review.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    review.customerUsername.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    review.comment.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const FilterModal = () => {
     const [localFilters, setLocalFilters] = useState(tempFilters);

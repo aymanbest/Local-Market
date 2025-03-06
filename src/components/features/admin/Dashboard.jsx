@@ -191,25 +191,14 @@ const Dashboard = () => {
 
   const revenueChartSeries = [{
     name: 'Revenue',
-    data: revenues || [] // Ensure data is always an array
+    data: revenues || [] 
   }];
-
-  // Add this handler for the jump to page functionality
-  const handleJumpToPage = (e) => {
-    e.preventDefault();
-    const pageNumber = parseInt(jumpToPage);
-    if (pageNumber && pageNumber > 0 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-      setJumpToPage('');
-    }
-  };
 
   // Pagination improvements
   const MAX_VISIBLE_PAGES = 5;
   const PaginationControls = ({ currentPage, setCurrentPage, totalPages, jumpToPage, setJumpToPage, handleJumpToPage, indexOfFirstItem, indexOfLastItem, totalItems }) => {
     const getVisiblePages = () => {
-      const totalPageNumbers = Math.min(MAX_VISIBLE_PAGES, totalPages);
-      
+  
       if (totalPages <= MAX_VISIBLE_PAGES) {
         return Array.from({ length: totalPages }, (_, i) => i + 1);
       }
@@ -373,7 +362,7 @@ const Dashboard = () => {
     );
   };
 
-  // Create a new memoized component for Recent Transactions
+  // Memorize Transactions
   const RecentTransactions = React.memo(({ transactions }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [jumpToPage, setJumpToPage] = useState('');

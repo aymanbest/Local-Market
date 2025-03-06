@@ -13,6 +13,7 @@ import { checkReviewEligibility, submitReview } from '../../../store/slices/cust
 import { useTheme } from '../../../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getFullImageUrl } from '../../../utils/getFullImageUrl';
+import { toast } from 'react-hot-toast';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -75,7 +76,7 @@ const ProductDetails = () => {
       dispatch(addToCart(cartItem));
 
       // Show success notification
-      // toast.success('Added to cart successfully!');
+      toast.success('Added to cart successfully!');
     }
   };
 

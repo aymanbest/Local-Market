@@ -8,7 +8,7 @@ import { fetchProducts } from '../../../store/slices/product/productSlice';
 import { addToCart } from '../../../store/slices/product/cartSlice';
 import Preloader from '../preloader/Preloader';
 import { getFullImageUrl } from '../../../utils/getFullImageUrl';
-
+import { toast } from 'react-hot-toast';
 const Store = () => {
     const dispatch = useDispatch();
     const { categories } = useSelector((state) => state.categories);
@@ -119,6 +119,7 @@ const Store = () => {
             quantity: 1
         };
         dispatch(addToCart(cartItem));
+        toast.success(product.name + ' Added to cart!');
     };
 
     // Update pagination controls

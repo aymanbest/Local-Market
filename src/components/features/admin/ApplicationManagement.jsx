@@ -27,26 +27,26 @@ const ApplicationCard = ({ app, onApprove, onDecline }) => {
       {/* Main Card Content */}
       <div className="p-6">
         <div className="flex justify-between items-start mb-6">
-          <div className="space-y-2">
-            <h3 className="text-2xl font-bold text-text group-hover:text-primary">
+          <div className="space-y-2 flex-1 min-w-0 mr-4">
+            <h3 className="text-2xl font-bold text-text group-hover:text-primary truncate">
               {app.businessName}
             </h3>
-            <div className="flex items-center gap-4 text-sm text-textSecondary">
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                {app.customerUsername}
+            <div className="flex items-center flex-wrap gap-4 text-sm text-textSecondary">
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <User className="w-4 h-4 flex-shrink-0" />
+                <span>{app.customerUsername}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4" />
-                {app.customerEmail}
+              <div className="flex items-center gap-2 max-w-[180px]">
+                <Globe className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate" title={app.customerEmail}>{app.customerEmail}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4" />
-                {app.businessPhoneNumber}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Phone className="w-4 h-4 flex-shrink-0" />
+                <span>{app.businessPhoneNumber}</span>
               </div>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <button
               onClick={() => onApprove(app)}
               className="bg-green-500/10 hover:bg-green-500 text-green-500 hover:text-white p-3 rounded-xl transition-all duration-300 hover:scale-105"
@@ -79,7 +79,14 @@ const ApplicationCard = ({ app, onApprove, onDecline }) => {
           <div>
             <div className="flex flex-wrap gap-2">
               {app.categories.map((cat, index) => (
-                <span key={index} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+                <span 
+                  key={index} 
+                  className={`px-3 py-1 rounded-full text-sm ${
+                    cat === "Deleted Category"
+                      ? 'bg-red-500/10 text-red-500'
+                      : 'bg-primary/10 text-primary'
+                  }`}
+                >
                   {cat}
                 </span>
               ))}

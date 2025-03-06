@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef , Fragment } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
-  MessageCircle, Clock, AlertTriangle, CheckCircle2, 
+  MessageCircle, Clock, AlertTriangle, 
   Send, ChevronRight, ArrowLeft, UserCircle2, X,
   Filter, Search, ChevronLeft, ChevronRight as ChevronRightIcon
 } from 'lucide-react';
@@ -12,7 +12,6 @@ import {
 } from '../../../store/slices/common/supportTicketSlice';
 import { fetchUsers } from '../../../store/slices/admin/userSlice';
 import Button from '../../common/ui/Button';
-import { Card } from '../../common/ui/Card';
 import { useTheme } from '../../../context/ThemeContext';
 
 const Support = () => {
@@ -63,9 +62,9 @@ const Support = () => {
   }, [dispatch, currentTicket]);
 
   useEffect(() => {
-    // Fetch admin users when component mounts
+    // Fetch admin users
     dispatch(fetchUsers({ role: 'ADMIN' }));
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -120,11 +119,6 @@ const Support = () => {
 
   const handlePageChange = (newPage) => {
     dispatch(updatePagination({ currentPage: newPage }));
-  };
-
-  const handleSortChange = (newSortBy) => {
-    const newDirection = sorting.sortBy === newSortBy && sorting.direction === 'asc' ? 'desc' : 'asc';
-    dispatch(updateSorting({ sortBy: newSortBy, direction: newDirection }));
   };
 
   const handleFilterChange = (newFilters) => {

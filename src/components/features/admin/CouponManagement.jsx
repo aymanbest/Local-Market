@@ -44,7 +44,7 @@ const CouponManagement = () => {
   useEffect(() => {
     dispatch(fetchCoupons({
       page: 0,
-      size: 10,
+      size: 6,
       sortBy: tempFilters.sorting.sortBy,
       direction: tempFilters.sorting.direction
     }));
@@ -196,9 +196,8 @@ const CouponManagement = () => {
     const [localFilters, setLocalFilters] = useState(tempFilters);
 
     const sortingOptions = [
-      { value: 'createdAt', label: 'Creation Date' },
-      { value: 'code', label: 'Coupon Code' },
-      { value: 'validUntil', label: 'Expiry Date' },
+      { value: 'validFrom', label: 'Valid From' },
+      { value: 'validUntil', label: 'Valid Until' },
       { value: 'discountValue', label: 'Discount Value' },
       { value: 'timesUsed', label: 'Usage Count' }
     ];

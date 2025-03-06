@@ -5,6 +5,7 @@ import Button from '../../common/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducerOrders, filterOrders, updateOrderStatus, fetchOrdersByStatus } from '../../../store/slices/customer/orderSlice';
+import { fetchOrderStatistics } from '../../../store/slices/common/analyticsSlice';
 
 const OrderManagement = () => {
   const dispatch = useDispatch();
@@ -33,6 +34,8 @@ const OrderManagement = () => {
 
   const [activeStatus, setActiveStatus] = useState('all');
 
+  const { orderStatistics } = useSelector((state) => state.analytics);
+
   const getStatusBadge = (status) => {
     const statusConfig = {
       'PENDING_PAYMENT': { icon: Clock, className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100', text: 'Pending Payment' },
@@ -57,16 +60,21 @@ const OrderManagement = () => {
   };
 
   useEffect(() => {
+    
     dispatch(fetchProducerOrders({
       page: 0,
-      size: 10,
+      size: 6,
       sortBy: tempFilters.sorting.sortBy,
       direction: tempFilters.sorting.direction,
       customerEmail: searchTerm
     }));
   }, [dispatch, tempFilters.sorting]);
 
-  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  useEffect(() => {
+    dispatch(fetchOrderStatistics());
+  }, [dispatch]);
+
+  
   const paginatedOrders = orders.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -295,14 +303,6 @@ const OrderManagement = () => {
     );
   };
 
-  // Calculate order statistics
-  const orderStats = {
-    total: orders.length,
-    pending: orders.filter(o => ['PAYMENT_COMPLETED'].includes(o.status)).length,
-    processing: orders.filter(o => ['PROCESSING'].includes(o.status)).length,
-    delivered: orders.filter(o => o.status === 'DELIVERED').length
-  };
-
   const handleStatusFilter = (status) => {
     setActiveStatus(status);
     if (status === 'all') {
@@ -357,9 +357,7 @@ const OrderManagement = () => {
               <span>{status.label}</span>
               {isActive && (
                 <span className="ml-2 px-2 py-0.5 text-xs bg-white/20 rounded-full">
-                  {status.value === 'all' 
-                    ? pagination.totalElements 
-                    : orders.filter(o => o.status === status.value).length}
+                  {pagination.totalElements}
                 </span>
               )}
             </Button>
@@ -528,10 +526,38 @@ const OrderManagement = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Total Orders', value: orderStats.total, icon: Package, gradientFrom: 'from-blue-500/30', gradientTo: 'to-blue-600/30', iconColor: 'text-blue-500' },
-              { label: 'Pending', value: orderStats.pending, icon: Clock, gradientFrom: 'from-yellow-500/30', gradientTo: 'to-yellow-600/30', iconColor: 'text-yellow-500' },
-              { label: 'Processing', value: orderStats.processing, icon: AlertCircle, gradientFrom: 'from-purple-500/30', gradientTo: 'to-purple-600/30', iconColor: 'text-purple-500' }, 
-              { label: 'Delivered', value: orderStats.delivered, icon: CheckCircle2, gradientFrom: 'from-green-500/30', gradientTo: 'to-green-600/30', iconColor: 'text-green-500' },
+              { 
+                label: 'Total Orders', 
+                value: orderStatistics.totalOrders, 
+                icon: Package, 
+                gradientFrom: 'from-blue-500/30', 
+                gradientTo: 'to-blue-600/30', 
+                iconColor: 'text-blue-500' 
+              },
+              { 
+                label: 'Pending', 
+                value: orderStatistics.pendingOrders, 
+                icon: Clock, 
+                gradientFrom: 'from-yellow-500/30', 
+                gradientTo: 'to-yellow-600/30', 
+                iconColor: 'text-yellow-500' 
+              },
+              { 
+                label: 'Processing', 
+                value: orderStatistics.processingOrders, 
+                icon: AlertCircle, 
+                gradientFrom: 'from-purple-500/30', 
+                gradientTo: 'to-purple-600/30', 
+                iconColor: 'text-purple-500' 
+              },
+              { 
+                label: 'Delivered', 
+                value: orderStatistics.deliveredOrders, 
+                icon: CheckCircle2, 
+                gradientFrom: 'from-green-500/30', 
+                gradientTo: 'to-green-600/30', 
+                iconColor: 'text-green-500' 
+              }
             ].map((stat, index) => (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -613,7 +639,41 @@ const OrderManagement = () => {
             {loading ? (
               <div className="text-center py-4">Loading orders...</div>
             ) : orders.length === 0 ? (
-              <div className="text-center py-4">No orders found</div>
+              <div className="col-span-full flex flex-col items-center justify-center py-12 px-4 bg-cardBg/50 border border-dashed border-border rounded-xl">
+                <Package className="w-16 h-16 text-textSecondary/30 mb-4" />
+                <h3 className="text-xl font-semibold text-text mb-2">No Orders Found</h3>
+                <p className="text-textSecondary text-center max-w-md mb-6">
+                  There are no orders matching your current filters. Try adjusting your search criteria or check back later.
+                </p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setFilters({
+                      status: 'all',
+                      dateRange: 'all',
+                      minAmount: '',
+                      maxAmount: ''
+                    });
+                    setSearchTerm('');
+                    setActiveStatus('all');
+                    
+                    // Fetch orders with reset filters
+                    dispatch(fetchProducerOrders({
+                      page: 0,
+                      size: itemsPerPage,
+                      sortBy: tempFilters.sorting.sortBy,
+                      direction: tempFilters.sorting.direction
+                    }));
+                    
+                    // Reset to first page
+                    setCurrentPage(1);
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <Filter className="w-4 h-4" />
+                  Reset Filters
+                </Button>
+              </div>
             ) : (
               paginatedOrders.map((order, index) => (
                 <motion.div
@@ -699,7 +759,43 @@ const OrderManagement = () => {
                   </TableRow>
                 ) : orders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">No orders found</TableCell>
+                    <TableCell colSpan={6}>
+                      <div className="flex flex-col items-center justify-center py-12 px-4">
+                        <Package className="w-16 h-16 text-textSecondary/30 mb-4" />
+                        <h3 className="text-xl font-semibold text-text mb-2">No Orders Found</h3>
+                        <p className="text-textSecondary text-center max-w-md mb-6">
+                          There are no orders matching your current filters. Try adjusting your search criteria or check back later.
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            setFilters({
+                              status: 'all',
+                              dateRange: 'all',
+                              minAmount: '',
+                              maxAmount: ''
+                            });
+                            setSearchTerm('');
+                            setActiveStatus('all');
+                            
+                            // Fetch orders with reset filters
+                            dispatch(fetchProducerOrders({
+                              page: 0,
+                              size: itemsPerPage,
+                              sortBy: tempFilters.sorting.sortBy,
+                              direction: tempFilters.sorting.direction
+                            }));
+                            
+                            // Reset to first page
+                            setCurrentPage(1);
+                          }}
+                          className="flex items-center gap-2"
+                        >
+                          <Filter className="w-4 h-4" />
+                          Reset Filters
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ) : (
                   paginatedOrders.map((order, index) => (

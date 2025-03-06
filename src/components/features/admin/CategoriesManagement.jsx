@@ -80,7 +80,7 @@ const CategoriesManagement = () => {
     await dispatch(fetchProductsByCategory({
       categoryId: category.categoryId,
       page: page,
-      size: 8,
+      size: 4,
       sortBy: 'name',
       direction: 'asc'
     }));

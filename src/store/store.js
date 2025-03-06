@@ -50,7 +50,6 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Ignore these action types from redux-persist
         ignoredActions: [
           'persist/PERSIST',
           'persist/REHYDRATE',
@@ -60,9 +59,7 @@ const store = configureStore({
     })
 });
 
-// Create persistor
 export const persistor = persistStore(store);
 
-// Export the store
 export default store;
 

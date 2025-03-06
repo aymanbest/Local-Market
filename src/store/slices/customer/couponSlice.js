@@ -4,7 +4,7 @@ import api from '../../../lib/axios';
 // Async thunks
 export const fetchCoupons = createAsyncThunk(
   'coupons/fetchCoupons',
-  async ({ page = 0, size = 10, sortBy = 'createdAt', direction = 'desc' } = {}) => {
+  async ({ page = 0, size = 10, sortBy = 'validFrom', direction = 'desc' } = {}) => {
     const response = await api.get(`/api/coupons?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`);
     return response.data;
   }

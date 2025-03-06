@@ -4,7 +4,7 @@ import { Check, X, Eye, Search, Package, User, ChevronLeft, ChevronRight, Trash2
 import { fetchPendingProducts, approveProduct, declineProduct , adminDeleteProduct } from '../../../store/slices/product/pendingProductsSlice';
 import Button from '../../common/ui/Button';
 import { Card } from '../../common/ui/Card';
-// import { // toast } from 'react-hot-// toast';
+import { toast } from 'react-hot-toast';
 import { fetchProducts } from '../../../store/slices/product/productSlice';
 
 const DeclineButton = React.memo(({ onClick, children, variant }) => (
@@ -84,7 +84,7 @@ const AdminDeleteModal = React.memo(() => {
               onClick={() => {
                 dispatch(adminDeleteProduct(productToDelete.productId)).unwrap()
                   .then(() => {
-                    // toast.success('Product deleted successfully');
+                    toast.success('Product deleted successfully');
                     // Refresh the products list
                     dispatch(fetchProducts({
                       page: pagination?.currentPage || 0,
@@ -94,7 +94,7 @@ const AdminDeleteModal = React.memo(() => {
                     }));
                   })
                   .catch(error => {
-                    // toast.error('Failed to delete product');
+                    toast.error('Failed to delete product');
                   })
                   .finally(() => {
                     setShowAdminDeleteModal(false);
@@ -154,9 +154,9 @@ const ProductManagement = () => {
     try {
       await dispatch(approveProduct(productId)).unwrap();
       console.log('Product approved successfully');
-      // toast.success('Product approved successfully');
+      toast.success('Product approved successfully');
     } catch (error) {
-      // toast.error('Failed to approve product');
+      toast.error('Failed to approve product');
     }
   };
 
@@ -167,9 +167,9 @@ const ProductManagement = () => {
         reason: reason
       })).unwrap();
       setShowDeclineModal(false);
-      // toast.success('Product declined successfully');
+      toast.success('Product declined successfully');
     } catch (error) {
-      // toast.error(error || 'Failed to decline product');
+      toast.error(error || 'Failed to decline product');
     }
   }, [selectedProduct]);
 
@@ -416,7 +416,7 @@ const ProductManagement = () => {
                     <div className="space-y-2">
                       <h3 className="font-medium text-text">{product.name}</h3>
                       <p className="text-primary font-semibold">${product.price.toFixed(2)}</p>
-                      <p className="text-sm text-textSecondary">By {product.producerName}</p>
+                      <p className="text-sm text-textSecondary">By {product.producer.firstname} {product.producer.lastname}</p>
                       <div className="flex justify-end gap-2">
                         <Button
                           onClick={() => {
@@ -554,7 +554,7 @@ const ProductManagement = () => {
                   onClick={() => {
                     dispatch(adminDeleteProduct(productToDelete.productId)).unwrap()
                       .then(() => {
-                        // toast.success('Product deleted successfully');
+                        toast.success('Product deleted successfully');
                         // Refresh the products list
                         dispatch(fetchProducts({
                           page: pagination?.currentPage || 0,
@@ -564,7 +564,7 @@ const ProductManagement = () => {
                         }));
                       })
                       .catch(error => {
-                        // toast.error('Failed to delete product');
+                        toast.error('Failed to delete product');
                       })
                       .finally(() => {
                         setShowAdminDeleteModal(false);

@@ -146,14 +146,7 @@ const categorySlice = createSlice({
       })
       .addCase(fetchProductsByCategory.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        const allProducts = action.payload.content.flatMap(producer => {
-          return producer.products.map(product => ({
-            ...product,
-            producer: producer.username,
-            producerName: `${producer.firstname} ${producer.lastname}`
-          }));
-        });
-        state.currentCategoryProducts = allProducts;
+        state.currentCategoryProducts = action.payload.content;
         state.pagination = {
           currentPage: action.payload.number,
           totalPages: action.payload.totalPages,
@@ -165,7 +158,7 @@ const categorySlice = createSlice({
       })
       .addCase(fetchProductsByCategory.rejected, (state, action) => {
         state.status = 'failed';
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(fetchProductById.fulfilled, (state, action) => {
         state.selectedProduct = action.payload;

@@ -37,6 +37,8 @@ import TermsOfService from './components/features/public/TermsOfService';
 import Footer from './components/features/public/Footer';
 import AuthPersistence from './components/security/AuthPersistence';
 import { PersistGate } from 'redux-persist/integration/react';
+import { Toaster } from 'react-hot-toast';
+import { useTheme } from './context/ThemeContext';
 
 // Create a separate component for the main content
 const MainContent = () => {
@@ -44,6 +46,7 @@ const MainContent = () => {
   const location = useLocation();
   const [initialLoad, setInitialLoad] = useState(true);
   const [navigationLoading, setNavigationLoading] = useState(false);
+  const { isDark } = useTheme();
   
   // Track route changes to show preloader on navigation
   useEffect(() => {
@@ -70,6 +73,16 @@ const MainContent = () => {
   return (
     <>
       <AuthPersistence />
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: isDark ? '#1f1f1f' : '#ffffff',
+            color: isDark ? '#ffffff' : '#1f1f1f',
+          },
+        }}
+      />
       {(isLoading || navigationLoading) && <Preloader />}
       <WebSocketInitializer />
       <WelcomeCoupon />

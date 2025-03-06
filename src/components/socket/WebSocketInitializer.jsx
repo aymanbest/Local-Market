@@ -12,7 +12,7 @@ const WebSocketInitializer = () => {
     }
   }, [isAuthenticated, dispatch]);
 
-  return null; // This is a utility component, it doesn't render anything
+  return null; // This doesn't render anything
 };
 
 export default WebSocketInitializer; 
