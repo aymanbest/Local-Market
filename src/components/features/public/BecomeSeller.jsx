@@ -129,7 +129,7 @@ const BecomeSeller = () => {
     if (user) {
       dispatch(fetchApplicationStatus());
     }
-    if (user.role === 'producer' || user.role === 'admin') {
+    if (user?.role === 'producer' || user?.role === 'admin') {
       navigate(-1);
     }
   }, [dispatch, user, navigate]);
