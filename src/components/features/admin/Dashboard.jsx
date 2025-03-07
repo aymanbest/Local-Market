@@ -204,10 +204,10 @@ const Dashboard = () => {
       }
 
       // Calculate center of the visible range
-      const leftOffset = Math.floor(MAX_VISIBLE_PAGES / 2); 
-      const rightOffset = MAX_VISIBLE_PAGES - leftOffset - 1;
+      const leftOffset = Math.floor(MAX_VISIBLE_PAGES / 2); // 2 
+      const rightOffset = MAX_VISIBLE_PAGES - leftOffset - 1; //2
 
-      // Handle cases near the start
+      // Handle cases near the start // 1, 2, 3, 4, ..., 355
       if (currentPage <= leftOffset) {
         return [
           ...Array.from({ length: MAX_VISIBLE_PAGES - 1 }, (_, i) => i + 1),
@@ -216,7 +216,7 @@ const Dashboard = () => {
         ];
       }
 
-      // Handle cases near the end
+      // Handle cases near the end // 1, ..., 352, 353, 354, 355
       if (currentPage > totalPages - rightOffset) {
         return [
           1,
@@ -228,7 +228,7 @@ const Dashboard = () => {
         ];
       }
 
-      // Handle middle cases
+      // Handle middle cases //1 ,..., 6, 7, 8 ,... ,355
       return [
         1,
         '...',
