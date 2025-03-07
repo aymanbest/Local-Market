@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '../../../store/slices/auth/authSlice';
 import { fetchApplicationStatus } from '../../../store/slices/producer/producerApplicationsSlice';
 import { formatDistanceToNow, addDays, parseISO, isAfter } from 'date-fns';
-import api from '../../../lib/axios';
+
 
 const AccountPage = ({ adminOnly = false, producerOnly = false }) => {
   const dispatch = useDispatch();

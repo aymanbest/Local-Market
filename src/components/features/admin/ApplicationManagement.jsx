@@ -7,7 +7,7 @@ import {
 } from '../../../store/slices/producer/producerApplicationsSlice';
 import { 
   CheckCircle, XCircle, Building2, Globe, MapPin, 
-  Calendar, Search, Filter, ChevronDown, Phone,
+  Search, Filter, Phone,
   User, MessageSquare, Link as LinkIcon, Clock,
   ChevronRight, Store, Info, SlidersHorizontal, X
 } from 'lucide-react';

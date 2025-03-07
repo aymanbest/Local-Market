@@ -6,8 +6,6 @@ import {
   updateCoupon, 
   deleteCoupon,
   updateCouponStatus,
-  setSelectedCoupon,
-  clearSelectedCoupon 
 } from '../../../store/slices/customer/couponSlice';
 import { Plus, Pencil, Trash2, X, Power, Filter, SlidersHorizontal } from 'lucide-react';
 import { useTheme } from '../../../context/ThemeContext';

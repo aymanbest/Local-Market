@@ -129,16 +129,10 @@ const BecomeSeller = () => {
     if (user) {
       dispatch(fetchApplicationStatus());
     }
-  }, [dispatch, user]);
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-      </div>
-    );
-  }
+    if (user.role === 'producer' || user.role === 'admin') {
+      navigate(-1);
+    }
+  }, [dispatch, user, navigate]);
 
   // If user is logged in, check their status
   if (user) {

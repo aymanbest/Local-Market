@@ -3,8 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
   ShoppingCart, CircleUser, Leaf, Sun, Moon, Menu, X,
-  Building2, LayoutDashboard, Users, Package, StarIcon, Home, Store, BookOpenText, MailOpen, MessageCircleQuestion, LogIn, UserPlus, LogOut, ChevronRight, ClipboardList, BarChart2, Bell, BadgePercent,
-  ChevronDown, Grid, Settings, ChevronUp, ArrowLeft
+  Building2, LayoutDashboard, Users, Package, StarIcon, Store, BookOpenText, MailOpen, MessageCircleQuestion, LogIn, UserPlus, LogOut, ChevronRight, ClipboardList, BarChart2, Bell, BadgePercent,
+  ChevronDown, Grid, ChevronUp,
 } from 'lucide-react';
 import { logoutUser } from '../../../store/slices/auth/authSlice';
 import { useTheme } from '../../../context/ThemeContext';
@@ -35,14 +35,12 @@ const Header = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showAdminMenu, setShowAdminMenu] = useState(false);
   const [activeGroup, setActiveGroup] = useState(null);
   const adminMenuRef = useRef(null);
 
   // Reset active states when location changes
   useEffect(() => {
     setActiveGroup(null);
-    setShowAdminMenu(false);
     setShowMobileMenu(false);
     setShowNotifications(false);
   }, [location.pathname]);
@@ -156,17 +154,6 @@ const Header = () => {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Close admin menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (adminMenuRef.current && !adminMenuRef.current.contains(event.target)) {
-        setShowAdminMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Render admin navigation group

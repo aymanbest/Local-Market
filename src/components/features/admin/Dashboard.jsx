@@ -204,7 +204,7 @@ const Dashboard = () => {
       }
 
       // Calculate center of the visible range
-      const leftOffset = Math.floor(MAX_VISIBLE_PAGES / 2);
+      const leftOffset = Math.floor(MAX_VISIBLE_PAGES / 2); 
       const rightOffset = MAX_VISIBLE_PAGES - leftOffset - 1;
 
       // Handle cases near the start
